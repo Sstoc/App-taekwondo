@@ -1,0 +1,1348 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Taekwondo - CMK</title>
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/jpeg" href="logo%20chang%20moo%20kwan.jpeg">
+    <link rel="apple-touch-icon" href="logo%20chang%20moo%20kwan.jpeg">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Taekwondo - CMK">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        [x-cloak] { display: none !important; }
+        html, body { height: 100%; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 100dvh;
+        }
+        
+        .page-enter { animation: fadeSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .floating-card {
+            transition: transform .2s ease, box-shadow .2s ease;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+            background: white;
+        }
+        .floating-card:active { transform: scale(0.98); }
+
+        .modal-enter { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        /* Estilos Temáticos de Cinturones */
+        .card-Blanco { background-color: #ffffff; border-left-color: #cbd5e1; border-left-width: 6px; }
+        .card-Amarillo { background-color: #fefce8; border-left-color: #facc15; border-left-width: 6px; }
+        .card-Azul { background-color: #eff6ff; border-left-color: #60a5fa; border-left-width: 6px; }
+        .card-Rojo { background-color: #fef2f2; border-left-color: #f87171; border-left-width: 6px; }
+        /* Avanzados más intensos */
+        .card-Amarillo-Avz { background-color: #fef08a; border-left-color: #ca8a04; border-left-width: 8px; }
+        .card-Azul-Avz { background-color: #dbeafe; border-left-color: #2563eb; border-left-width: 8px; }
+        .card-Rojo-Avz { background-color: #fee2e2; border-left-color: #dc2626; border-left-width: 8px; }
+        .card-Negro { background-color: #0f172a; border-left-color: #334155; border-left-width: 6px; color: white; }
+
+        /* Toast */
+        .toast-enter { animation: toastIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(20px) translateX(-50%); } to { opacity: 1; transform: translateY(0) translateX(-50%); } }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+
+<body class="text-slate-800 bg-slate-50 h-[100dvh] overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+
+    <div x-data="tkdApp()" x-init="init()" class="h-full min-h-0 flex flex-col md:flex-row">
+
+        <div x-show="!user" x-cloak class="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden modal-enter">
+                <div class="p-8 bg-slate-900 text-white text-center">
+                    <img src="logo%20chang%20moo%20kwan.jpeg" alt="Chang Moo Kwan" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2296%22 height=%2296%22%3E%3Crect width=%2296%22 height=%2296%22 rx=%2218%22 fill=%22%230f172a%22/%3E%3Ctext x=%2248%22 y=%2240%22 font-size=%2214%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-family=%22Arial%22%3ECMK%3C/text%3E%3Ctext x=%2248%22 y=%2262%22 font-size=%2210%22 text-anchor=%22middle%22 fill=%22%23cbd5e1%22 font-family=%22Arial%22%3ETaekwondo%3C/text%3E%3C/svg%3E';" class="w-24 h-24 rounded-2xl mx-auto object-cover shadow-lg mb-4 border border-white/20">
+                    <h2 class="text-2xl font-extrabold">Taekwondo</h2>
+                    <p class="text-sm text-slate-300 mt-1">CHANG MOO KWAN</p>
+                </div>
+                <div class="p-8 space-y-5">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Email</label>
+                        <input type="email" x-model="authEmail" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Contraseña</label>
+                        <div class="relative">
+                            <input :type="showPassword ? 'text' : 'password'" x-model="authPassword" class="w-full p-4 pr-24 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
+                            <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg" x-text="showPassword ? 'Ocultar' : 'Ver'"></button>
+                        </div>
+                    </div>
+                    
+                    <p x-show="authError" x-text="authError" class="text-sm font-bold text-red-500 text-center bg-red-50 border border-red-200 py-3 px-2 rounded-xl"></p>
+                    
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button @click="signIn()" :disabled="authLoading" class="py-4 rounded-xl bg-slate-900 text-white font-bold disabled:opacity-50 hover:bg-slate-800 transition">
+                            <span x-show="!authLoading">Entrar</span>
+                            <i x-show="authLoading" class="fa-solid fa-spinner fa-spin"></i>
+                        </button>
+                        <button @click="signUp()" :disabled="authLoading" class="py-4 rounded-xl bg-indigo-600 text-white font-bold disabled:opacity-50 hover:bg-indigo-700 transition">Crear cuenta</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="hidden md:flex w-72 bg-white border-r border-slate-200 flex-col justify-between p-6 z-20 shadow-xl">
+            <div>
+                <div class="flex items-center gap-3 mb-10 text-indigo-700">
+                    <img src="logo%20chang%20moo%20kwan.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%2210%22 fill=%220f172a%22/%3E%3Ctext x=%2220%22 y=%2225%22 font-size=%2214%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-family=%22Arial%22%3ECMK%3C/text%3E%3C/svg%3E';" class="w-10 h-10 rounded-xl object-cover shadow-lg border border-slate-200">
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-slate-900">Taekwondo</h1>
+                        <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">CHANG MOO KWAN</p>
+                    </div>
+                </div>
+                <nav class="space-y-2">
+                    <template x-for="item in menu" :key="item.id">
+                        <button @click="view = item.id" 
+                                :class="view === item.id ? 'bg-indigo-50 text-indigo-700 translate-x-2' : 'text-slate-500 hover:bg-slate-50'" 
+                                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all duration-300">
+                            <i :class="item.icon + ' w-5'"></i> <span x-text="item.label"></span>
+                        </button>
+                    </template>
+                </nav>
+            </div>
+            <div>
+                <div class="bg-slate-900 rounded-2xl p-5 text-white relative overflow-hidden mb-4">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-1 tracking-wider">Caja Mensual</p>
+                    <p class="text-2xl font-extrabold" x-text="formatMoney(revenue)"></p>
+                    <div x-show="!confirmReset" class="mt-3">
+                        <button @click="confirmReset = true" class="text-[10px] text-slate-400 underline hover:text-white transition">Reiniciar mes</button>
+                    </div>
+                    <div x-show="confirmReset" class="mt-3 bg-slate-800 p-2 rounded-lg flex gap-2">
+                        <button @click="resetCaja()" class="flex-1 bg-red-500 text-white text-xs font-bold py-1 rounded">Sí, borrar</button>
+                        <button @click="confirmReset = false" class="flex-1 bg-slate-700 text-white text-xs font-bold py-1 rounded">Cancelar</button>
+                    </div>
+                </div>
+                <button @click="signOut()" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all duration-300">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex min-h-0 flex-col h-full relative overflow-hidden bg-[#f8fafc]">
+            
+            <header class="md:hidden bg-white/90 backdrop-blur-lg border-b border-slate-200 p-4 sticky top-0 z-30 flex justify-between items-center transition-all">
+                <div class="flex items-center gap-2">
+                    <img src="logo%20chang%20moo%20kwan.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%220f172a%22/%3E%3Ctext x=%2216%22 y=%2221%22 font-size=%2211%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-family=%22Arial%22%3ECMK%3C/text%3E%3C/svg%3E';" class="w-8 h-8 rounded-lg object-cover shadow-md border border-slate-200">
+                    <h1 class="font-bold text-lg text-slate-800">Taekwondo</h1>
+                </div>
+                <div class="flex gap-2">
+                    <button x-show="user" @click="signOut()" class="bg-red-50 text-red-600 w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition">
+                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex-1 min-h-0 overflow-y-auto p-4 md:p-10 scroll-smooth pb-32 relative">
+                <div class="max-w-5xl mx-auto space-y-6">
+                    
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight" x-text="getPageTitle()"></h2>
+                            <p class="text-slate-500 font-medium text-sm" x-text="getPageSubtitle()"></p>
+                        </div>
+                        
+                        <button x-show="view === 'attendance' && attendanceBuffer.length > 0" 
+                                @click="saveAttendance()" 
+                                x-transition 
+                                class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:scale-105 transition transform flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>Guardar (<span x-text="attendanceBuffer.length"></span>)</span>
+                        </button>
+                        <button x-show="view === 'attendance' && hasAttendanceToday()" 
+                                @click="clearTodayAttendance()" 
+                                class="bg-red-50 text-red-700 px-4 py-2.5 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition">
+                            Limpiar hoy
+                        </button>
+                        
+                        <button x-show="view === 'students' || view === 'dashboard'" 
+                                @click="openEditModal(null)" 
+                                class="hidden md:flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:-translate-y-1 transition-all active:scale-95">
+                            <i class="fa-solid fa-user-plus"></i> Nuevo Alumno
+                        </button>
+                    </div>
+
+                    <div x-show="view === 'dashboard'" class="page-enter space-y-6">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm floating-card cursor-pointer" @click="view='students'">
+                                <p class="text-xs font-bold uppercase text-slate-400">Alumnos</p>
+                                <p class="text-3xl font-black text-slate-800" x-text="students.length"></p>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm floating-card">
+                                <p class="text-xs font-bold uppercase text-green-600">Recaudado</p>
+                                <p class="text-3xl font-black text-slate-800" x-text="formatMoney(revenue)"></p>
+                            </div>
+                            <div class="col-span-2 md:col-span-1 bg-slate-900 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden cursor-pointer" @click="view='exams'">
+                                <p class="text-xs font-bold uppercase text-slate-400">Próximo Examen</p>
+                                <p class="text-xl font-bold mt-1" x-text="formatExamDate(getUpcomingExamDate())"></p>
+                                <p class="text-xs text-indigo-300 mt-2">Faltan <span class="font-bold text-white" x-text="countSaturdays(getUpcomingExamDate())"></span> Sábados</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-wallet text-slate-400"></i> Estado de Cuotas
+                            </h3>
+                            <div class="space-y-3">
+                                <template x-for="student in students" :key="student.id">
+                                    <div class="bg-white p-3 rounded-xl border flex items-center justify-between floating-card"
+                                         :class="student.debt > 0 ? 'border-red-100' : 'border-green-100'">
+                                        
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border"
+                                                 :class="student.debt > 0 ? 'bg-red-50 text-red-500 border-red-100' : 'bg-green-50 text-green-600 border-green-100'">
+                                                <span x-text="student.name.substring(0,2)"></span>
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-sm text-slate-800" x-text="student.name"></p>
+                                                <p class="text-[10px] uppercase font-bold text-slate-400" x-text="student.rank"></p>
+                                            </div>
+                                        </div>
+
+                                        <div x-data="{ confirming: false }">
+                                            <template x-if="student.debt > 0">
+                                                <div>
+                                                    <button x-show="!confirming" @click="confirming = true" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg active:scale-95 transition flex items-center gap-2">
+                                                        <span>Cobrar</span>
+                                                        <span class="text-indigo-200" x-text="formatMoney(student.debt)"></span>
+                                                    </button>
+                                                    <div x-show="confirming" class="flex gap-1">
+                                                        <button @click="quickPay(student); confirming = false" class="bg-green-500 text-white px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-check"></i></button>
+                                                        <button @click="confirming = false" class="bg-slate-200 text-slate-600 px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <template x-if="student.debt === 0">
+                                                <div class="flex items-center gap-1 text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100">
+                                                    <i class="fa-solid fa-check text-xs"></i>
+                                                    <span class="text-xs font-bold">Al día</span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div x-show="students.length === 0" class="text-center text-slate-400 py-10">
+                                    Aún no tienes alumnos registrados.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="view === 'students'" class="page-enter" x-cloak>
+                         <div class="relative mb-6">
+                            <input type="text" x-model="search" placeholder="Buscar alumno por nombre..." class="w-full p-4 pl-12 bg-white rounded-2xl border border-slate-200 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                            <i class="fa-solid fa-search absolute left-5 top-5 text-slate-400"></i>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <template x-for="student in filteredStudents" :key="student.id">
+                                <div @click="openStudentProfile(student)" 
+                                     class="rounded-2xl p-5 border shadow-sm relative overflow-hidden floating-card cursor-pointer flex justify-between items-center transition-colors duration-300"
+                                     :class="getCardStyle(student.rank)">
+                                    
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg border-2 bg-white/80 border-black/10 text-slate-800">
+                                            <span x-text="student.name.substring(0,2)"></span>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-lg leading-tight" :class="student.rank.includes('Negro') ? 'text-white' : 'text-slate-800'" x-text="student.name"></h4>
+                                            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide opacity-80 mt-1">
+                                                <span x-text="student.rank"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right opacity-40 text-xl"></i>
+                                </div>
+                            </template>
+                            <div x-show="filteredStudents.length === 0" class="text-center text-slate-400 py-10 col-span-full">
+                                No se encontraron alumnos.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="view === 'attendance'" class="page-enter" x-cloak>
+                        <p class="text-sm text-slate-500 mb-6">Toca el nombre del alumno para marcarlo como presente. Los alumnos ya registrados no apareceran en la lista de hoy.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <template x-for="student in studentsForAttendance" :key="student.id">
+                                <div @click="toggleBuffer(student.id)" 
+                                     class="rounded-xl p-4 border cursor-pointer flex items-center gap-4 transition-all duration-200 select-none floating-card"
+                                     :class="attendanceBuffer.includes(student.id) ? 'bg-green-50 border-green-500 text-green-900 shadow-sm' : 'bg-white border-slate-200 text-slate-700'">
+                                    
+                                    <div class="w-6 h-6 rounded-md border flex items-center justify-center transition-colors"
+                                         :class="attendanceBuffer.includes(student.id) ? 'bg-green-500 border-green-500' : 'border-slate-300 bg-slate-50'">
+                                        <i x-show="attendanceBuffer.includes(student.id)" class="fa-solid fa-check text-white text-xs"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <span class="font-bold block" x-text="student.name"></span>
+                                        <span class="text-[10px] uppercase font-bold opacity-60" x-text="student.rank"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        
+                        <div x-show="students.length > 0 && studentsForAttendance.length === 0" class="text-center py-10 bg-green-50 rounded-2xl border border-green-100 mt-4">
+                            <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-2"></i>
+                            <p class="font-bold text-green-800">Asistencia completa</p>
+                            <p class="text-sm text-green-600">Todos los alumnos ya tienen asistencia registrada hoy.</p>
+                        </div>
+                        <div x-show="students.length === 0" class="text-center py-10 bg-slate-50 rounded-2xl border border-slate-200 mt-4 text-slate-500">
+                            Aún no tienes alumnos para tomar asistencia.
+                        </div>
+                    </div>
+
+                    <div x-show="view === 'history'" class="page-enter space-y-4" x-cloak>
+                        <template x-for="month in historyData" :key="month.id">
+                            <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                                <button @click="month.open = !month.open" class="w-full flex items-center justify-between p-5 bg-white hover:bg-slate-50 transition border-b border-slate-100">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fa-regular fa-calendar text-indigo-500"></i>
+                                        <span class="font-bold text-lg capitalize text-slate-800" x-text="month.name"></span>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-down text-slate-400 transition-transform" :class="month.open ? 'rotate-180' : ''"></i>
+                                </button>
+                                
+                                <div x-show="month.open" x-collapse>
+                                    <div class="bg-slate-50/50">
+                                        <template x-for="clase in month.classes" :key="clase.id || clase.date">
+                                            <div class="border-b border-slate-100 last:border-0">
+                                                <button @click="clase.open = !clase.open" class="w-full flex justify-between items-center p-4 hover:bg-white transition">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="bg-slate-200 text-slate-700 font-mono text-xs px-2 py-1 rounded font-bold" x-text="clase.date"></div>
+                                                        <span class="text-sm font-bold text-slate-800 capitalize" x-text="clase.dayOfWeek || 'Clase'"></span>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-xs font-bold text-indigo-600" x-text="getClassAttendeeNames(clase).length + ' alumnos presentes'"></span>
+                                                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" :class="clase.open ? 'rotate-180' : ''"></i>
+                                                    </div>
+                                                </button>
+                                                
+                                                <div x-show="clase.open" x-collapse>
+                                                    <div class="p-2 space-y-1 bg-white pl-14 pr-4 pb-4">
+                                                        <template x-for="name in getClassAttendeeNames(clase)" :key="name">
+                                                            <div class="flex items-center gap-3 p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                                                <span class="text-sm font-bold text-slate-700" x-text="name"></span>
+                                                            </div>
+                                                        </template>
+                                                        <div x-show="getClassAttendeeNames(clase).length === 0" class="text-xs text-slate-400 py-2">
+                                                            Nadie asistió a esta clase.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <div x-show="month.classes.length === 0" class="text-center py-6 text-sm text-slate-400">
+                                            Sin registros este mes.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <div x-show="historyData.length === 0" class="text-center py-10 text-slate-400 font-bold">
+                            Aún no has guardado ninguna asistencia.
+                        </div>
+                    </div>
+
+                    <div x-show="view === 'exams'" class="page-enter" x-cloak>
+                         <div class="bg-indigo-600 text-white p-6 rounded-3xl mb-6 shadow-xl flex justify-between items-center">
+                            <div>
+                                <h2 class="text-2xl font-bold">Proyección</h2>
+                                <p class="text-indigo-200 text-sm">Próxima mesa: <span x-text="formatExamDate(getUpcomingExamDate())"></span></p>
+                            </div>
+                            <button @click="generateExamList()" class="bg-white text-indigo-700 font-bold px-4 py-2 rounded-xl shadow-lg active:scale-95 transition text-sm">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <template x-for="item in examList" :key="item.id">
+                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm floating-card space-y-3">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <p class="font-bold text-slate-800 truncate" x-text="item.name"></p>
+                                        <template x-if="item.exam_paid">
+                                            <span class="text-[10px] uppercase font-bold text-green-700 bg-green-100 border border-green-200 px-2 py-1 rounded-full">Pagado</span>
+                                        </template>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3 flex-1">
+                                            <div class="h-10 px-3 rounded-lg border-l-4 flex items-center justify-center shadow-sm font-bold text-xs" :class="getCardStyle(item.current)">
+                                                <span x-text="item.current" :class="item.current.includes('Negro') ? 'text-white' : 'text-slate-800'"></span>
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-arrow-right text-slate-300 mx-2"></i>
+                                        <div class="flex items-center justify-end flex-1">
+                                             <div class="h-10 px-3 rounded-lg border-l-4 flex items-center justify-center shadow-sm font-bold text-xs" :class="getCardStyle(item.next)">
+                                                 <span x-text="item.next" :class="item.next.includes('Negro') ? 'text-white' : 'text-slate-800'"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pt-1">
+                                        <button x-show="!item.exam_paid" @click="openExamPayment(students.find(s => s.id === item.id))" class="w-full py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition">
+                                            Registrar pago
+                                        </button>
+                                        <button x-show="item.exam_paid" @click="cancelExamPay(students.find(s => s.id === item.id))" class="w-full py-2.5 bg-red-50 text-red-700 border border-red-100 rounded-lg font-bold text-sm hover:bg-red-100 transition">
+                                            Anular pago
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="md:hidden sticky bottom-0 bg-white/90 backdrop-blur-md border-t border-slate-200 flex justify-around p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] z-30">
+                <template x-for="item in menu" :key="item.id">
+                    <button @click="view = item.id" :class="view === item.id ? 'text-indigo-600' : 'text-slate-400'" class="flex flex-col items-center gap-1 transition relative">
+                        <i :class="item.icon + ' text-xl'"></i>
+                        <span x-show="item.id === 'attendance'" class="text-[9px] font-bold">Asist.</span>
+                        <span x-show="item.id === 'dashboard' && students.some(s=>s.debt > 0)" class="absolute -top-1 -right-1 bg-red-500 w-2.5 h-2.5 rounded-full border border-white"></span>
+                    </button>
+                </template>
+            </nav>
+
+            <button x-show="view === 'students' || view === 'dashboard'"
+                    @click="openEditModal(null)"
+                    class="md:hidden fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] w-14 h-14 rounded-full bg-slate-900 text-white shadow-2xl shadow-slate-300 flex items-center justify-center z-40 active:scale-95 transition"
+                    aria-label="Nuevo Alumno">
+                <i class="fa-solid fa-user-plus text-lg"></i>
+            </button>
+        </main>
+
+        <div x-show="showProfileModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeProfileModal()" x-transition.opacity></div>
+            <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[90vh]">
+                
+                <div class="h-32 relative shrink-0" :class="activeStudent ? getCardStyle(activeStudent.rank) : 'bg-slate-200'">
+                    <button @click="closeProfileModal()" class="absolute top-4 right-4 bg-black/20 text-white hover:bg-black/40 w-8 h-8 rounded-full flex items-center justify-center transition backdrop-blur-sm"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="px-6 relative -mt-12 flex-1 overflow-y-auto pb-6">
+                    <div class="w-24 h-24 rounded-full bg-white p-1 mx-auto shadow-lg mb-3">
+                        <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-2xl font-bold text-slate-800 border border-slate-200">
+                            <span x-text="activeStudent?.name.substring(0,2)"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-black text-slate-800 leading-tight" x-text="activeStudent?.name"></h2>
+                        <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold border bg-white text-slate-800" :class="activeStudent ? getCardStyle(activeStudent.rank) : ''" x-text="activeStudent?.rank"></span>
+                        <span class="text-sm font-bold text-slate-400 ml-2" x-text="activeStudent?.dob ? calculateAge(activeStudent.dob) + ' anios' : ''"></span>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-2xl border border-slate-100 p-4 mb-4 space-y-4">
+                        <div class="flex items-center gap-3 text-slate-700">
+                            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-location-dot text-slate-400 text-xs"></i></div>
+                            <span class="text-sm font-bold" x-text="activeStudent?.location || 'Sin ubicación registrada'"></span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-700">
+                            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-phone text-slate-400 text-xs"></i></div>
+                            <span class="text-sm font-bold font-mono" x-text="activeStudent?.phone || 'Sin teléfono'"></span>
+                        </div>
+                        <a :href="activeStudent?.phone ? 'https://wa.me/' + activeStudent.phone : '#'" target="_blank" class="w-full mt-2 py-3.5 bg-[#25D366] text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-md hover:brightness-105 transition">
+                            <i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp
+                        </a>
+                    </div>
+
+                    <div x-show="activeStudent?.debt > 0" class="bg-red-50 p-4 rounded-2xl border border-red-100 flex justify-between items-center mb-6">
+                        <div>
+                            <p class="text-red-500 font-bold text-xs uppercase">Deuda pendiente</p>
+                            <p class="text-2xl font-black text-red-900" x-text="formatMoney(activeStudent?.debt)"></p>
+                        </div>
+                        <div x-data="{ confCobro: false }">
+                            <button x-show="!confCobro" @click="confCobro = true" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold active:scale-95 transition">Cobrar</button>
+                            <div x-show="confCobro" class="flex gap-1">
+                                <button @click="processPaymentConfirmed(); confCobro = false" class="bg-green-500 text-white px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-check"></i></button>
+                                <button @click="confCobro = false" class="bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div x-show="activeStudent?.debt === 0" class="bg-green-50 p-4 rounded-2xl border border-green-100 flex items-center gap-2 mb-6 text-green-700">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span class="font-bold text-sm">Cuota al día</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <button @click="openEditModal(activeStudent)" class="py-3 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition">
+                            <i class="fa-solid fa-pen"></i> Editar Info
+                        </button>
+                        
+                        <div x-data="{ confDelete: false }" class="relative w-full">
+                            <button x-show="!confDelete" @click="confDelete = true" class="w-full py-3 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-100 transition">
+                                <i class="fa-solid fa-trash"></i> Eliminar
+                            </button>
+                            <div x-show="confDelete" class="absolute inset-0 bg-red-500 rounded-xl flex items-center justify-center gap-2 overflow-hidden shadow-lg shadow-red-200">
+                                <button @click="deleteStudentConfirmed(); confDelete = false" class="flex-1 h-full text-white font-bold text-xs hover:bg-red-600">Sí, Borrar</button>
+                                <button @click="confDelete = false" class="flex-1 h-full text-red-100 bg-red-800 font-bold text-xs hover:bg-red-900">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeEditModal()" x-transition.opacity></div>
+            <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[90vh]">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+                    <h3 class="text-lg font-extrabold text-slate-800" x-text="isEditing ? 'Editar Alumno' : 'Nuevo Alumno'"></h3>
+                    <button @click="closeEditModal()" class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6 space-y-4 flex-1 overflow-y-auto">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase">Nombre Completo</label>
+                        <input type="text" x-model="form.name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase">Teléfono</label>
+                            <input type="tel" x-model="form.phone" placeholder="549..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                             <label class="text-xs font-bold text-slate-500 uppercase">F. Nacimiento</label>
+                            <input type="date" x-model="form.dob" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase">Dirección / Ubicación</label>
+                        <input type="text" x-model="form.location" placeholder="Calle 123, Barrio" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-50">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase">Cinturón</label>
+                            <select x-model="form.rank" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                                <template x-for="rank in ranks" :key="rank">
+                                    <option :value="rank" x-text="rank"></option>
+                                </template>
+                            </select>
+                        </div>
+                         <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase">Cuota Mensual ($)</label>
+                            <input type="number" x-model="form.tuition" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div class="pt-2">
+                        <label class="text-xs font-bold text-red-500 uppercase">Ajustar Deuda Actual ($)</label>
+                        <input type="number" x-model="form.debt" class="w-full p-3 bg-red-50 border border-red-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-500 text-red-800">
+                    </div>
+                    <button @click="saveStudent()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-600 transition mt-2">
+                        <span x-text="isEditing ? 'Guardar Cambios' : 'Registrar Alumno'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="showExamModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showExamModal = false" x-transition.opacity></div>
+            <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 text-center">
+                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-slate-800">Pago de Examen</h3>
+                <p class="text-slate-500 text-sm mt-1">Alumno: <span class="font-bold text-slate-700" x-text="examPaymentStudent?.name"></span></p>
+
+                <div class="mt-6 text-left">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Monto a cobrar ($)</label>
+                    <input type="number" x-model="examPaymentAmount" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-500 mt-2 text-xl text-center text-slate-800">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-6">
+                    <button @click="showExamModal = false" class="py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition">Cancelar</button>
+                    <button @click="confirmExamPayment()" class="py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">Confirmar</button>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="toastMsg !== ''" x-transition.opacity class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl font-bold text-sm flex items-center gap-3 toast-enter w-max">
+            <i class="fa-solid fa-circle-check text-green-400"></i>
+            <span x-text="toastMsg"></span>
+        </div>
+
+    </div>
+
+    <script>
+        // CONFIGURACIÓN SUPABASE
+        const SUPABASE_URL = 'https://ihxvrsdyxhslwahkklmh.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_iCPuyn5_jTXvtPl4zwwbVA_uf-F3W05';
+        
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('tkdApp', () => ({
+                view: 'dashboard',
+                search: '',
+                
+                // Auth & Supabase
+                supabase: null,
+                user: null,
+                authEmail: '',
+                authPassword: '',
+                authError: '',
+                authLoading: false,
+                showPassword: false,
+                lastBilled: null,
+                
+                // Modales
+                showProfileModal: false,
+                showEditModal: false,
+                isEditing: false,
+                activeStudent: null,
+                
+                // Modal Examen
+                showExamModal: false,
+                examPaymentStudent: null,
+                examPaymentAmount: 15000,
+
+                // Misc
+                toastMsg: '',
+                confirmReset: false,
+                revenue: 0,
+                billingInProgress: false,
+                
+                form: { id: null, name: '', dob: '', rank: 'Blanco', tuition: 12500, debt: 12500, phone: '', location: '', exam_paid: false, exam_paid_amount: 0 },
+                
+                attendanceBuffer: [],
+                
+                menu: [
+                    { id: 'dashboard', label: 'General', icon: 'fa-solid fa-chart-pie' },
+                    { id: 'students', label: 'Alumnos', icon: 'fa-solid fa-users' },
+                    { id: 'attendance', label: 'Asistencia', icon: 'fa-solid fa-clipboard-check' },
+                    { id: 'history', label: 'Historial', icon: 'fa-solid fa-clock-rotate-left' },
+                    { id: 'exams', label: 'Examen', icon: 'fa-solid fa-graduation-cap' }
+                ],
+
+                ranks: ['Blanco', 'Amarillo', 'Amarillo Int.', 'Amarillo Avz.', 'Azul', 'Azul Int.', 'Azul Avz.', 'Rojo', 'Rojo Avz.', 'Negro'],
+
+                students: [],
+                historyData: [],
+
+                async init() {
+                    if (SUPABASE_URL === 'TU_URL_AQUI' || !SUPABASE_URL.startsWith('http')) {
+                        this.authError = "ADVERTENCIA: Debes colocar tus credenciales reales de Supabase en el código para iniciar sesión.";
+                        return;
+                    }
+
+                    try {
+                        this.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+                        const { data: { session } } = await this.supabase.auth.getSession();
+                        if (session?.user) {
+                            this.startUserSession(session.user);
+                        }
+
+                        this.supabase.auth.onAuthStateChange((_event, session) => {
+                            if (session?.user) {
+                                if (!this.user) this.startUserSession(session.user);
+                            } else {
+                                this.user = null;
+                                this.students = [];
+                                this.historyData = [];
+                            }
+                        });
+                    } catch (e) {
+                        this.authError = "Error al conectar con Supabase. Verifica las credenciales.";
+                    }
+                },
+
+                // --- AUTENTICACIÓN ---
+                async signIn() {
+                    if (!this.supabase) return;
+                    this.authError = ''; this.authLoading = true;
+                    const { error } = await this.supabase.auth.signInWithPassword({ email: this.authEmail, password: this.authPassword });
+                    this.authLoading = false;
+                    if (error) this.authError = 'Error: verifica tus credenciales';
+                },
+
+                async signUp() {
+                    if (!this.supabase) return;
+                    this.authError = ''; this.authLoading = true;
+                    const { error } = await this.supabase.auth.signUp({ email: this.authEmail, password: this.authPassword });
+                    this.authLoading = false;
+                    if (error) this.authError = error.message; else await this.signIn();
+                },
+
+                async signOut() {
+                    if (this.supabase) await this.supabase.auth.signOut();
+                },
+
+                async startUserSession(user) {
+                    this.user = user;
+                    this.authError = '';
+                    await this.loadDataFromDB();
+                    this.checkNewMonthBilling();
+                },
+
+                // --- CONEXIÓN A DB ESTRICTA (SUPABASE) ---
+                async loadDataFromDB() {
+                    try {
+                        const { data: studentsData } = await this.supabase.from('tkd_students').select('*').eq('user_id', this.user.id).order('name');
+                        if (studentsData) {
+                            this.students = studentsData.map(s => ({
+                                ...s,
+                                exam_paid: !!s.exam_paid,
+                                exam_paid_amount: Number(s.exam_paid_amount || 0)
+                            }));
+                        }
+
+                        const { data: settingsRows } = await this.supabase
+                            .from('tkd_settings')
+                            .select('*')
+                            .eq('user_id', this.user.id);
+                        const settingsData = this.pickLatestSettingsRow(settingsRows || []);
+                        if (settingsData) {
+                            this.revenue = Number(settingsData.revenue);
+                            this.historyData = this.normalizeHistoryData(settingsData.history_data || []);
+                            this.lastBilled = settingsData.last_billed;
+                        } else {
+                            await this.supabase.from('tkd_settings').insert({ user_id: this.user.id });
+                        }
+                    } catch (e) { console.error(e); }
+                },
+
+                pickLatestSettingsRow(rows) {
+                    if (!Array.isArray(rows) || rows.length === 0) return null;
+                    if (rows.length === 1) return rows[0];
+
+                    const rowTime = (row) => {
+                        const updated = Date.parse(row?.updated_at || '');
+                        if (!Number.isNaN(updated)) return updated;
+                        const created = Date.parse(row?.created_at || '');
+                        if (!Number.isNaN(created)) return created;
+                        return -1;
+                    };
+
+                    const withTime = rows.filter(r => rowTime(r) >= 0);
+                    if (withTime.length > 0) {
+                        return withTime.reduce((best, row) => rowTime(row) > rowTime(best) ? row : best, withTime[0]);
+                    }
+
+                    return rows.reduce((best, row) => {
+                        const bestHistory = Array.isArray(best?.history_data) ? best.history_data.length : 0;
+                        const rowHistory = Array.isArray(row?.history_data) ? row.history_data.length : 0;
+                        if (rowHistory > bestHistory) return row;
+                        if (Number(row?.revenue || 0) > Number(best?.revenue || 0)) return row;
+                        return best;
+                    }, rows[0]);
+                },
+
+                normalizeHistoryData(rawHistory) {
+                    if (!Array.isArray(rawHistory)) return [];
+                    return rawHistory.map(month => {
+                        const normalizedMonth = {
+                            id: month?.id || this.createId(),
+                            name: month?.name || '',
+                            open: !!month?.open,
+                            classes: Array.isArray(month?.classes) ? month.classes.map(clase => ({
+                                id: clase?.id || '',
+                                date: clase?.date || '',
+                                dayOfWeek: clase?.dayOfWeek || 'Clase',
+                                open: !!clase?.open,
+                                attendees: Array.isArray(clase?.attendees)
+                                    ? clase.attendees.filter(Boolean)
+                                    : (typeof clase?.attendees === 'string' ? [clase.attendees] : []),
+                                attendeeIds: Array.isArray(clase?.attendeeIds)
+                                    ? clase.attendeeIds.filter(Boolean)
+                                    : []
+                            })) : []
+                        };
+                        normalizedMonth.classes = this.mergeDuplicateClasses(normalizedMonth.classes);
+                        return normalizedMonth;
+                    });
+                },
+
+                mergeDuplicateClasses(classes) {
+                    if (!Array.isArray(classes)) return [];
+                    const map = new Map();
+                    classes.forEach(clase => {
+                        const dateKey = (clase?.date || '').toString().trim().toLowerCase();
+                        const idKey = (clase?.id || '').toString().trim();
+                        const key = idKey !== '' ? ('id:' + idKey) : ('date:' + dateKey);
+                        if (!map.has(key)) {
+                            map.set(key, {
+                                id: idKey,
+                                date: clase?.date || '',
+                                dayOfWeek: clase?.dayOfWeek || 'Clase',
+                                open: !!clase?.open,
+                                attendees: Array.isArray(clase?.attendees) ? [...new Set(clase.attendees.filter(Boolean))] : [],
+                                attendeeIds: Array.isArray(clase?.attendeeIds) ? [...new Set(clase.attendeeIds.filter(Boolean))] : []
+                            });
+                            return;
+                        }
+                        const current = map.get(key);
+                        const merged = {
+                            id: current.id || idKey,
+                            date: current.date || clase?.date || '',
+                            dayOfWeek: current.dayOfWeek !== 'Clase' ? current.dayOfWeek : (clase?.dayOfWeek || 'Clase'),
+                            open: current.open || !!clase?.open,
+                            attendees: [...new Set([...(current.attendees || []), ...((Array.isArray(clase?.attendees) ? clase.attendees : []).filter(Boolean))])],
+                            attendeeIds: [...new Set([...(current.attendeeIds || []), ...((Array.isArray(clase?.attendeeIds) ? clase.attendeeIds : []).filter(Boolean))])]
+                        };
+                        map.set(key, merged);
+                    });
+                    return Array.from(map.values());
+                },
+
+                createId() {
+                    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                        return window.crypto.randomUUID();
+                    }
+                    return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+                },
+
+                async saveSettingsToDB() {
+                    if (!this.user) return false;
+                    const payload = {
+                        user_id: this.user.id,
+                        revenue: this.revenue,
+                        history_data: this.historyData,
+                        last_billed: this.lastBilled
+                    };
+
+                    const { data: updatedRows, error: updateError } = await this.supabase
+                        .from('tkd_settings')
+                        .update(payload)
+                        .eq('user_id', this.user.id)
+                        .select('user_id');
+                    
+                    let error = updateError;
+                    if (!error && (!updatedRows || updatedRows.length === 0)) {
+                        const { error: insertError } = await this.supabase.from('tkd_settings').insert(payload);
+                        error = insertError;
+                    }
+                    
+                    if (error) {
+                        console.error(error);
+                        this.showToast('Error al guardar en Supabase');
+                        return false;
+                    }
+                    return true;
+                },
+
+                showToast(msg) {
+                    this.toastMsg = msg;
+                    setTimeout(() => { this.toastMsg = ''; }, 3500);
+                },
+
+                // --- MOTOR DE MESES ---
+                async checkNewMonthBilling() {
+                    if (this.billingInProgress) return;
+                    this.billingInProgress = true;
+                    const today = new Date();
+                    const currentMonthKey = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0');
+
+                    try {
+                        if (this.lastBilled !== currentMonthKey && this.students.length > 0) {
+                            const previousDebts = new Map(this.students.map(s => [s.id, Number(s.debt || 0)]));
+                            const previousLastBilled = this.lastBilled;
+                            for (let s of this.students) {
+                                s.debt = Number(s.debt) + Number(s.tuition);
+                                await this.supabase.from('tkd_students').update({ debt: s.debt }).eq('id', s.id);
+                            }
+                            this.lastBilled = currentMonthKey;
+                            const saved = await this.saveSettingsToDB();
+                            if (!saved) {
+                                this.students = this.students.map(s => ({ ...s, debt: previousDebts.get(s.id) ?? s.debt }));
+                                this.lastBilled = previousLastBilled;
+                                return;
+                            }
+                            this.showToast('Nuevo mes: cuotas agregadas a la deuda');
+                        } else if (!this.lastBilled) {
+                            this.lastBilled = currentMonthKey;
+                            const saved = await this.saveSettingsToDB();
+                            if (!saved) this.lastBilled = null;
+                        }
+                    } finally {
+                        this.billingInProgress = false;
+                    }
+                },
+
+                // --- PAGOS MENSUALES ---
+                async quickPay(student) {
+                    const previousDebt = Number(student.debt || 0);
+                    const previousRevenue = Number(this.revenue || 0);
+                    this.revenue = previousRevenue + previousDebt;
+                    student.debt = 0;
+                    if (this.user) {
+                        const { error } = await this.supabase.from('tkd_students').update({ debt: 0 }).eq('id', student.id);
+                        if (error) {
+                            this.revenue = previousRevenue;
+                            student.debt = previousDebt;
+                            this.showToast('Error al actualizar deuda');
+                            return;
+                        }
+                        const saved = await this.saveSettingsToDB();
+                        if (!saved) {
+                            this.revenue = previousRevenue;
+                            student.debt = previousDebt;
+                            return;
+                        }
+                    }
+                    this.showToast('Cobro registrado en caja');
+                },
+                
+                async processPaymentConfirmed() {
+                    if(this.activeStudent) {
+                        const previousDebt = Number(this.activeStudent.debt || 0);
+                        const previousRevenue = Number(this.revenue || 0);
+                        this.revenue = previousRevenue + previousDebt;
+                        this.activeStudent.debt = 0;
+                        const index = this.students.findIndex(s => s.id === this.activeStudent.id);
+                        if(index !== -1) this.students[index] = { ...this.activeStudent };
+                        
+                        if (this.user) {
+                            const { error } = await this.supabase.from('tkd_students').update({ debt: 0 }).eq('id', this.activeStudent.id);
+                            if (error) {
+                                this.revenue = previousRevenue;
+                                this.activeStudent.debt = previousDebt;
+                                if(index !== -1) this.students[index] = { ...this.activeStudent };
+                                this.showToast('Error al actualizar deuda');
+                                return;
+                            }
+                            const saved = await this.saveSettingsToDB();
+                            if (!saved) {
+                                this.revenue = previousRevenue;
+                                this.activeStudent.debt = previousDebt;
+                                if(index !== -1) this.students[index] = { ...this.activeStudent };
+                                return;
+                            }
+                        }
+                        this.showToast('Pago guardado correctamente');
+                    }
+                },
+
+                async resetCaja() {
+                    const previousRevenue = Number(this.revenue || 0);
+                    this.revenue = 0;
+                    this.confirmReset = false;
+                    const saved = await this.saveSettingsToDB();
+                    if (!saved) {
+                        this.revenue = previousRevenue;
+                        return;
+                    }
+                    this.showToast('Caja reiniciada a cero');
+                },
+
+                // --- PERFIL Y CRUD ---
+                openStudentProfile(student) {
+                    this.activeStudent = { ...student };
+                    this.showProfileModal = true;
+                },
+                closeProfileModal() {
+                    this.showProfileModal = false;
+                    this.activeStudent = null;
+                },
+
+                openEditModal(student = null) {
+                    this.showProfileModal = false;
+                    if (student) {
+                        this.isEditing = true;
+                        this.form = { ...student };
+                    } else {
+                        this.isEditing = false;
+                        this.form = { id: this.createId(), name: '', dob: '', rank: 'Blanco', tuition: 12500, debt: 12500, phone: '', location: '', exam_paid: false, exam_paid_amount: 0 };
+                    }
+                    setTimeout(() => { this.showEditModal = true; }, 100);
+                },
+                closeEditModal() { 
+                    this.showEditModal = false; 
+                },
+
+                async saveStudent() {
+                    if (!this.form.name) {
+                        this.showToast("El nombre es obligatorio");
+                        return;
+                    }
+                    
+                    this.form.debt = Number(this.form.debt);
+                    this.form.tuition = Number(this.form.tuition);
+                    this.form.exam_paid_amount = Number(this.form.exam_paid_amount || 0);
+
+                    if (this.user) {
+                        const dbPayload = {
+                            id: this.form.id,
+                            user_id: this.user.id,
+                            name: this.form.name,
+                            dob: this.form.dob || null,
+                            rank: this.form.rank,
+                            tuition: this.form.tuition,
+                            debt: this.form.debt,
+                            phone: this.form.phone,
+                            location: this.form.location,
+                            exam_paid: this.form.exam_paid || false,
+                            exam_paid_amount: this.form.exam_paid_amount
+                        };
+                        let { error } = await this.supabase.from('tkd_students').upsert(dbPayload);
+                        if (error && String(error.message || '').toLowerCase().includes('exam_paid_amount')) {
+                            const fallbackPayload = { ...dbPayload };
+                            delete fallbackPayload.exam_paid_amount;
+                            const retry = await this.supabase.from('tkd_students').upsert(fallbackPayload);
+                            error = retry.error;
+                        }
+                        if (error) { this.showToast("Error guardando en BD"); return; }
+                    }
+
+                    if (this.isEditing) {
+                        const index = this.students.findIndex(s => s.id === this.form.id);
+                        if (index !== -1) this.students[index] = { ...this.form };
+                        this.showToast('Cambios guardados');
+                    } else {
+                        this.students.push({ ...this.form });
+                        this.showToast('Alumno registrado');
+                    }
+                    
+                    this.closeEditModal();
+                },
+
+                async deleteStudentConfirmed() {
+                    if(this.activeStudent) {
+                        if (this.user) {
+                            await this.supabase.from('tkd_students').delete().eq('id', this.activeStudent.id);
+                        }
+                        this.students = this.students.filter(s => s.id !== this.activeStudent.id);
+                        this.closeProfileModal();
+                        this.showToast('Alumno eliminado con éxito');
+                    }
+                },
+
+                // --- ASISTENCIA INTELIGENTE ---
+                getLocalISODate() {
+                    const dateObj = new Date();
+                    const tzOffset = dateObj.getTimezoneOffset() * 60000;
+                    return (new Date(dateObj - tzOffset)).toISOString().split('T')[0];
+                },
+
+                hasAttendanceToday() {
+                    const localISOTime = this.getLocalISODate();
+                    return this.historyData.some(month =>
+                        Array.isArray(month.classes) && month.classes.some(c => c.id === localISOTime)
+                    );
+                },
+
+                async clearTodayAttendance() {
+                    const localISOTime = this.getLocalISODate();
+                    this.historyData = this.historyData.map(month => ({
+                        ...month,
+                        classes: Array.isArray(month.classes) ? month.classes.filter(c => c.id !== localISOTime) : []
+                    }));
+                    this.historyData = this.historyData.filter(month => Array.isArray(month.classes) && month.classes.length > 0);
+                    const saved = await this.saveSettingsToDB();
+                    if (!saved) return;
+                    this.attendanceBuffer = [];
+                    this.showToast('Asistencia de hoy eliminada');
+                },
+
+                getAttendeeIds(clase) {
+                    if (!clase) return [];
+                    if (Array.isArray(clase.attendeeIds) && clase.attendeeIds.length > 0) {
+                        return clase.attendeeIds;
+                    }
+                    // Compatibilidad con historial antiguo guardado por nombres.
+                    const attendeeNames = Array.isArray(clase.attendees) ? clase.attendees : [];
+                    return this.students
+                        .filter(s => attendeeNames.includes(s.name))
+                        .map(s => s.id);
+                },
+
+                getClassAttendeeNames(clase) {
+                    if (!clase) return [];
+                    const names = Array.isArray(clase.attendees) ? clase.attendees.filter(Boolean) : [];
+                    if (names.length > 0) return names;
+                    const ids = Array.isArray(clase.attendeeIds) ? clase.attendeeIds : [];
+                    if (ids.length === 0) return [];
+                    const byId = new Map(this.students.map(s => [s.id, s.name]));
+                    return ids.map(id => byId.get(id) || ('Alumno eliminado (' + String(id).slice(0, 8) + ')'));
+                },
+
+                get studentsForAttendance() {
+                    const localISOTime = this.getLocalISODate();
+                    
+                    let todaysAttendeeIds = [];
+                    this.historyData.forEach(month => {
+                        if (!Array.isArray(month.classes)) return;
+                        const todaysClass = month.classes.find(c => c.id === localISOTime);
+                        if (!todaysClass) return;
+                        const ids = this.getAttendeeIds(todaysClass);
+                        const names = this.getClassAttendeeNames(todaysClass);
+                        // Solo bloquear alumnos si la clase de hoy tiene asistentes reales.
+                        if (ids.length > 0 || names.length > 0) {
+                            todaysAttendeeIds.push(...ids);
+                        }
+                    });
+                    
+                    return this.students.filter(s => !todaysAttendeeIds.includes(s.id));
+                },
+
+                toggleBuffer(id) {
+                    if (this.attendanceBuffer.includes(id)) {
+                        this.attendanceBuffer = this.attendanceBuffer.filter(sid => sid !== id);
+                    } else {
+                        this.attendanceBuffer.push(id);
+                    }
+                },
+
+                async saveAttendance() {
+                    if (this.attendanceBuffer.length === 0) return;
+
+                    const dateObj = new Date();
+                    const localISOTime = this.getLocalISODate();
+                    
+                    const monthName = dateObj.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+                    const displayDate = dateObj.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+                    const dayOfWeek = dateObj.toLocaleDateString('es-AR', { weekday: 'long' }); 
+                    
+                    const selectedStudents = this.students.filter(s => this.attendanceBuffer.includes(s.id));
+                    const names = selectedStudents.map(s => s.name);
+                    const ids = selectedStudents.map(s => s.id);
+
+                    let monthGroup = this.historyData.find(m => m.name.toLowerCase() === monthName.toLowerCase());
+                    if (!monthGroup) {
+                        monthGroup = { id: this.createId(), name: monthName, open: true, classes: [] };
+                        this.historyData.unshift(monthGroup);
+                    }
+                    monthGroup.open = true;
+                    monthGroup.classes = this.mergeDuplicateClasses(monthGroup.classes);
+                    
+                    let todaysClass = monthGroup.classes.find(c => c.id === localISOTime || c.date === displayDate);
+                    if (todaysClass) {
+                        todaysClass.id = localISOTime; // actualiza a un ID seguro
+                        todaysClass.open = true;
+                        names.forEach(n => {
+                            if (!todaysClass.attendees.includes(n)) todaysClass.attendees.push(n);
+                        });
+                        if (!Array.isArray(todaysClass.attendeeIds)) todaysClass.attendeeIds = [];
+                        ids.forEach(id => {
+                            if (!todaysClass.attendeeIds.includes(id)) todaysClass.attendeeIds.push(id);
+                        });
+                    } else {
+                        monthGroup.classes.unshift({
+                            id: localISOTime,
+                            date: displayDate,
+                            dayOfWeek: dayOfWeek,
+                            open: true,
+                            attendees: names,
+                            attendeeIds: ids
+                        });
+                    }
+                    monthGroup.classes = this.mergeDuplicateClasses(monthGroup.classes);
+                    
+                    // Forzar reactividad profunda en Alpine.js
+                    this.historyData = JSON.parse(JSON.stringify(this.historyData));
+                    const saved = await this.saveSettingsToDB();
+                    if (!saved) return;
+                    this.attendanceBuffer = [];
+                    this.showToast('Asistencia guardada con éxito');
+                    this.view = 'history';
+                },
+
+                // --- PAGOS DE EXAMEN (CUSTOM UI MODAL) ---
+                get examList() {
+                    return this.students.map(student => ({
+                        id: student.id,
+                        name: student.name,
+                        current: student.rank,
+                        next: this.getNextRank(student.rank),
+                        exam_paid: !!student.exam_paid
+                    }));
+                },
+
+                generateExamList() {
+                    this.students = [...this.students];
+                    this.showToast('Lista de examen actualizada');
+                },
+
+                openExamPayment(student) {
+                    if (!student) return;
+                    this.examPaymentStudent = student;
+                    this.examPaymentAmount = 15000;
+                    this.showExamModal = true;
+                },
+
+                async confirmExamPayment() {
+                    if (!this.examPaymentStudent) return;
+                    const amount = Number(this.examPaymentAmount) || 0;
+                    if (amount <= 0) {
+                        this.showToast('Ingresa un monto valido');
+                        return;
+                    }
+                    const previousRevenue = Number(this.revenue || 0);
+                    const previousPaid = !!this.examPaymentStudent.exam_paid;
+                    const previousPaidAmount = Number(this.examPaymentStudent.exam_paid_amount || 0);
+                    this.revenue = previousRevenue + amount;
+                    this.examPaymentStudent.exam_paid = true;
+                    this.examPaymentStudent.exam_paid_amount = amount;
+                    
+                    if (this.user) {
+                        let { error } = await this.supabase
+                            .from('tkd_students')
+                            .update({ exam_paid: true, exam_paid_amount: amount })
+                            .eq('id', this.examPaymentStudent.id);
+                        if (error && String(error.message || '').toLowerCase().includes('exam_paid_amount')) {
+                            const retry = await this.supabase
+                                .from('tkd_students')
+                                .update({ exam_paid: true })
+                                .eq('id', this.examPaymentStudent.id);
+                            error = retry.error;
+                        }
+                        if (error) {
+                            this.revenue = previousRevenue;
+                            this.examPaymentStudent.exam_paid = previousPaid;
+                            this.examPaymentStudent.exam_paid_amount = previousPaidAmount;
+                            this.showToast('Error al registrar pago de examen');
+                            return;
+                        }
+                        const saved = await this.saveSettingsToDB();
+                        if (!saved) {
+                            this.revenue = previousRevenue;
+                            this.examPaymentStudent.exam_paid = previousPaid;
+                            this.examPaymentStudent.exam_paid_amount = previousPaidAmount;
+                            return;
+                        }
+                    }
+
+                    this.students = [...this.students];
+                    this.showExamModal = false;
+                    this.showToast('Pago de examen registrado exitosamente');
+                },
+
+                async cancelExamPay(student) {
+                    if (!student) return;
+                    const paidAmount = Number(student.exam_paid_amount);
+                    const discount = paidAmount > 0 ? paidAmount : 15000;
+                    const previousRevenue = Number(this.revenue || 0);
+                    const previousPaid = !!student.exam_paid;
+                    const previousPaidAmount = Number(student.exam_paid_amount || 0);
+                    student.exam_paid = false;
+                    student.exam_paid_amount = 0;
+                    this.revenue = Math.max(0, previousRevenue - discount);
+                    if (this.user) {
+                        let { error } = await this.supabase
+                            .from('tkd_students')
+                            .update({ exam_paid: false, exam_paid_amount: 0 })
+                            .eq('id', student.id);
+                        if (error && String(error.message || '').toLowerCase().includes('exam_paid_amount')) {
+                            const retry = await this.supabase
+                                .from('tkd_students')
+                                .update({ exam_paid: false })
+                                .eq('id', student.id);
+                            error = retry.error;
+                        }
+                        if (error) {
+                            this.revenue = previousRevenue;
+                            student.exam_paid = previousPaid;
+                            student.exam_paid_amount = previousPaidAmount;
+                            this.showToast('Error al anular pago de examen');
+                            return;
+                        }
+                        const saved = await this.saveSettingsToDB();
+                        if (!saved) {
+                            this.revenue = previousRevenue;
+                            student.exam_paid = previousPaid;
+                            student.exam_paid_amount = previousPaidAmount;
+                            return;
+                        }
+                    }
+                    this.students = [...this.students];
+                    this.showToast('Pago anulado y descontado de caja');
+                },
+
+                // --- UTILIDADES ---
+                get filteredStudents() {
+                    if (this.search === '') return this.students;
+                    return this.students.filter(s => s.name.toLowerCase().includes(this.search.toLowerCase()));
+                },
+
+                getUpcomingExamDate() {
+                    const today = new Date();
+                    let year = today.getFullYear();
+                    let examDate = new Date(year, 3, 10); // 10 de abril
+                    if (today > examDate) {
+                        year += 1;
+                        examDate = new Date(year, 3, 10);
+                    }
+                    return examDate;
+                },
+
+                formatExamDate(date) {
+                    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '-';
+                    return date.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+                },
+
+                getPageTitle() {
+                    const map = { 'dashboard': 'General', 'students': 'Alumnos', 'attendance': 'Tomar Lista', 'history': 'Historial', 'exams': 'Examen' };
+                    return map[this.view];
+                },
+                getPageSubtitle() {
+                    if (this.view === 'attendance') return 'Selecciona a los presentes';
+                    if (this.view === 'students') return 'Toca un alumno para ver su perfil';
+                    return new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+                },
+
+                calculateAge(dob) {
+                    if(!dob) return '-';
+                    const diff = Date.now() - new Date(dob).getTime();
+                    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+                },
+
+                countSaturdays(targetDate) {
+                    let count = 0; let current = new Date();
+                    while (current <= targetDate) {
+                        if (current.getDay() === 6) count++;
+                        current.setDate(current.getDate() + 1);
+                    }
+                    return count;
+                },
+
+                getNextRank(rank) {
+                    const idx = this.ranks.indexOf(rank);
+                    return (idx !== -1 && idx < this.ranks.length - 1) ? this.ranks[idx+1] : 'Dan (Máximo)';
+                },
+
+                formatMoney(amount) { 
+                    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(amount || 0); 
+                },
+
+                getCardStyle(rank) {
+                    if (!rank) return 'card-Blanco';
+                    let isAvz = rank.includes('Avz');
+                    
+                    if (rank.includes('Blanco')) return 'card-Blanco';
+                    if (rank.includes('Amarillo')) return isAvz ? 'card-Amarillo-Avz' : 'card-Amarillo';
+                    if (rank.includes('Azul')) return isAvz ? 'card-Azul-Avz' : 'card-Azul';
+                    if (rank.includes('Rojo')) return isAvz ? 'card-Rojo-Avz' : 'card-Rojo';
+                    if (rank.includes('Negro')) return 'card-Negro';
+                    
+                    return 'card-Blanco';
+                }
+            }));
+        });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
+

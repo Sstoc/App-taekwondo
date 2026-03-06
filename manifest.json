@@ -1,0 +1,20 @@
+{
+  "name": "Taekwondo - CMK",
+  "short_name": "CMK",
+  "description": "Administracion de alumnos, asistencia y caja mensual de Chang Moo Kwan.",
+  "lang": "es-AR",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "logo%20chang%20moo%20kwan.jpeg",
+      "type": "image/jpeg",
+      "sizes": "225x225",
+      "purpose": "any maskable"
+    }
+  ]
+}
