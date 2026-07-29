@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -22,54 +22,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-    <style>
-        [x-cloak] { display: none !important; }
-        html, body { height: 100%; }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            -webkit-tap-highlight-color: transparent;
-            min-height: 100dvh;
-        }
-        
-        .page-enter { animation: fadeSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .floating-card {
-            transition: transform .2s ease, box-shadow .2s ease;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
-            background: white;
-        }
-        .floating-card:active { transform: scale(0.98); }
-
-        .modal-enter { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-
-        /* Estilos Temáticos de Cinturones */
-        .card-Blanco { background-color: #ffffff; border-left-color: #cbd5e1; border-left-width: 6px; }
-        .card-Amarillo { background-color: #fefce8; border-left-color: #facc15; border-left-width: 6px; }
-        .card-Azul { background-color: #eff6ff; border-left-color: #60a5fa; border-left-width: 6px; }
-        .card-Rojo { background-color: #fef2f2; border-left-color: #f87171; border-left-width: 6px; }
-        /* Avanzados más intensos */
-        .card-Amarillo-Avz { background-color: #fef08a; border-left-color: #ca8a04; border-left-width: 8px; }
-        .card-Azul-Avz { background-color: #dbeafe; border-left-color: #2563eb; border-left-width: 8px; }
-        .card-Rojo-Avz { background-color: #fee2e2; border-left-color: #dc2626; border-left-width: 8px; }
-        .card-Negro { background-color: #0f172a; border-left-color: #334155; border-left-width: 6px; color: white; }
-
-        /* Toast */
-        .toast-enter { animation: toastIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateY(20px) translateX(-50%); } to { opacity: 1; transform: translateY(0) translateX(-50%); } }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="text-slate-800 bg-slate-50 h-[100dvh] overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+<body class="text-slate-800 h-[100dvh] overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
 
     <div x-data="tkdApp()" x-init="init()" class="h-full min-h-0 flex flex-col md:flex-row">
 
+        <!-- LOGIN -->
         <div x-show="!user" x-cloak class="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
             <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden modal-enter">
                 <div class="p-8 bg-slate-900 text-white text-center">
@@ -103,7 +63,8 @@
             </div>
         </div>
 
-        <aside class="hidden md:flex w-72 bg-white border-r border-slate-200 flex-col justify-between p-6 z-20 shadow-xl">
+        <!-- SIDEBAR DESKTOP -->
+        <aside class="hidden md:flex w-72 flex-col justify-between p-6 z-20 glass">
             <div>
                 <div class="flex items-center gap-3 mb-10 text-indigo-700">
                     <img src="logo%20chang%20moo%20kwan.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%2210%22 fill=%220f172a%22/%3E%3Ctext x=%2220%22 y=%2225%22 font-size=%2214%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-family=%22Arial%22%3ECMK%3C/text%3E%3C/svg%3E';" class="w-10 h-10 rounded-xl object-cover shadow-lg border border-slate-200">
@@ -120,12 +81,25 @@
                             <i :class="item.icon + ' w-5'"></i> <span x-text="item.label"></span>
                         </button>
                     </template>
+                    <!-- Botón Ajustes -->
+                    <button @click="openSettingsModal()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-all duration-300">
+                        <i class="fa-solid fa-gear w-5"></i> <span>Ajustes</span>
+                    </button>
                 </nav>
             </div>
             <div>
-                <div class="bg-slate-900 rounded-2xl p-5 text-white relative overflow-hidden mb-4">
-                    <p class="text-xs text-slate-400 font-bold uppercase mb-1 tracking-wider">Caja Mensual</p>
-                    <p class="text-2xl font-extrabold" x-text="formatMoney(revenue)"></p>
+                <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 text-white relative overflow-hidden mb-4">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full -translate-y-8 translate-x-8"></div>
+                    <div class="flex items-center justify-between mb-1">
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Caja Mensual</p>
+                        <button @click="showRevenue = !showRevenue" class="text-slate-400 hover:text-white transition w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10">
+                            <i :class="showRevenue ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" class="text-xs"></i>
+                        </button>
+                    </div>
+                    <p class="text-2xl font-extrabold">
+                        <span x-show="showRevenue" x-text="formatMoney(getCurrentMonthRevenue())"></span>
+                        <span x-show="!showRevenue">$ ••••••</span>
+                    </p>
                     <div x-show="!confirmReset" class="mt-3">
                         <button @click="confirmReset = true" class="text-[10px] text-slate-400 underline hover:text-white transition">Reiniciar mes</button>
                     </div>
@@ -140,25 +114,48 @@
             </div>
         </aside>
 
-        <main class="flex-1 flex min-h-0 flex-col h-full relative overflow-hidden bg-[#f8fafc]">
-            
-            <header class="md:hidden bg-white/90 backdrop-blur-lg border-b border-slate-200 p-4 sticky top-0 z-30 flex justify-between items-center transition-all">
-                <div class="flex items-center gap-2">
-                    <img src="logo%20chang%20moo%20kwan.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%220f172a%22/%3E%3Ctext x=%2216%22 y=%2221%22 font-size=%2211%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-family=%22Arial%22%3ECMK%3C/text%3E%3C/svg%3E';" class="w-8 h-8 rounded-lg object-cover shadow-md border border-slate-200">
-                    <h1 class="font-bold text-lg text-slate-800">Taekwondo</h1>
-                </div>
-                <div class="flex gap-2">
-                    <button x-show="user" @click="signOut()" class="bg-red-50 text-red-600 w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition">
-                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
-                    </button>
-                </div>
-            </header>
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex min-h-0 flex-col h-full relative">
+            <div class="flex-1 min-h-0 overflow-y-auto scroll-smooth relative">
+                
+                <!-- HEADER MOBILE -->
+                <header class="md:hidden glass sticky top-0 z-30 px-4 py-3 transition-all flex justify-between items-center border-b border-white/20 dark:border-white/10">
+                    <div class="flex items-center gap-3">
+                        <img src="logo%20chang%20moo%20kwan.jpeg" alt="CMK Logo"
+                             onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%220f172a%22/%3E%3Ctext x=%2216%22 y=%2221%22 font-size=%2211%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-family=%22Arial%22%3ECMK%3C/text%3E%3C/svg%3E';" 
+                             class="w-9 h-9 rounded-xl object-cover shadow-sm border border-slate-200/40">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <h1 class="font-black text-base text-slate-800 leading-none tracking-tight">Taekwondo</h1>
+                                <span class="bg-indigo-500/10 text-indigo-600 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-indigo-500/20 leading-none">CMK</span>
+                            </div>
+                            <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider leading-none mt-1">Chang Moo Kwan</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button x-show="user" @click="openSettingsModal()" class="w-9 h-9 rounded-xl glass hover:bg-white/40 text-slate-600 flex items-center justify-center active:scale-90 transition shadow-sm border border-white/50" aria-label="Ajustes">
+                            <i class="fa-solid fa-gear text-xs"></i>
+                        </button>
+                        <button x-show="user" @click="signOut()" class="w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 flex items-center justify-center active:scale-90 transition shadow-sm" aria-label="Cerrar sesión">
+                            <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                        </button>
+                    </div>
+                </header>
 
-            <div class="flex-1 min-h-0 overflow-y-auto p-4 md:p-10 scroll-smooth pb-32 relative">
+                <div class="p-4 md:p-10 pb-28">
                 <div class="max-w-5xl mx-auto space-y-6">
                     
+                    <!-- OFFLINE BANNER -->
+                    <div x-show="!isOnline" x-cloak class="bg-amber-100 text-amber-800 border border-amber-200 p-3 rounded-xl flex items-center gap-3 text-sm font-bold shadow-sm page-enter">
+                        <div class="relative w-5 h-5 flex items-center justify-center text-amber-600">
+                            <i class="fa-solid fa-wifi text-lg opacity-50"></i>
+                            <div class="absolute inset-0 w-[120%] h-[2px] bg-red-500 rounded-full transform top-1/2 left-[-10%] rotate-45"></div>
+                        </div>
+                        <span>Modo Offline. Los cambios se guardarán localmente.</span>
+                    </div>
                     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
                         <div>
+                            <p x-show="view === 'dashboard'" class="text-sm font-bold text-indigo-500 mb-1" x-text="getGreeting()"></p>
                             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight" x-text="getPageTitle()"></h2>
                             <p class="text-slate-500 font-medium text-sm" x-text="getPageSubtitle()"></p>
                         </div>
@@ -183,35 +180,56 @@
                         </button>
                     </div>
 
+                    <!-- ===== DASHBOARD ===== -->
                     <div x-show="view === 'dashboard'" class="page-enter space-y-6">
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm floating-card cursor-pointer" @click="view='students'">
+                            <div class="glass p-5 rounded-2xl floating-card cursor-pointer" @click="view='students'">
                                 <p class="text-xs font-bold uppercase text-slate-400">Alumnos</p>
-                                <p class="text-3xl font-black text-slate-800" x-text="students.length"></p>
+                                <p class="text-3xl font-black text-slate-800" x-text="students.filter(s => !s.archived).length"></p>
                             </div>
-                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm floating-card">
-                                <p class="text-xs font-bold uppercase text-green-600">Recaudado</p>
-                                <p class="text-3xl font-black text-slate-800" x-text="formatMoney(revenue)"></p>
+                            <div class="glass p-5 rounded-2xl floating-card relative">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-xs font-bold uppercase text-green-600">Recaudado</p>
+                                    <button @click="showRevenue = !showRevenue" class="text-slate-300 hover:text-slate-600 transition w-6 h-6 flex items-center justify-center rounded-full hover:bg-slate-100">
+                                        <i :class="showRevenue ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" class="text-xs"></i>
+                                    </button>
+                                </div>
+                                <p class="text-3xl font-black text-slate-800">
+                                    <span x-show="showRevenue" x-text="formatMoney(getCurrentMonthRevenue())"></span>
+                                    <span x-show="!showRevenue">$ ••••••</span>
+                                </p>
                             </div>
-                            <div class="col-span-2 md:col-span-1 bg-slate-900 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden cursor-pointer" @click="view='exams'">
-                                <p class="text-xs font-bold uppercase text-slate-400">Próximo Examen</p>
+                            <div class="col-span-2 md:col-span-1 glass-indigo text-white p-5 rounded-2xl relative overflow-hidden cursor-pointer" @click="view='exams'">
+                                <p class="text-xs font-bold uppercase text-indigo-200">Próximo Examen</p>
                                 <p class="text-xl font-bold mt-1" x-text="formatExamDate(getUpcomingExamDate())"></p>
-                                <p class="text-xs text-indigo-300 mt-2">Faltan <span class="font-bold text-white" x-text="countSaturdays(getUpcomingExamDate())"></span> Sábados</p>
+                                <p class="text-xs text-indigo-200 mt-2">Faltan <span class="font-bold text-white" x-text="countSaturdays(getUpcomingExamDate())"></span> Sábados</p>
                             </div>
                         </div>
 
-                        <div>
+                        <!-- Cuota actual -->
+                        <div class="glass rounded-2xl p-4 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold uppercase text-indigo-500">Cuota hoy <span class="text-indigo-400 font-normal" x-text="'(' + getCurrentTierLabel() + ')'"></span></p>
+                                <p class="text-2xl font-black text-indigo-700" x-text="formatMoney(getCurrentTierAmount(null))"></p>
+                            </div>
+                            <div class="text-right space-y-1">
+                                <div class="text-[10px]" :class="new Date().getDate() <= 10 ? 'text-indigo-600 font-bold' : 'text-slate-500'"><span class="font-bold">Días 1-10:</span> <span x-text="formatMoney(priceTiers.tier1)"></span></div>
+                                <div class="text-[10px]" :class="new Date().getDate() > 10 && new Date().getDate() <= 20 ? 'text-indigo-600 font-bold' : 'text-slate-500'"><span class="font-bold">Días 11-20:</span> <span x-text="formatMoney(priceTiers.tier2)"></span></div>
+                                <div class="text-[10px]" :class="new Date().getDate() > 20 ? 'text-indigo-600 font-bold' : 'text-slate-500'"><span class="font-bold">Días 21+:</span> <span x-text="formatMoney(priceTiers.tier3)"></span></div>
+                            </div>
+                        </div>
+
+                                <div>
                             <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
                                 <i class="fa-solid fa-wallet text-slate-400"></i> Estado de Cuotas
                             </h3>
                             <div class="space-y-3">
-                                <template x-for="student in students" :key="student.id">
-                                    <div class="bg-white p-3 rounded-xl border flex items-center justify-between floating-card"
-                                         :class="student.debt > 0 ? 'border-red-100' : 'border-green-100'">
+                                <template x-for="student in students.filter(s => !s.archived)" :key="student.id">
+                                    <div class="glass p-3 rounded-xl flex items-center justify-between floating-card">
                                         
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border"
-                                                 :class="student.debt > 0 ? 'bg-red-50 text-red-500 border-red-100' : 'bg-green-50 text-green-600 border-green-100'">
+                                                 :class="getUnpaidMonths(student.id).length > 0 ? 'bg-red-50 text-red-500 border-red-100' : 'bg-green-50 text-green-600 border-green-100'">
                                                 <span x-text="student.name.substring(0,2)"></span>
                                             </div>
                                             <div>
@@ -220,20 +238,15 @@
                                             </div>
                                         </div>
 
-                                        <div x-data="{ confirming: false }">
-                                            <template x-if="student.debt > 0">
-                                                <div>
-                                                    <button x-show="!confirming" @click="confirming = true" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg active:scale-95 transition flex items-center gap-2">
-                                                        <span>Cobrar</span>
-                                                        <span class="text-indigo-200" x-text="formatMoney(student.debt)"></span>
-                                                    </button>
-                                                    <div x-show="confirming" class="flex gap-1">
-                                                        <button @click="quickPay(student); confirming = false" class="bg-green-500 text-white px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-check"></i></button>
-                                                        <button @click="confirming = false" class="bg-slate-200 text-slate-600 px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
-                                                    </div>
-                                                </div>
+                                        <div>
+                                            <template x-if="getUnpaidMonths(student.id).length > 0">
+                                                <button @click="openPaymentModal(student)" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg active:scale-95 transition flex items-center gap-2">
+                                                    <span>Cobrar</span>
+                                                    <span class="text-indigo-200" x-text="formatMoney(calcStudentDebt(student.id))"></span>
+                                                    <span class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full" x-text="getUnpaidMonths(student.id).length + ' mes' + (getUnpaidMonths(student.id).length > 1 ? 'es' : '')"></span>
+                                                </button>
                                             </template>
-                                            <template x-if="student.debt === 0">
+                                            <template x-if="getUnpaidMonths(student.id).length === 0">
                                                 <div class="flex items-center gap-1 text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100">
                                                     <i class="fa-solid fa-check text-xs"></i>
                                                     <span class="text-xs font-bold">Al día</span>
@@ -242,23 +255,39 @@
                                         </div>
                                     </div>
                                 </template>
-                                <div x-show="students.length === 0" class="text-center text-slate-400 py-10">
-                                    Aún no tienes alumnos registrados.
+                                <div x-show="students.filter(s => !s.archived).length === 0" class="text-center text-slate-400 py-10">
+                                    Aún no tenés alumnos registrados.
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
+                    <!-- ===== STUDENTS ===== -->
                     <div x-show="view === 'students'" class="page-enter" x-cloak>
+                        <!-- Tabs de filtro de archivado -->
+                        <div class="flex glass p-1 rounded-xl mb-4 max-w-xs">
+                            <button @click="archiveFilter = 'active'"
+                                    :class="archiveFilter === 'active' ? 'bg-white text-slate-850 shadow-sm font-extrabold' : 'text-slate-500 hover:text-slate-700 font-bold'"
+                                    class="flex-1 py-2 text-xs rounded-lg transition">
+                                Activos (<span x-text="students.filter(s => !s.archived).length"></span>)
+                            </button>
+                            <button @click="archiveFilter = 'archived'"
+                                    :class="archiveFilter === 'archived' ? 'bg-white text-slate-850 shadow-sm font-extrabold' : 'text-slate-500 hover:text-slate-700 font-bold'"
+                                    class="flex-1 py-2 text-xs rounded-lg transition">
+                                Archivados (<span x-text="students.filter(s => !!s.archived).length"></span>)
+                            </button>
+                        </div>
+
                          <div class="relative mb-6">
-                            <input type="text" x-model="search" placeholder="Buscar alumno por nombre..." class="w-full p-4 pl-12 bg-white rounded-2xl border border-slate-200 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                            <input type="text" x-model="search" placeholder="Buscar alumno por nombre..." class="w-full p-4 pl-12 glass rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
                             <i class="fa-solid fa-search absolute left-5 top-5 text-slate-400"></i>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <template x-for="student in filteredStudents" :key="student.id">
                                 <div @click="openStudentProfile(student)" 
-                                     class="rounded-2xl p-5 border shadow-sm relative overflow-hidden floating-card cursor-pointer flex justify-between items-center transition-colors duration-300"
+                                     class="rounded-2xl p-5 relative overflow-hidden floating-card cursor-pointer flex justify-between items-center transition-all duration-300"
                                      :class="getCardStyle(student.rank)">
                                     
                                     <div class="flex items-center gap-4">
@@ -281,14 +310,15 @@
                         </div>
                     </div>
 
+                    <!-- ===== ATTENDANCE ===== -->
                     <div x-show="view === 'attendance'" class="page-enter" x-cloak>
-                        <p class="text-sm text-slate-500 mb-6">Toca el nombre del alumno para marcarlo como presente. Los alumnos ya registrados no apareceran en la lista de hoy.</p>
+                        <p class="text-sm text-slate-500 mb-6">Tocá el nombre del alumno para marcarlo como presente. Los alumnos ya registrados no aparecerán en la lista de hoy.</p>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                             <template x-for="student in studentsForAttendance" :key="student.id">
                                 <div @click="toggleBuffer(student.id)" 
                                      class="rounded-xl p-4 border cursor-pointer flex items-center gap-4 transition-all duration-200 select-none floating-card"
-                                     :class="attendanceBuffer.includes(student.id) ? 'bg-green-50 border-green-500 text-green-900 shadow-sm' : 'bg-white border-slate-200 text-slate-700'">
+                                     :class="attendanceBuffer.includes(student.id) ? 'bg-green-400/20 border-green-400/50 text-green-900' : 'glass text-slate-700'">
                                     
                                     <div class="w-6 h-6 rounded-md border flex items-center justify-center transition-colors"
                                          :class="attendanceBuffer.includes(student.id) ? 'bg-green-500 border-green-500' : 'border-slate-300 bg-slate-50'">
@@ -302,25 +332,32 @@
                             </template>
                         </div>
                         
-                        <div x-show="students.length > 0 && studentsForAttendance.length === 0" class="text-center py-10 bg-green-50 rounded-2xl border border-green-100 mt-4">
+                        <div x-show="students.length > 0 && studentsForAttendance.length === 0" class="text-center py-10 glass rounded-2xl mt-4">
                             <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-2"></i>
-                            <p class="font-bold text-green-800">Asistencia completa</p>
-                            <p class="text-sm text-green-600">Todos los alumnos ya tienen asistencia registrada hoy.</p>
+                            <p class="font-bold text-slate-800">Asistencia completa</p>
+                            <p class="text-sm text-slate-500">Todos los alumnos ya tienen asistencia registrada hoy.</p>
                         </div>
-                        <div x-show="students.length === 0" class="text-center py-10 bg-slate-50 rounded-2xl border border-slate-200 mt-4 text-slate-500">
-                            Aún no tienes alumnos para tomar asistencia.
+                        <div x-show="students.length === 0" class="text-center py-10 glass rounded-2xl mt-4 text-slate-500">
+                            Aún no tenés alumnos para tomar asistencia.
                         </div>
                     </div>
 
+                    <!-- ===== HISTORY ===== -->
                     <div x-show="view === 'history'" class="page-enter space-y-4" x-cloak>
                         <template x-for="month in historyData" :key="month.id">
-                            <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                                <button @click="month.open = !month.open" class="w-full flex items-center justify-between p-5 bg-white hover:bg-slate-50 transition border-b border-slate-100">
+                            <div class="glass rounded-2xl overflow-hidden">
+                                <button @click="month.open = !month.open" class="w-full flex items-center justify-between p-5 hover:bg-white/20 transition border-b border-white/20">
                                     <div class="flex items-center gap-3">
                                         <i class="fa-regular fa-calendar text-indigo-500"></i>
                                         <span class="font-bold text-lg capitalize text-slate-800" x-text="month.name"></span>
                                     </div>
-                                    <i class="fa-solid fa-chevron-down text-slate-400 transition-transform" :class="month.open ? 'rotate-180' : ''"></i>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-sm font-bold text-green-600" :class="showRevenue ? '' : 'text-slate-400'">
+                                            <span x-show="showRevenue" x-text="formatMoney(month.revenue || 0)"></span>
+                                            <span x-show="!showRevenue">$ ••••••</span>
+                                        </span>
+                                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform" :class="month.open ? 'rotate-180' : ''"></i>
+                                    </div>
                                 </button>
                                 
                                 <div x-show="month.open" x-collapse>
@@ -362,23 +399,25 @@
                         </template>
                         
                         <div x-show="historyData.length === 0" class="text-center py-10 text-slate-400 font-bold">
-                            Aún no has guardado ninguna asistencia.
+                            Aún no guardaste ninguna asistencia.
                         </div>
                     </div>
 
+                    <!-- ===== EXAMS ===== -->
                     <div x-show="view === 'exams'" class="page-enter" x-cloak>
-                         <div class="bg-indigo-600 text-white p-6 rounded-3xl mb-6 shadow-xl flex justify-between items-center">
+                         <div class="glass-indigo text-white p-6 rounded-3xl mb-6 flex justify-between items-center">
                             <div>
                                 <h2 class="text-2xl font-bold">Proyección</h2>
                                 <p class="text-indigo-200 text-sm">Próxima mesa: <span x-text="formatExamDate(getUpcomingExamDate())"></span></p>
                             </div>
-                            <button @click="generateExamList()" class="bg-white text-indigo-700 font-bold px-4 py-2 rounded-xl shadow-lg active:scale-95 transition text-sm">
-                                <i class="fa-solid fa-rotate"></i>
+                            <button @click="promotePaidStudents()" class="bg-white text-indigo-700 font-bold px-4 py-2.5 rounded-xl shadow-lg active:scale-95 transition text-xs flex items-center gap-2 hover:bg-slate-50">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                <span>Promocionar Graduados</span>
                             </button>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <template x-for="item in examList" :key="item.id">
-                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm floating-card space-y-3">
+                                <div class="glass p-4 rounded-2xl floating-card space-y-3">
                                     <div class="flex items-center justify-between gap-3">
                                         <p class="font-bold text-slate-800 truncate" x-text="item.name"></p>
                                         <template x-if="item.exam_paid">
@@ -413,27 +452,35 @@
                 </div>
             </div>
 
-            <nav class="md:hidden sticky bottom-0 bg-white/90 backdrop-blur-md border-t border-slate-200 flex justify-around p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] z-30">
+            <!-- NAV MOBILE -->
+            <!-- NAV MOBILE FLOTANTE (fixed, pill) -->
+            <nav class="md:hidden nav-pill glass flex justify-around py-3 px-4 z-[100]">
                 <template x-for="item in menu" :key="item.id">
-                    <button @click="view = item.id" :class="view === item.id ? 'text-indigo-600' : 'text-slate-400'" class="flex flex-col items-center gap-1 transition relative">
-                        <i :class="item.icon + ' text-xl'"></i>
+                    <button @click="view = item.id"
+                            :class="view === item.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'"
+                            class="flex flex-col items-center gap-1 transition-all duration-200 relative px-3 py-1">
+                        <div class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200">
+                            <i :class="item.icon + ' text-xl'"></i>
+                        </div>
                         <span x-show="item.id === 'attendance'" class="text-[9px] font-bold">Asist.</span>
-                        <span x-show="item.id === 'dashboard' && students.some(s=>s.debt > 0)" class="absolute -top-1 -right-1 bg-red-500 w-2.5 h-2.5 rounded-full border border-white"></span>
+                        <span x-show="item.id === 'dashboard' && students.some(s=>s.debt > 0)" class="absolute top-0 right-1 bg-red-500 w-2.5 h-2.5 rounded-full"></span>
                     </button>
                 </template>
             </nav>
 
             <button x-show="view === 'students' || view === 'dashboard'"
                     @click="openEditModal(null)"
-                    class="md:hidden fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] w-14 h-14 rounded-full bg-slate-900 text-white shadow-2xl shadow-slate-300 flex items-center justify-center z-40 active:scale-95 transition"
+                    class="md:hidden fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+7.5rem)] w-14 h-14 rounded-full glass-indigo text-white shadow-2xl flex items-center justify-center z-40 active:scale-95 transition"
                     aria-label="Nuevo Alumno">
                 <i class="fa-solid fa-user-plus text-lg"></i>
             </button>
+            </div>
         </main>
 
-        <div x-show="showProfileModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeProfileModal()" x-transition.opacity></div>
-            <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[90vh]">
+        <!-- ===== MODAL: PERFIL ALUMNO ===== -->
+        <div x-show="showProfileModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md" @click="closeProfileModal()" x-transition.opacity></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[80vh] md:max-h-[88vh]">
                 
                 <div class="h-32 relative shrink-0" :class="activeStudent ? getCardStyle(activeStudent.rank) : 'bg-slate-200'">
                     <button @click="closeProfileModal()" class="absolute top-4 right-4 bg-black/20 text-white hover:bg-black/40 w-8 h-8 rounded-full flex items-center justify-center transition backdrop-blur-sm"><i class="fa-solid fa-xmark"></i></button>
@@ -449,48 +496,77 @@
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-black text-slate-800 leading-tight" x-text="activeStudent?.name"></h2>
                         <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold border bg-white text-slate-800" :class="activeStudent ? getCardStyle(activeStudent.rank) : ''" x-text="activeStudent?.rank"></span>
-                        <span class="text-sm font-bold text-slate-400 ml-2" x-text="activeStudent?.dob ? calculateAge(activeStudent.dob) + ' anios' : ''"></span>
+                        <span class="text-sm font-bold text-slate-400 ml-2" x-text="activeStudent?.dob ? calculateAge(activeStudent.dob) + ' años' : ''"></span>
                     </div>
 
-                    <div class="bg-slate-50 rounded-2xl border border-slate-100 p-4 mb-4 space-y-4">
+                    <div class="glass rounded-2xl border border-white/30 p-4 mb-4 space-y-4">
+                        <!-- DNI en lugar de teléfono -->
+                        <div class="flex items-center gap-3 text-slate-700">
+                            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-id-card text-slate-400 text-xs"></i></div>
+                            <span class="text-sm font-bold font-mono" x-text="activeStudent?.dni || 'Sin DNI registrado'"></span>
+                        </div>
                         <div class="flex items-center gap-3 text-slate-700">
                             <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-location-dot text-slate-400 text-xs"></i></div>
                             <span class="text-sm font-bold" x-text="activeStudent?.location || 'Sin ubicación registrada'"></span>
                         </div>
-                        <div class="flex items-center gap-3 text-slate-700">
-                            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-phone text-slate-400 text-xs"></i></div>
-                            <span class="text-sm font-bold font-mono" x-text="activeStudent?.phone || 'Sin teléfono'"></span>
+                        <!-- Cuota fija badge -->
+                        <div x-show="activeStudent?.cuota_fija" class="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
+                            <i class="fa-solid fa-lock text-xs"></i>
+                            <span class="text-xs font-bold">Cuota fija: <span x-text="formatMoney(activeStudent?.tuition)"></span></span>
                         </div>
                         <a :href="activeStudent?.phone ? 'https://wa.me/' + activeStudent.phone : '#'" target="_blank" class="w-full mt-2 py-3.5 bg-[#25D366] text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-md hover:brightness-105 transition">
                             <i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp
                         </a>
                     </div>
 
-                    <div x-show="activeStudent?.debt > 0" class="bg-red-50 p-4 rounded-2xl border border-red-100 flex justify-between items-center mb-6">
-                        <div>
-                            <p class="text-red-500 font-bold text-xs uppercase">Deuda pendiente</p>
-                            <p class="text-2xl font-black text-red-900" x-text="formatMoney(activeStudent?.debt)"></p>
-                        </div>
-                        <div x-data="{ confCobro: false }">
-                            <button x-show="!confCobro" @click="confCobro = true" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold active:scale-95 transition">Cobrar</button>
-                            <div x-show="confCobro" class="flex gap-1">
-                                <button @click="processPaymentConfirmed(); confCobro = false" class="bg-green-500 text-white px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-check"></i></button>
-                                <button @click="confCobro = false" class="bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                    <div x-show="activeStudent && getUnpaidMonths(activeStudent.id).length > 0" class="bg-red-500/10 backdrop-blur-sm p-4 rounded-2xl border border-red-300/30 mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <p class="text-red-500 font-bold text-xs uppercase">Deuda pendiente</p>
+                                <p class="text-2xl font-black text-red-900" x-text="formatMoney(calcStudentDebt(activeStudent?.id))"></p>
                             </div>
+                            <button @click="openPaymentModal(activeStudent)" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold active:scale-95 transition">Cobrar</button>
                         </div>
+                        <!-- Desglose mensual -->
+                        <div class="space-y-1.5 mt-2">
+                            <template x-for="entry in getUnpaidMonths(activeStudent?.id)" :key="entry.month">
+                                <div class="flex items-center justify-between bg-white/40 px-3 py-2 rounded-lg border border-red-200/30">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-red-400"></div>
+                                        <span class="text-xs font-bold text-slate-700" x-text="entry.label"></span>
+                                    </div>
+                                    <span class="text-xs font-black text-red-800" x-text="formatMoney(entry.amount)"></span>
+                                </div>
+                            </template>
+                        </div>
+                        <!-- Botón Recordar por WhatsApp -->
+                        <a x-show="activeStudent?.phone" 
+                           :href="buildWhatsAppDebtUrl(activeStudent)" 
+                           target="_blank"
+                           class="w-full mt-3 py-3 bg-[#25D366] text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-md hover:brightness-105 transition text-sm active:scale-95">
+                            <i class="fa-brands fa-whatsapp text-lg"></i> Recordar por WhatsApp
+                        </a>
                     </div>
-                    <div x-show="activeStudent?.debt === 0" class="bg-green-50 p-4 rounded-2xl border border-green-100 flex items-center gap-2 mb-6 text-green-700">
+                    <div x-show="activeStudent && getUnpaidMonths(activeStudent?.id).length === 0" class="bg-green-500/10 backdrop-blur-sm p-4 rounded-2xl border border-green-300/30 flex items-center gap-2 mb-6 text-green-700">
                         <i class="fa-solid fa-circle-check"></i>
                         <span class="font-bold text-sm">Cuota al día</span>
                     </div>
 
+                    <!-- Botón de Archivar / Desarchivar -->
+                    <button @click="toggleArchiveStudent(activeStudent)" 
+                            :class="activeStudent?.archived ? 'bg-amber-500/10 text-amber-700 border-amber-300/30 hover:bg-amber-500/20' : 'bg-white/30 text-slate-700 border-white/30 hover:bg-white/50'"
+                            class="w-full py-3 mb-3 border rounded-xl font-bold flex items-center justify-center gap-2 transition text-sm backdrop-blur-sm">
+                        <i :class="activeStudent?.archived ? 'fa-solid fa-box-open' : 'fa-solid fa-box-archive'"></i>
+                        <span x-text="activeStudent?.archived ? 'Desarchivar Alumno' : 'Archivar Alumno'"></span>
+                    </button>
+
                     <div class="grid grid-cols-2 gap-3 mb-6">
-                        <button @click="openEditModal(activeStudent)" class="py-3 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-100 transition">
+                        <button @click="openEditModal(activeStudent)" class="py-3 bg-indigo-500/15 text-indigo-700 border border-indigo-300/30 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-500/25 transition backdrop-blur-sm">
                             <i class="fa-solid fa-pen"></i> Editar Info
                         </button>
                         
                         <div x-data="{ confDelete: false }" class="relative w-full">
-                            <button x-show="!confDelete" @click="confDelete = true" class="w-full py-3 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-100 transition">
+                            <button x-show="!confDelete" @click="confDelete = true" class="w-full py-3 bg-red-500/10 text-red-600 border border-red-300/30 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-500/20 transition backdrop-blur-sm">
                                 <i class="fa-solid fa-trash"></i> Eliminar
                             </button>
                             <div x-show="confDelete" class="absolute inset-0 bg-red-500 rounded-xl flex items-center justify-center gap-2 overflow-hidden shadow-lg shadow-red-200">
@@ -503,36 +579,43 @@
             </div>
         </div>
 
-        <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeEditModal()" x-transition.opacity></div>
-            <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[90vh]">
-                <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+        <!-- ===== MODAL: EDITAR/NUEVO ALUMNO ===== -->
+        <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md" @click="closeEditModal()" x-transition.opacity></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[80vh] md:max-h-[88vh]">
+                <div class="px-6 py-4 border-b border-white/20 flex justify-between items-center shrink-0">
                     <h3 class="text-lg font-extrabold text-slate-800" x-text="isEditing ? 'Editar Alumno' : 'Nuevo Alumno'"></h3>
                     <button @click="closeEditModal()" class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="p-6 space-y-4 flex-1 overflow-y-auto">
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase">Nombre Completo</label>
-                        <input type="text" x-model="form.name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" x-model="form.name" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase">DNI</label>
+                            <input type="text" x-model="form.dni" placeholder="12345678" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 font-mono backdrop-blur-sm">
+                        </div>
+                        <div>
+                             <label class="text-xs font-bold text-slate-500 uppercase">F. Nacimiento</label>
+                            <input type="date" x-model="form.dob" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="text-xs font-bold text-slate-500 uppercase">Teléfono</label>
-                            <input type="tel" x-model="form.phone" placeholder="549..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="tel" x-model="form.phone" placeholder="549..." class="w-full p-3 bg-white/40 border border-white/40 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
                         </div>
                         <div>
-                             <label class="text-xs font-bold text-slate-500 uppercase">F. Nacimiento</label>
-                            <input type="date" x-model="form.dob" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Dirección</label>
+                            <input type="text" x-model="form.location" placeholder="Calle 123" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
                         </div>
                     </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-500 uppercase">Dirección / Ubicación</label>
-                        <input type="text" x-model="form.location" placeholder="Calle 123, Barrio" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-50">
+                    <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/20">
                         <div>
                             <label class="text-xs font-bold text-slate-500 uppercase">Cinturón</label>
-                            <select x-model="form.rank" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                            <select x-model="form.rank" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 backdrop-blur-sm">
                                 <template x-for="rank in ranks" :key="rank">
                                     <option :value="rank" x-text="rank"></option>
                                 </template>
@@ -540,12 +623,23 @@
                         </div>
                          <div>
                             <label class="text-xs font-bold text-slate-500 uppercase">Cuota Mensual ($)</label>
-                            <input type="number" x-model="form.tuition" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="number" x-model="form.tuition" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
                         </div>
+                    </div>
+                    <!-- Toggle cuota fija -->
+                    <div class="flex items-center justify-between bg-amber-500/10 border border-amber-300/30 rounded-xl px-4 py-3 backdrop-blur-sm">
+                        <div>
+                            <p class="text-sm font-bold text-amber-800">Cuota Fija</p>
+                            <p class="text-[10px] text-amber-600">Activar para alumnos con precio especial</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" x-model="form.cuota_fija" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
                     </div>
                     <div class="pt-2">
                         <label class="text-xs font-bold text-red-500 uppercase">Ajustar Deuda Actual ($)</label>
-                        <input type="number" x-model="form.debt" class="w-full p-3 bg-red-50 border border-red-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-500 text-red-800">
+                        <input type="number" x-model="form.debt" class="w-full p-3 bg-red-500/10 border border-red-300/30 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-400 text-red-700 backdrop-blur-sm">
                     </div>
                     <button @click="saveStudent()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-600 transition mt-2">
                         <span x-text="isEditing ? 'Guardar Cambios' : 'Registrar Alumno'"></span>
@@ -554,10 +648,11 @@
             </div>
         </div>
 
-        <div x-show="showExamModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showExamModal = false" x-transition.opacity></div>
-            <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 text-center">
-                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+        <!-- ===== MODAL: PAGO DE EXAMEN ===== -->
+        <div x-show="showExamModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md" @click="showExamModal = false" x-transition.opacity></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-6 text-center max-h-[85vh] overflow-y-auto">
+                <div class="w-16 h-16 bg-indigo-500/15 text-indigo-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 backdrop-blur-sm">
                     <i class="fa-solid fa-file-invoice-dollar"></i>
                 </div>
                 <h3 class="text-xl font-extrabold text-slate-800">Pago de Examen</h3>
@@ -565,784 +660,117 @@
 
                 <div class="mt-6 text-left">
                     <label class="text-xs font-bold text-slate-500 uppercase">Monto a cobrar ($)</label>
-                    <input type="number" x-model="examPaymentAmount" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-500 mt-2 text-xl text-center text-slate-800">
+                    <input type="number" x-model="examPaymentAmount" class="w-full p-4 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 mt-2 text-xl text-center text-slate-800 backdrop-blur-sm">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mt-6">
-                    <button @click="showExamModal = false" class="py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition">Cancelar</button>
+                    <button @click="showExamModal = false" class="py-3 bg-white/30 text-slate-600 border border-white/30 rounded-xl font-bold hover:bg-white/50 transition backdrop-blur-sm">Cancelar</button>
                     <button @click="confirmExamPayment()" class="py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">Confirmar</button>
                 </div>
             </div>
         </div>
 
-        <div x-show="toastMsg !== ''" x-transition.opacity class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl font-bold text-sm flex items-center gap-3 toast-enter w-max">
+        <!-- ===== MODAL: COBRO MENSUAL (NUEVO) ===== -->
+        <div x-show="showPaymentModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md" @click="showPaymentModal = false" x-transition.opacity></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-6 text-center max-h-[85vh] overflow-y-auto">
+                <div class="w-16 h-16 bg-green-500/15 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 backdrop-blur-sm">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-slate-800">Registrar Cobro</h3>
+                <p class="text-slate-500 text-sm mt-1">Alumno: <span class="font-bold text-slate-700" x-text="paymentStudent?.name"></span></p>
+                
+                <div class="mt-4 bg-red-500/10 border border-red-300/30 rounded-xl p-3 backdrop-blur-sm">
+                    <p class="text-xs font-bold text-red-500 uppercase">Deuda actual</p>
+                    <p class="text-2xl font-black text-red-800" x-text="formatMoney(calcStudentDebt(paymentStudent?.id))"></p>
+                </div>
+
+                <div x-show="paymentStudent && !paymentStudent.cuota_fija" class="mt-3 text-[11px] text-slate-500 bg-white/30 rounded-lg px-3 py-2 border border-white/30 backdrop-blur-sm">
+                    <span class="font-bold" x-text="getCurrentTierLabel()"></span>: cuota de <span class="font-bold text-slate-700" x-text="formatMoney(getCurrentTierAmount(paymentStudent))"></span>
+                </div>
+
+                <div class="mt-4 text-left">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Monto a cobrar ($)</label>
+                    <input type="number" x-model="paymentAmount" class="w-full p-4 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-400 focus:bg-white/60 mt-2 text-xl text-center text-slate-800 backdrop-blur-sm">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-6">
+                    <button @click="showPaymentModal = false" class="py-3 bg-white/30 text-slate-600 border border-white/30 rounded-xl font-bold hover:bg-white/50 transition backdrop-blur-sm">Cancelar</button>
+                    <button @click="confirmPayment()" class="py-3 bg-green-600 text-white rounded-xl font-bold shadow-lg hover:bg-green-700 transition">Confirmar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: CONFIGURACIÓN DE CUOTAS (NUEVO) ===== -->
+        <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 pt-4 pb-28 md:pb-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showSettingsModal = false" x-transition.opacity></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-8 md:pb-6 max-h-[85vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gear text-slate-400"></i> Ajustes de Cuotas</h3>
+                    <button @click="showSettingsModal = false" class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <p class="text-sm text-slate-500 mb-5">Configurá los valores de cuota según el día de pago del mes.</p>
+
+                <div class="space-y-4">
+                    <div class="bg-green-50 border border-green-100 rounded-xl p-4">
+                        <label class="text-xs font-bold text-green-700 uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check"></i> Días 1 al 10
+                        </label>
+                        <input type="number" x-model="editTiers.tier1" class="w-full p-3 bg-white border border-green-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-500 mt-2 text-lg text-center">
+                    </div>
+                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                        <label class="text-xs font-bold text-amber-700 uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-minus"></i> Días 11 al 20
+                        </label>
+                        <input type="number" x-model="editTiers.tier2" class="w-full p-3 bg-white border border-amber-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-amber-500 mt-2 text-lg text-center">
+                    </div>
+                    <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+                        <label class="text-xs font-bold text-red-700 uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-xmark"></i> Días 21 en adelante
+                        </label>
+                        <input type="number" x-model="editTiers.tier3" class="w-full p-3 bg-white border border-red-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-500 mt-2 text-lg text-center">
+                    </div>
+                </div>
+
+                <!-- Selector de tema -->
+                <div class="mt-6 pt-6 border-t border-slate-200">
+                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-palette text-slate-400"></i> Apariencia
+                    </h4>
+                    <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
+                        <button @click="setTheme('light')" 
+                                :class="themeMode === 'light' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'"
+                                class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-sun text-amber-500"></i> Claro
+                        </button>
+                        <button @click="setTheme('dark')" 
+                                :class="themeMode === 'dark' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'"
+                                class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-moon text-indigo-500"></i> Oscuro
+                        </button>
+                        <button @click="setTheme('system')" 
+                                :class="themeMode === 'system' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'"
+                                class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-laptop text-slate-400"></i> Sistema
+                        </button>
+                    </div>
+                </div>
+
+                <button @click="savePriceTiers()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-600 transition mt-6">
+                    Guardar Cambios
+                </button>
+            </div>
+        </div>
+
+        <!-- TOAST -->
+        <div x-show="toastMsg !== ''" x-transition.opacity class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] glass-dark-surface text-white px-6 py-3 rounded-full shadow-2xl font-bold text-sm flex items-center gap-3 toast-enter w-max">
             <i class="fa-solid fa-circle-check text-green-400"></i>
             <span x-text="toastMsg"></span>
         </div>
 
     </div>
 
-    <script>
-        // CONFIGURACIÓN SUPABASE
-        const SUPABASE_URL = 'https://ihxvrsdyxhslwahkklmh.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_iCPuyn5_jTXvtPl4zwwbVA_uf-F3W05';
-        
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('tkdApp', () => ({
-                view: 'dashboard',
-                search: '',
-                
-                // Auth & Supabase
-                supabase: null,
-                user: null,
-                authEmail: '',
-                authPassword: '',
-                authError: '',
-                authLoading: false,
-                showPassword: false,
-                lastBilled: null,
-                
-                // Modales
-                showProfileModal: false,
-                showEditModal: false,
-                isEditing: false,
-                activeStudent: null,
-                
-                // Modal Examen
-                showExamModal: false,
-                examPaymentStudent: null,
-                examPaymentAmount: 15000,
-
-                // Misc
-                toastMsg: '',
-                confirmReset: false,
-                revenue: 0,
-                billingInProgress: false,
-                
-                form: { id: null, name: '', dob: '', rank: 'Blanco', tuition: 12500, debt: 12500, phone: '', location: '', exam_paid: false, exam_paid_amount: 0 },
-                
-                attendanceBuffer: [],
-                
-                menu: [
-                    { id: 'dashboard', label: 'General', icon: 'fa-solid fa-chart-pie' },
-                    { id: 'students', label: 'Alumnos', icon: 'fa-solid fa-users' },
-                    { id: 'attendance', label: 'Asistencia', icon: 'fa-solid fa-clipboard-check' },
-                    { id: 'history', label: 'Historial', icon: 'fa-solid fa-clock-rotate-left' },
-                    { id: 'exams', label: 'Examen', icon: 'fa-solid fa-graduation-cap' }
-                ],
-
-                ranks: ['Blanco', 'Amarillo', 'Amarillo Int.', 'Amarillo Avz.', 'Azul', 'Azul Int.', 'Azul Avz.', 'Rojo', 'Rojo Avz.', 'Negro'],
-
-                students: [],
-                historyData: [],
-
-                async init() {
-                    if (SUPABASE_URL === 'TU_URL_AQUI' || !SUPABASE_URL.startsWith('http')) {
-                        this.authError = "ADVERTENCIA: Debes colocar tus credenciales reales de Supabase en el código para iniciar sesión.";
-                        return;
-                    }
-
-                    try {
-                        this.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-                        const { data: { session } } = await this.supabase.auth.getSession();
-                        if (session?.user) {
-                            this.startUserSession(session.user);
-                        }
-
-                        this.supabase.auth.onAuthStateChange((_event, session) => {
-                            if (session?.user) {
-                                if (!this.user) this.startUserSession(session.user);
-                            } else {
-                                this.user = null;
-                                this.students = [];
-                                this.historyData = [];
-                            }
-                        });
-                    } catch (e) {
-                        this.authError = "Error al conectar con Supabase. Verifica las credenciales.";
-                    }
-                },
-
-                // --- AUTENTICACIÓN ---
-                async signIn() {
-                    if (!this.supabase) return;
-                    this.authError = ''; this.authLoading = true;
-                    const { error } = await this.supabase.auth.signInWithPassword({ email: this.authEmail, password: this.authPassword });
-                    this.authLoading = false;
-                    if (error) this.authError = 'Error: verifica tus credenciales';
-                },
-
-                async signUp() {
-                    if (!this.supabase) return;
-                    this.authError = ''; this.authLoading = true;
-                    const { error } = await this.supabase.auth.signUp({ email: this.authEmail, password: this.authPassword });
-                    this.authLoading = false;
-                    if (error) this.authError = error.message; else await this.signIn();
-                },
-
-                async signOut() {
-                    if (this.supabase) await this.supabase.auth.signOut();
-                },
-
-                async startUserSession(user) {
-                    this.user = user;
-                    this.authError = '';
-                    await this.loadDataFromDB();
-                    this.checkNewMonthBilling();
-                },
-
-                // --- CONEXIÓN A DB ESTRICTA (SUPABASE) ---
-                async loadDataFromDB() {
-                    try {
-                        const { data: studentsData } = await this.supabase.from('tkd_students').select('*').eq('user_id', this.user.id).order('name');
-                        if (studentsData) {
-                            this.students = studentsData.map(s => ({
-                                ...s,
-                                exam_paid: !!s.exam_paid,
-                                exam_paid_amount: Number(s.exam_paid_amount || 0)
-                            }));
-                        }
-
-                        const { data: settingsRows } = await this.supabase
-                            .from('tkd_settings')
-                            .select('*')
-                            .eq('user_id', this.user.id);
-                        const settingsData = this.pickLatestSettingsRow(settingsRows || []);
-                        if (settingsData) {
-                            this.revenue = Number(settingsData.revenue);
-                            this.historyData = this.normalizeHistoryData(settingsData.history_data || []);
-                            this.lastBilled = settingsData.last_billed;
-                        } else {
-                            await this.supabase.from('tkd_settings').insert({ user_id: this.user.id });
-                        }
-                    } catch (e) { console.error(e); }
-                },
-
-                pickLatestSettingsRow(rows) {
-                    if (!Array.isArray(rows) || rows.length === 0) return null;
-                    if (rows.length === 1) return rows[0];
-
-                    const rowTime = (row) => {
-                        const updated = Date.parse(row?.updated_at || '');
-                        if (!Number.isNaN(updated)) return updated;
-                        const created = Date.parse(row?.created_at || '');
-                        if (!Number.isNaN(created)) return created;
-                        return -1;
-                    };
-
-                    const withTime = rows.filter(r => rowTime(r) >= 0);
-                    if (withTime.length > 0) {
-                        return withTime.reduce((best, row) => rowTime(row) > rowTime(best) ? row : best, withTime[0]);
-                    }
-
-                    return rows.reduce((best, row) => {
-                        const bestHistory = Array.isArray(best?.history_data) ? best.history_data.length : 0;
-                        const rowHistory = Array.isArray(row?.history_data) ? row.history_data.length : 0;
-                        if (rowHistory > bestHistory) return row;
-                        if (Number(row?.revenue || 0) > Number(best?.revenue || 0)) return row;
-                        return best;
-                    }, rows[0]);
-                },
-
-                normalizeHistoryData(rawHistory) {
-                    if (!Array.isArray(rawHistory)) return [];
-                    return rawHistory.map(month => {
-                        const normalizedMonth = {
-                            id: month?.id || this.createId(),
-                            name: month?.name || '',
-                            open: !!month?.open,
-                            classes: Array.isArray(month?.classes) ? month.classes.map(clase => ({
-                                id: clase?.id || '',
-                                date: clase?.date || '',
-                                dayOfWeek: clase?.dayOfWeek || 'Clase',
-                                open: !!clase?.open,
-                                attendees: Array.isArray(clase?.attendees)
-                                    ? clase.attendees.filter(Boolean)
-                                    : (typeof clase?.attendees === 'string' ? [clase.attendees] : []),
-                                attendeeIds: Array.isArray(clase?.attendeeIds)
-                                    ? clase.attendeeIds.filter(Boolean)
-                                    : []
-                            })) : []
-                        };
-                        normalizedMonth.classes = this.mergeDuplicateClasses(normalizedMonth.classes);
-                        return normalizedMonth;
-                    });
-                },
-
-                mergeDuplicateClasses(classes) {
-                    if (!Array.isArray(classes)) return [];
-                    const map = new Map();
-                    classes.forEach(clase => {
-                        const dateKey = (clase?.date || '').toString().trim().toLowerCase();
-                        const idKey = (clase?.id || '').toString().trim();
-                        const key = idKey !== '' ? ('id:' + idKey) : ('date:' + dateKey);
-                        if (!map.has(key)) {
-                            map.set(key, {
-                                id: idKey,
-                                date: clase?.date || '',
-                                dayOfWeek: clase?.dayOfWeek || 'Clase',
-                                open: !!clase?.open,
-                                attendees: Array.isArray(clase?.attendees) ? [...new Set(clase.attendees.filter(Boolean))] : [],
-                                attendeeIds: Array.isArray(clase?.attendeeIds) ? [...new Set(clase.attendeeIds.filter(Boolean))] : []
-                            });
-                            return;
-                        }
-                        const current = map.get(key);
-                        const merged = {
-                            id: current.id || idKey,
-                            date: current.date || clase?.date || '',
-                            dayOfWeek: current.dayOfWeek !== 'Clase' ? current.dayOfWeek : (clase?.dayOfWeek || 'Clase'),
-                            open: current.open || !!clase?.open,
-                            attendees: [...new Set([...(current.attendees || []), ...((Array.isArray(clase?.attendees) ? clase.attendees : []).filter(Boolean))])],
-                            attendeeIds: [...new Set([...(current.attendeeIds || []), ...((Array.isArray(clase?.attendeeIds) ? clase.attendeeIds : []).filter(Boolean))])]
-                        };
-                        map.set(key, merged);
-                    });
-                    return Array.from(map.values());
-                },
-
-                createId() {
-                    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-                        return window.crypto.randomUUID();
-                    }
-                    return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-                },
-
-                async saveSettingsToDB() {
-                    if (!this.user) return false;
-                    const payload = {
-                        user_id: this.user.id,
-                        revenue: this.revenue,
-                        history_data: this.historyData,
-                        last_billed: this.lastBilled
-                    };
-
-                    const { data: updatedRows, error: updateError } = await this.supabase
-                        .from('tkd_settings')
-                        .update(payload)
-                        .eq('user_id', this.user.id)
-                        .select('user_id');
-                    
-                    let error = updateError;
-                    if (!error && (!updatedRows || updatedRows.length === 0)) {
-                        const { error: insertError } = await this.supabase.from('tkd_settings').insert(payload);
-                        error = insertError;
-                    }
-                    
-                    if (error) {
-                        console.error(error);
-                        this.showToast('Error al guardar en Supabase');
-                        return false;
-                    }
-                    return true;
-                },
-
-                showToast(msg) {
-                    this.toastMsg = msg;
-                    setTimeout(() => { this.toastMsg = ''; }, 3500);
-                },
-
-                // --- MOTOR DE MESES ---
-                async checkNewMonthBilling() {
-                    if (this.billingInProgress) return;
-                    this.billingInProgress = true;
-                    const today = new Date();
-                    const currentMonthKey = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0');
-
-                    try {
-                        if (this.lastBilled !== currentMonthKey && this.students.length > 0) {
-                            const previousDebts = new Map(this.students.map(s => [s.id, Number(s.debt || 0)]));
-                            const previousLastBilled = this.lastBilled;
-                            for (let s of this.students) {
-                                s.debt = Number(s.debt) + Number(s.tuition);
-                                await this.supabase.from('tkd_students').update({ debt: s.debt }).eq('id', s.id);
-                            }
-                            this.lastBilled = currentMonthKey;
-                            const saved = await this.saveSettingsToDB();
-                            if (!saved) {
-                                this.students = this.students.map(s => ({ ...s, debt: previousDebts.get(s.id) ?? s.debt }));
-                                this.lastBilled = previousLastBilled;
-                                return;
-                            }
-                            this.showToast('Nuevo mes: cuotas agregadas a la deuda');
-                        } else if (!this.lastBilled) {
-                            this.lastBilled = currentMonthKey;
-                            const saved = await this.saveSettingsToDB();
-                            if (!saved) this.lastBilled = null;
-                        }
-                    } finally {
-                        this.billingInProgress = false;
-                    }
-                },
-
-                // --- PAGOS MENSUALES ---
-                async quickPay(student) {
-                    const previousDebt = Number(student.debt || 0);
-                    const previousRevenue = Number(this.revenue || 0);
-                    this.revenue = previousRevenue + previousDebt;
-                    student.debt = 0;
-                    if (this.user) {
-                        const { error } = await this.supabase.from('tkd_students').update({ debt: 0 }).eq('id', student.id);
-                        if (error) {
-                            this.revenue = previousRevenue;
-                            student.debt = previousDebt;
-                            this.showToast('Error al actualizar deuda');
-                            return;
-                        }
-                        const saved = await this.saveSettingsToDB();
-                        if (!saved) {
-                            this.revenue = previousRevenue;
-                            student.debt = previousDebt;
-                            return;
-                        }
-                    }
-                    this.showToast('Cobro registrado en caja');
-                },
-                
-                async processPaymentConfirmed() {
-                    if(this.activeStudent) {
-                        const previousDebt = Number(this.activeStudent.debt || 0);
-                        const previousRevenue = Number(this.revenue || 0);
-                        this.revenue = previousRevenue + previousDebt;
-                        this.activeStudent.debt = 0;
-                        const index = this.students.findIndex(s => s.id === this.activeStudent.id);
-                        if(index !== -1) this.students[index] = { ...this.activeStudent };
-                        
-                        if (this.user) {
-                            const { error } = await this.supabase.from('tkd_students').update({ debt: 0 }).eq('id', this.activeStudent.id);
-                            if (error) {
-                                this.revenue = previousRevenue;
-                                this.activeStudent.debt = previousDebt;
-                                if(index !== -1) this.students[index] = { ...this.activeStudent };
-                                this.showToast('Error al actualizar deuda');
-                                return;
-                            }
-                            const saved = await this.saveSettingsToDB();
-                            if (!saved) {
-                                this.revenue = previousRevenue;
-                                this.activeStudent.debt = previousDebt;
-                                if(index !== -1) this.students[index] = { ...this.activeStudent };
-                                return;
-                            }
-                        }
-                        this.showToast('Pago guardado correctamente');
-                    }
-                },
-
-                async resetCaja() {
-                    const previousRevenue = Number(this.revenue || 0);
-                    this.revenue = 0;
-                    this.confirmReset = false;
-                    const saved = await this.saveSettingsToDB();
-                    if (!saved) {
-                        this.revenue = previousRevenue;
-                        return;
-                    }
-                    this.showToast('Caja reiniciada a cero');
-                },
-
-                // --- PERFIL Y CRUD ---
-                openStudentProfile(student) {
-                    this.activeStudent = { ...student };
-                    this.showProfileModal = true;
-                },
-                closeProfileModal() {
-                    this.showProfileModal = false;
-                    this.activeStudent = null;
-                },
-
-                openEditModal(student = null) {
-                    this.showProfileModal = false;
-                    if (student) {
-                        this.isEditing = true;
-                        this.form = { ...student };
-                    } else {
-                        this.isEditing = false;
-                        this.form = { id: this.createId(), name: '', dob: '', rank: 'Blanco', tuition: 12500, debt: 12500, phone: '', location: '', exam_paid: false, exam_paid_amount: 0 };
-                    }
-                    setTimeout(() => { this.showEditModal = true; }, 100);
-                },
-                closeEditModal() { 
-                    this.showEditModal = false; 
-                },
-
-                async saveStudent() {
-                    if (!this.form.name) {
-                        this.showToast("El nombre es obligatorio");
-                        return;
-                    }
-                    
-                    this.form.debt = Number(this.form.debt);
-                    this.form.tuition = Number(this.form.tuition);
-                    this.form.exam_paid_amount = Number(this.form.exam_paid_amount || 0);
-
-                    if (this.user) {
-                        const dbPayload = {
-                            id: this.form.id,
-                            user_id: this.user.id,
-                            name: this.form.name,
-                            dob: this.form.dob || null,
-                            rank: this.form.rank,
-                            tuition: this.form.tuition,
-                            debt: this.form.debt,
-                            phone: this.form.phone,
-                            location: this.form.location,
-                            exam_paid: this.form.exam_paid || false,
-                            exam_paid_amount: this.form.exam_paid_amount
-                        };
-                        let { error } = await this.supabase.from('tkd_students').upsert(dbPayload);
-                        if (error && String(error.message || '').toLowerCase().includes('exam_paid_amount')) {
-                            const fallbackPayload = { ...dbPayload };
-                            delete fallbackPayload.exam_paid_amount;
-                            const retry = await this.supabase.from('tkd_students').upsert(fallbackPayload);
-                            error = retry.error;
-                        }
-                        if (error) { this.showToast("Error guardando en BD"); return; }
-                    }
-
-                    if (this.isEditing) {
-                        const index = this.students.findIndex(s => s.id === this.form.id);
-                        if (index !== -1) this.students[index] = { ...this.form };
-                        this.showToast('Cambios guardados');
-                    } else {
-                        this.students.push({ ...this.form });
-                        this.showToast('Alumno registrado');
-                    }
-                    
-                    this.closeEditModal();
-                },
-
-                async deleteStudentConfirmed() {
-                    if(this.activeStudent) {
-                        if (this.user) {
-                            await this.supabase.from('tkd_students').delete().eq('id', this.activeStudent.id);
-                        }
-                        this.students = this.students.filter(s => s.id !== this.activeStudent.id);
-                        this.closeProfileModal();
-                        this.showToast('Alumno eliminado con éxito');
-                    }
-                },
-
-                // --- ASISTENCIA INTELIGENTE ---
-                getLocalISODate() {
-                    const dateObj = new Date();
-                    const tzOffset = dateObj.getTimezoneOffset() * 60000;
-                    return (new Date(dateObj - tzOffset)).toISOString().split('T')[0];
-                },
-
-                hasAttendanceToday() {
-                    const localISOTime = this.getLocalISODate();
-                    return this.historyData.some(month =>
-                        Array.isArray(month.classes) && month.classes.some(c => c.id === localISOTime)
-                    );
-                },
-
-                async clearTodayAttendance() {
-                    const localISOTime = this.getLocalISODate();
-                    this.historyData = this.historyData.map(month => ({
-                        ...month,
-                        classes: Array.isArray(month.classes) ? month.classes.filter(c => c.id !== localISOTime) : []
-                    }));
-                    this.historyData = this.historyData.filter(month => Array.isArray(month.classes) && month.classes.length > 0);
-                    const saved = await this.saveSettingsToDB();
-                    if (!saved) return;
-                    this.attendanceBuffer = [];
-                    this.showToast('Asistencia de hoy eliminada');
-                },
-
-                getAttendeeIds(clase) {
-                    if (!clase) return [];
-                    if (Array.isArray(clase.attendeeIds) && clase.attendeeIds.length > 0) {
-                        return clase.attendeeIds;
-                    }
-                    // Compatibilidad con historial antiguo guardado por nombres.
-                    const attendeeNames = Array.isArray(clase.attendees) ? clase.attendees : [];
-                    return this.students
-                        .filter(s => attendeeNames.includes(s.name))
-                        .map(s => s.id);
-                },
-
-                getClassAttendeeNames(clase) {
-                    if (!clase) return [];
-                    const names = Array.isArray(clase.attendees) ? clase.attendees.filter(Boolean) : [];
-                    if (names.length > 0) return names;
-                    const ids = Array.isArray(clase.attendeeIds) ? clase.attendeeIds : [];
-                    if (ids.length === 0) return [];
-                    const byId = new Map(this.students.map(s => [s.id, s.name]));
-                    return ids.map(id => byId.get(id) || ('Alumno eliminado (' + String(id).slice(0, 8) + ')'));
-                },
-
-                get studentsForAttendance() {
-                    const localISOTime = this.getLocalISODate();
-                    
-                    let todaysAttendeeIds = [];
-                    this.historyData.forEach(month => {
-                        if (!Array.isArray(month.classes)) return;
-                        const todaysClass = month.classes.find(c => c.id === localISOTime);
-                        if (!todaysClass) return;
-                        const ids = this.getAttendeeIds(todaysClass);
-                        const names = this.getClassAttendeeNames(todaysClass);
-                        // Solo bloquear alumnos si la clase de hoy tiene asistentes reales.
-                        if (ids.length > 0 || names.length > 0) {
-                            todaysAttendeeIds.push(...ids);
-                        }
-                    });
-                    
-                    return this.students.filter(s => !todaysAttendeeIds.includes(s.id));
-                },
-
-                toggleBuffer(id) {
-                    if (this.attendanceBuffer.includes(id)) {
-                        this.attendanceBuffer = this.attendanceBuffer.filter(sid => sid !== id);
-                    } else {
-                        this.attendanceBuffer.push(id);
-                    }
-                },
-
-                async saveAttendance() {
-                    if (this.attendanceBuffer.length === 0) return;
-
-                    const dateObj = new Date();
-                    const localISOTime = this.getLocalISODate();
-                    
-                    const monthName = dateObj.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-                    const displayDate = dateObj.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
-                    const dayOfWeek = dateObj.toLocaleDateString('es-AR', { weekday: 'long' }); 
-                    
-                    const selectedStudents = this.students.filter(s => this.attendanceBuffer.includes(s.id));
-                    const names = selectedStudents.map(s => s.name);
-                    const ids = selectedStudents.map(s => s.id);
-
-                    let monthGroup = this.historyData.find(m => m.name.toLowerCase() === monthName.toLowerCase());
-                    if (!monthGroup) {
-                        monthGroup = { id: this.createId(), name: monthName, open: true, classes: [] };
-                        this.historyData.unshift(monthGroup);
-                    }
-                    monthGroup.open = true;
-                    monthGroup.classes = this.mergeDuplicateClasses(monthGroup.classes);
-                    
-                    let todaysClass = monthGroup.classes.find(c => c.id === localISOTime || c.date === displayDate);
-                    if (todaysClass) {
-                        todaysClass.id = localISOTime; // actualiza a un ID seguro
-                        todaysClass.open = true;
-                        names.forEach(n => {
-                            if (!todaysClass.attendees.includes(n)) todaysClass.attendees.push(n);
-                        });
-                        if (!Array.isArray(todaysClass.attendeeIds)) todaysClass.attendeeIds = [];
-                        ids.forEach(id => {
-                            if (!todaysClass.attendeeIds.includes(id)) todaysClass.attendeeIds.push(id);
-                        });
-                    } else {
-                        monthGroup.classes.unshift({
-                            id: localISOTime,
-                            date: displayDate,
-                            dayOfWeek: dayOfWeek,
-                            open: true,
-                            attendees: names,
-                            attendeeIds: ids
-                        });
-                    }
-                    monthGroup.classes = this.mergeDuplicateClasses(monthGroup.classes);
-                    
-                    // Forzar reactividad profunda en Alpine.js
-                    this.historyData = JSON.parse(JSON.stringify(this.historyData));
-                    const saved = await this.saveSettingsToDB();
-                    if (!saved) return;
-                    this.attendanceBuffer = [];
-                    this.showToast('Asistencia guardada con éxito');
-                    this.view = 'history';
-                },
-
-                // --- PAGOS DE EXAMEN (CUSTOM UI MODAL) ---
-                get examList() {
-                    return this.students.map(student => ({
-                        id: student.id,
-                        name: student.name,
-                        current: student.rank,
-                        next: this.getNextRank(student.rank),
-                        exam_paid: !!student.exam_paid
-                    }));
-                },
-
-                generateExamList() {
-                    this.students = [...this.students];
-                    this.showToast('Lista de examen actualizada');
-                },
-
-                openExamPayment(student) {
-                    if (!student) return;
-                    this.examPaymentStudent = student;
-                    this.examPaymentAmount = 15000;
-                    this.showExamModal = true;
-                },
-
-                async confirmExamPayment() {
-                    if (!this.examPaymentStudent) return;
-                    const amount = Number(this.examPaymentAmount) || 0;
-                    if (amount <= 0) {
-                        this.showToast('Ingresa un monto valido');
-                        return;
-                    }
-                    const previousRevenue = Number(this.revenue || 0);
-                    const previousPaid = !!this.examPaymentStudent.exam_paid;
-                    const previousPaidAmount = Number(this.examPaymentStudent.exam_paid_amount || 0);
-                    this.revenue = previousRevenue + amount;
-                    this.examPaymentStudent.exam_paid = true;
-                    this.examPaymentStudent.exam_paid_amount = amount;
-                    
-                    if (this.user) {
-                        let { error } = await this.supabase
-                            .from('tkd_students')
-                            .update({ exam_paid: true, exam_paid_amount: amount })
-                            .eq('id', this.examPaymentStudent.id);
-                        if (error && String(error.message || '').toLowerCase().includes('exam_paid_amount')) {
-                            const retry = await this.supabase
-                                .from('tkd_students')
-                                .update({ exam_paid: true })
-                                .eq('id', this.examPaymentStudent.id);
-                            error = retry.error;
-                        }
-                        if (error) {
-                            this.revenue = previousRevenue;
-                            this.examPaymentStudent.exam_paid = previousPaid;
-                            this.examPaymentStudent.exam_paid_amount = previousPaidAmount;
-                            this.showToast('Error al registrar pago de examen');
-                            return;
-                        }
-                        const saved = await this.saveSettingsToDB();
-                        if (!saved) {
-                            this.revenue = previousRevenue;
-                            this.examPaymentStudent.exam_paid = previousPaid;
-                            this.examPaymentStudent.exam_paid_amount = previousPaidAmount;
-                            return;
-                        }
-                    }
-
-                    this.students = [...this.students];
-                    this.showExamModal = false;
-                    this.showToast('Pago de examen registrado exitosamente');
-                },
-
-                async cancelExamPay(student) {
-                    if (!student) return;
-                    const paidAmount = Number(student.exam_paid_amount);
-                    const discount = paidAmount > 0 ? paidAmount : 15000;
-                    const previousRevenue = Number(this.revenue || 0);
-                    const previousPaid = !!student.exam_paid;
-                    const previousPaidAmount = Number(student.exam_paid_amount || 0);
-                    student.exam_paid = false;
-                    student.exam_paid_amount = 0;
-                    this.revenue = Math.max(0, previousRevenue - discount);
-                    if (this.user) {
-                        let { error } = await this.supabase
-                            .from('tkd_students')
-                            .update({ exam_paid: false, exam_paid_amount: 0 })
-                            .eq('id', student.id);
-                        if (error && String(error.message || '').toLowerCase().includes('exam_paid_amount')) {
-                            const retry = await this.supabase
-                                .from('tkd_students')
-                                .update({ exam_paid: false })
-                                .eq('id', student.id);
-                            error = retry.error;
-                        }
-                        if (error) {
-                            this.revenue = previousRevenue;
-                            student.exam_paid = previousPaid;
-                            student.exam_paid_amount = previousPaidAmount;
-                            this.showToast('Error al anular pago de examen');
-                            return;
-                        }
-                        const saved = await this.saveSettingsToDB();
-                        if (!saved) {
-                            this.revenue = previousRevenue;
-                            student.exam_paid = previousPaid;
-                            student.exam_paid_amount = previousPaidAmount;
-                            return;
-                        }
-                    }
-                    this.students = [...this.students];
-                    this.showToast('Pago anulado y descontado de caja');
-                },
-
-                // --- UTILIDADES ---
-                get filteredStudents() {
-                    if (this.search === '') return this.students;
-                    return this.students.filter(s => s.name.toLowerCase().includes(this.search.toLowerCase()));
-                },
-
-                getUpcomingExamDate() {
-                    const today = new Date();
-                    let year = today.getFullYear();
-                    let examDate = new Date(year, 3, 10); // 10 de abril
-                    if (today > examDate) {
-                        year += 1;
-                        examDate = new Date(year, 3, 10);
-                    }
-                    return examDate;
-                },
-
-                formatExamDate(date) {
-                    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '-';
-                    return date.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-                },
-
-                getPageTitle() {
-                    const map = { 'dashboard': 'General', 'students': 'Alumnos', 'attendance': 'Tomar Lista', 'history': 'Historial', 'exams': 'Examen' };
-                    return map[this.view];
-                },
-                getPageSubtitle() {
-                    if (this.view === 'attendance') return 'Selecciona a los presentes';
-                    if (this.view === 'students') return 'Toca un alumno para ver su perfil';
-                    return new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
-                },
-
-                calculateAge(dob) {
-                    if(!dob) return '-';
-                    const diff = Date.now() - new Date(dob).getTime();
-                    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
-                },
-
-                countSaturdays(targetDate) {
-                    let count = 0; let current = new Date();
-                    while (current <= targetDate) {
-                        if (current.getDay() === 6) count++;
-                        current.setDate(current.getDate() + 1);
-                    }
-                    return count;
-                },
-
-                getNextRank(rank) {
-                    const idx = this.ranks.indexOf(rank);
-                    return (idx !== -1 && idx < this.ranks.length - 1) ? this.ranks[idx+1] : 'Dan (Máximo)';
-                },
-
-                formatMoney(amount) { 
-                    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(amount || 0); 
-                },
-
-                getCardStyle(rank) {
-                    if (!rank) return 'card-Blanco';
-                    let isAvz = rank.includes('Avz');
-                    
-                    if (rank.includes('Blanco')) return 'card-Blanco';
-                    if (rank.includes('Amarillo')) return isAvz ? 'card-Amarillo-Avz' : 'card-Amarillo';
-                    if (rank.includes('Azul')) return isAvz ? 'card-Azul-Avz' : 'card-Azul';
-                    if (rank.includes('Rojo')) return isAvz ? 'card-Rojo-Avz' : 'card-Rojo';
-                    if (rank.includes('Negro')) return 'card-Negro';
-                    
-                    return 'card-Blanco';
-                }
-            }));
-        });
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js').catch(() => {});
-            });
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
-

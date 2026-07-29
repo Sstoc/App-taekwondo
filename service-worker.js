@@ -1,17 +1,33 @@
-const CACHE_NAME = 'cmk-pwa-v5';
+const CACHE_NAME = 'cmk-pwa-v10';
 
 const APP_SHELL = [
   './',
   './index.html',
   './Administraci%C3%B3n%20CMK.html',
   './manifest.json',
-  './logo%20chang%20moo%20kwan.jpeg',
-  './favicon.svg'
+  './icon-padded.png',
+  './favicon.svg',
+  './styles.css',
+  './app.js'
+];
+
+const CDN_ASSETS = [
+  'https://cdn.tailwindcss.com',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  'https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js',
+  'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await cache.addAll(APP_SHELL);
+      // CDNs se cachean individualmente para no bloquear la instalación si alguno falla
+      for (const url of CDN_ASSETS) {
+        try { await cache.add(url); } catch (e) { console.warn('No se pudo cachear CDN:', url); }
+      }
+    })
   );
   self.skipWaiting();
 });
@@ -61,7 +77,7 @@ self.addEventListener('fetch', (event) => {
 
       return fetch(event.request)
         .then((response) => {
-          if (isSameOrigin && response && response.ok) {
+          if ((isSameOrigin || CDN_ASSETS.some(cdn => event.request.url.startsWith(cdn))) && response && response.ok) {
             const cloned = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
           }
