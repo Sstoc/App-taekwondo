@@ -25,9 +25,12 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="text-slate-800 h-[100dvh] overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+<body class="text-slate-800 h-[100dvh] overflow-hidden selection:bg-indigo-100 selection:text-indigo-700 relative">
 
-    <div x-data="tkdApp()" x-init="init()" class="h-full min-h-0 flex flex-col md:flex-row">
+    <!-- Canvas de Fondo Líquido Acelerado por GPU -->
+    <canvas id="bg-canvas" class="fixed inset-0 pointer-events-none opacity-70 dark:opacity-50 transition-opacity duration-700 z-0"></canvas>
+
+    <div x-data="tkdApp()" x-init="init()" class="h-full min-h-0 flex flex-col md:flex-row relative z-10">
 
         <!-- LOGIN -->
         <div x-show="!user" x-cloak class="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -116,7 +119,7 @@
 
         <!-- MAIN CONTENT -->
         <main class="flex-1 flex min-h-0 flex-col h-full relative">
-            <div class="flex-1 min-h-0 overflow-y-auto scroll-smooth relative">
+            <div class="flex-1 min-h-0 overflow-y-auto relative">
                 
                 <!-- HEADER MOBILE -->
                 <header class="md:hidden glass sticky top-0 z-30 px-4 py-3 transition-all flex justify-between items-center border-b border-white/20 dark:border-white/10">
@@ -225,7 +228,7 @@
                             </h3>
                             <div class="space-y-3">
                                 <template x-for="student in students.filter(s => !s.archived)" :key="student.id">
-                                    <div class="glass p-3 rounded-xl flex items-center justify-between floating-card">
+                                    <div class="card-item p-3 rounded-xl flex items-center justify-between floating-card">
                                         
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border"
@@ -284,27 +287,29 @@
                             <i class="fa-solid fa-search absolute left-5 top-5 text-slate-400"></i>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <template x-for="student in filteredStudents" :key="student.id">
-                                <div @click="openStudentProfile(student)" 
-                                     class="rounded-2xl p-5 relative overflow-hidden floating-card cursor-pointer flex justify-between items-center transition-all duration-300"
-                                     :class="getCardStyle(student.rank)">
-                                    
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg border-2 bg-white/80 border-black/10 text-slate-800">
-                                            <span x-text="student.name.substring(0,2)"></span>
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-lg leading-tight" :class="student.rank.includes('Negro') ? 'text-white' : 'text-slate-800'" x-text="student.name"></h4>
-                                            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide opacity-80 mt-1">
-                                                <span x-text="student.rank"></span>
+                        <div class="glass rounded-3xl p-3 md:p-5 shadow-xl border border-white/50">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <template x-for="student in filteredStudents" :key="student.id">
+                                    <div @click="openStudentProfile(student)" 
+                                         class="rounded-2xl p-4 cursor-pointer flex justify-between items-center transition-colors duration-150 hover:brightness-105"
+                                         :class="getCardStyle(student.rank)">
+                                        
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base border bg-white/80 border-black/10 text-slate-800">
+                                                <span x-text="student.name.substring(0,2)"></span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-base leading-tight" :class="student.rank.includes('Negro') ? 'text-white' : 'text-slate-800'" x-text="student.name"></h4>
+                                                <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide opacity-80 mt-1">
+                                                    <span x-text="student.rank"></span>
+                                                </div>
                                             </div>
                                         </div>
+                                        <i class="fa-solid fa-chevron-right opacity-40 text-lg"></i>
                                     </div>
-                                    <i class="fa-solid fa-chevron-right opacity-40 text-xl"></i>
-                                </div>
-                            </template>
-                            <div x-show="filteredStudents.length === 0" class="text-center text-slate-400 py-10 col-span-full">
+                                </template>
+                            </div>
+                            <div x-show="filteredStudents.length === 0" class="text-center text-slate-400 py-10">
                                 No se encontraron alumnos.
                             </div>
                         </div>
@@ -318,7 +323,7 @@
                             <template x-for="student in studentsForAttendance" :key="student.id">
                                 <div @click="toggleBuffer(student.id)" 
                                      class="rounded-xl p-4 border cursor-pointer flex items-center gap-4 transition-all duration-200 select-none floating-card"
-                                     :class="attendanceBuffer.includes(student.id) ? 'bg-green-400/20 border-green-400/50 text-green-900' : 'glass text-slate-700'">
+                                     :class="attendanceBuffer.includes(student.id) ? 'bg-green-400/20 border-green-400/50 text-green-900' : 'card-item text-slate-700'">
                                     
                                     <div class="w-6 h-6 rounded-md border flex items-center justify-center transition-colors"
                                          :class="attendanceBuffer.includes(student.id) ? 'bg-green-500 border-green-500' : 'border-slate-300 bg-slate-50'">
@@ -332,12 +337,12 @@
                             </template>
                         </div>
                         
-                        <div x-show="students.length > 0 && studentsForAttendance.length === 0" class="text-center py-10 glass rounded-2xl mt-4">
+                        <div x-show="students.length > 0 && studentsForAttendance.length === 0" class="text-center py-10 card-item rounded-2xl mt-4">
                             <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-2"></i>
                             <p class="font-bold text-slate-800">Asistencia completa</p>
                             <p class="text-sm text-slate-500">Todos los alumnos ya tienen asistencia registrada hoy.</p>
                         </div>
-                        <div x-show="students.length === 0" class="text-center py-10 glass rounded-2xl mt-4 text-slate-500">
+                        <div x-show="students.length === 0" class="text-center py-10 card-item rounded-2xl mt-4 text-slate-500">
                             Aún no tenés alumnos para tomar asistencia.
                         </div>
                     </div>
@@ -345,7 +350,7 @@
                     <!-- ===== HISTORY ===== -->
                     <div x-show="view === 'history'" class="page-enter space-y-4" x-cloak>
                         <template x-for="month in historyData" :key="month.id">
-                            <div class="glass rounded-2xl overflow-hidden">
+                            <div class="card-item rounded-2xl overflow-hidden">
                                 <button @click="month.open = !month.open" class="w-full flex items-center justify-between p-5 hover:bg-white/20 transition border-b border-white/20">
                                     <div class="flex items-center gap-3">
                                         <i class="fa-regular fa-calendar text-indigo-500"></i>
@@ -417,7 +422,7 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <template x-for="item in examList" :key="item.id">
-                                <div class="glass p-4 rounded-2xl floating-card space-y-3">
+                                <div class="card-item p-4 rounded-2xl floating-card space-y-3">
                                     <div class="flex items-center justify-between gap-3">
                                         <p class="font-bold text-slate-800 truncate" x-text="item.name"></p>
                                         <template x-if="item.exam_paid">
@@ -479,11 +484,11 @@
 
         <!-- ===== MODAL: PERFIL ALUMNO ===== -->
         <div x-show="showProfileModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md" @click="closeProfileModal()" x-transition.opacity></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="closeProfileModal()" x-transition.opacity></div>
             <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[80vh] md:max-h-[88vh]">
                 
                 <div class="h-32 relative shrink-0" :class="activeStudent ? getCardStyle(activeStudent.rank) : 'bg-slate-200'">
-                    <button @click="closeProfileModal()" class="absolute top-4 right-4 bg-black/20 text-white hover:bg-black/40 w-8 h-8 rounded-full flex items-center justify-center transition backdrop-blur-sm"><i class="fa-solid fa-xmark"></i></button>
+                    <button @click="closeProfileModal()" class="absolute top-4 right-4 bg-black/20 text-white hover:bg-black/40 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 
                 <div class="px-6 relative -mt-12 flex-1 overflow-y-auto pb-6">
@@ -519,7 +524,7 @@
                         </a>
                     </div>
 
-                    <div x-show="activeStudent && getUnpaidMonths(activeStudent.id).length > 0" class="bg-red-500/10 backdrop-blur-sm p-4 rounded-2xl border border-red-300/30 mb-6">
+                    <div x-show="activeStudent && getUnpaidMonths(activeStudent.id).length > 0" class="bg-red-500/10 p-4 rounded-2xl border border-red-300/30 mb-6">
                         <div class="flex justify-between items-center mb-3">
                             <div>
                                 <p class="text-red-500 font-bold text-xs uppercase">Deuda pendiente</p>
@@ -547,26 +552,26 @@
                             <i class="fa-brands fa-whatsapp text-lg"></i> Recordar por WhatsApp
                         </a>
                     </div>
-                    <div x-show="activeStudent && getUnpaidMonths(activeStudent?.id).length === 0" class="bg-green-500/10 backdrop-blur-sm p-4 rounded-2xl border border-green-300/30 flex items-center gap-2 mb-6 text-green-700">
+                    <div x-show="activeStudent && getUnpaidMonths(activeStudent?.id).length === 0" class="bg-green-500/10 p-4 rounded-2xl border border-green-300/30 flex items-center gap-2 mb-6 text-green-700">
                         <i class="fa-solid fa-circle-check"></i>
                         <span class="font-bold text-sm">Cuota al día</span>
                     </div>
 
                     <!-- Botón de Archivar / Desarchivar -->
                     <button @click="toggleArchiveStudent(activeStudent)" 
-                            :class="activeStudent?.archived ? 'bg-amber-500/10 text-amber-700 border-amber-300/30 hover:bg-amber-500/20' : 'bg-white/30 text-slate-700 border-white/30 hover:bg-white/50'"
-                            class="w-full py-3 mb-3 border rounded-xl font-bold flex items-center justify-center gap-2 transition text-sm backdrop-blur-sm">
+                            :class="activeStudent?.archived ? 'bg-amber-500/10 text-amber-700 border-amber-300/30 hover:bg-amber-500/20' : 'bg-white/40 text-slate-700 border-white/40 hover:bg-white/60'"
+                            class="w-full py-3 mb-3 border rounded-xl font-bold flex items-center justify-center gap-2 transition text-sm">
                         <i :class="activeStudent?.archived ? 'fa-solid fa-box-open' : 'fa-solid fa-box-archive'"></i>
                         <span x-text="activeStudent?.archived ? 'Desarchivar Alumno' : 'Archivar Alumno'"></span>
                     </button>
 
                     <div class="grid grid-cols-2 gap-3 mb-6">
-                        <button @click="openEditModal(activeStudent)" class="py-3 bg-indigo-500/15 text-indigo-700 border border-indigo-300/30 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-500/25 transition backdrop-blur-sm">
+                        <button @click="openEditModal(activeStudent)" class="py-3 bg-indigo-500/15 text-indigo-700 border border-indigo-300/30 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-500/25 transition">
                             <i class="fa-solid fa-pen"></i> Editar Info
                         </button>
                         
                         <div x-data="{ confDelete: false }" class="relative w-full">
-                            <button x-show="!confDelete" @click="confDelete = true" class="w-full py-3 bg-red-500/10 text-red-600 border border-red-300/30 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-500/20 transition backdrop-blur-sm">
+                            <button x-show="!confDelete" @click="confDelete = true" class="w-full py-3 bg-red-500/10 text-red-600 border border-red-300/30 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-500/20 transition">
                                 <i class="fa-solid fa-trash"></i> Eliminar
                             </button>
                             <div x-show="confDelete" class="absolute inset-0 bg-red-500 rounded-xl flex items-center justify-center gap-2 overflow-hidden shadow-lg shadow-red-200">
@@ -581,7 +586,7 @@
 
         <!-- ===== MODAL: EDITAR/NUEVO ALUMNO ===== -->
         <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md" @click="closeEditModal()" x-transition.opacity></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="closeEditModal()" x-transition.opacity></div>
             <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[80vh] md:max-h-[88vh]">
                 <div class="px-6 py-4 border-b border-white/20 flex justify-between items-center shrink-0">
                     <h3 class="text-lg font-extrabold text-slate-800" x-text="isEditing ? 'Editar Alumno' : 'Nuevo Alumno'"></h3>
@@ -590,32 +595,32 @@
                 <div class="p-6 space-y-4 flex-1 overflow-y-auto">
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase">Nombre Completo</label>
-                        <input type="text" x-model="form.name" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
+                        <input type="text" x-model="form.name" class="w-full p-3 bg-white/60 border border-white/60 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="text-xs font-bold text-slate-500 uppercase">DNI</label>
-                            <input type="text" x-model="form.dni" placeholder="12345678" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 font-mono backdrop-blur-sm">
+                            <input type="text" x-model="form.dni" placeholder="12345678" class="w-full p-3 bg-white/60 border border-white/60 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white font-mono">
                         </div>
                         <div>
                              <label class="text-xs font-bold text-slate-500 uppercase">F. Nacimiento</label>
-                            <input type="date" x-model="form.dob" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
+                            <input type="date" x-model="form.dob" class="w-full p-3 bg-white/60 border border-white/60 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="text-xs font-bold text-slate-500 uppercase">Teléfono</label>
-                            <input type="tel" x-model="form.phone" placeholder="549..." class="w-full p-3 bg-white/40 border border-white/40 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
+                            <input type="tel" x-model="form.phone" placeholder="549..." class="w-full p-3 bg-white/60 border border-white/60 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white">
                         </div>
                         <div>
                             <label class="text-xs font-bold text-slate-500 uppercase">Dirección</label>
-                            <input type="text" x-model="form.location" placeholder="Calle 123" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
+                            <input type="text" x-model="form.location" placeholder="Calle 123" class="w-full p-3 bg-white/60 border border-white/60 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/20">
                         <div>
                             <label class="text-xs font-bold text-slate-500 uppercase">Cinturón</label>
-                            <select x-model="form.rank" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 backdrop-blur-sm">
+                            <select x-model="form.rank" class="w-full p-3 bg-white/60 border border-white/60 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400">
                                 <template x-for="rank in ranks" :key="rank">
                                     <option :value="rank" x-text="rank"></option>
                                 </template>
@@ -623,11 +628,11 @@
                         </div>
                          <div>
                             <label class="text-xs font-bold text-slate-500 uppercase">Cuota Mensual ($)</label>
-                            <input type="number" x-model="form.tuition" class="w-full p-3 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 backdrop-blur-sm">
+                            <input type="number" x-model="form.tuition" class="w-full p-3 bg-white/60 border border-white/60 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white">
                         </div>
                     </div>
                     <!-- Toggle cuota fija -->
-                    <div class="flex items-center justify-between bg-amber-500/10 border border-amber-300/30 rounded-xl px-4 py-3 backdrop-blur-sm">
+                    <div class="flex items-center justify-between bg-amber-500/10 border border-amber-300/30 rounded-xl px-4 py-3">
                         <div>
                             <p class="text-sm font-bold text-amber-800">Cuota Fija</p>
                             <p class="text-[10px] text-amber-600">Activar para alumnos con precio especial</p>
@@ -639,7 +644,7 @@
                     </div>
                     <div class="pt-2">
                         <label class="text-xs font-bold text-red-500 uppercase">Ajustar Deuda Actual ($)</label>
-                        <input type="number" x-model="form.debt" class="w-full p-3 bg-red-500/10 border border-red-300/30 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-400 text-red-700 backdrop-blur-sm">
+                        <input type="number" x-model="form.debt" class="w-full p-3 bg-red-500/10 border border-red-300/30 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-400 text-red-700">
                     </div>
                     <button @click="saveStudent()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-600 transition mt-2">
                         <span x-text="isEditing ? 'Guardar Cambios' : 'Registrar Alumno'"></span>
@@ -650,9 +655,9 @@
 
         <!-- ===== MODAL: PAGO DE EXAMEN ===== -->
         <div x-show="showExamModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md" @click="showExamModal = false" x-transition.opacity></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showExamModal = false" x-transition.opacity></div>
             <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-6 text-center max-h-[85vh] overflow-y-auto">
-                <div class="w-16 h-16 bg-indigo-500/15 text-indigo-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 backdrop-blur-sm">
+                <div class="w-16 h-16 bg-indigo-500/15 text-indigo-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
                     <i class="fa-solid fa-file-invoice-dollar"></i>
                 </div>
                 <h3 class="text-xl font-extrabold text-slate-800">Pago de Examen</h3>
@@ -660,11 +665,11 @@
 
                 <div class="mt-6 text-left">
                     <label class="text-xs font-bold text-slate-500 uppercase">Monto a cobrar ($)</label>
-                    <input type="number" x-model="examPaymentAmount" class="w-full p-4 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/60 mt-2 text-xl text-center text-slate-800 backdrop-blur-sm">
+                    <input type="number" x-model="examPaymentAmount" class="w-full p-4 bg-white/60 border border-white/60 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white mt-2 text-xl text-center text-slate-800">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mt-6">
-                    <button @click="showExamModal = false" class="py-3 bg-white/30 text-slate-600 border border-white/30 rounded-xl font-bold hover:bg-white/50 transition backdrop-blur-sm">Cancelar</button>
+                    <button @click="showExamModal = false" class="py-3 bg-white/40 text-slate-600 border border-white/40 rounded-xl font-bold hover:bg-white/60 transition">Cancelar</button>
                     <button @click="confirmExamPayment()" class="py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">Confirmar</button>
                 </div>
             </div>
@@ -672,30 +677,30 @@
 
         <!-- ===== MODAL: COBRO MENSUAL (NUEVO) ===== -->
         <div x-show="showPaymentModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md" @click="showPaymentModal = false" x-transition.opacity></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showPaymentModal = false" x-transition.opacity></div>
             <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-6 text-center max-h-[85vh] overflow-y-auto">
-                <div class="w-16 h-16 bg-green-500/15 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 backdrop-blur-sm">
+                <div class="w-16 h-16 bg-green-500/15 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
                     <i class="fa-solid fa-money-bill-wave"></i>
                 </div>
                 <h3 class="text-xl font-extrabold text-slate-800">Registrar Cobro</h3>
                 <p class="text-slate-500 text-sm mt-1">Alumno: <span class="font-bold text-slate-700" x-text="paymentStudent?.name"></span></p>
                 
-                <div class="mt-4 bg-red-500/10 border border-red-300/30 rounded-xl p-3 backdrop-blur-sm">
+                <div class="mt-4 bg-red-500/10 border border-red-300/30 rounded-xl p-3">
                     <p class="text-xs font-bold text-red-500 uppercase">Deuda actual</p>
                     <p class="text-2xl font-black text-red-800" x-text="formatMoney(calcStudentDebt(paymentStudent?.id))"></p>
                 </div>
 
-                <div x-show="paymentStudent && !paymentStudent.cuota_fija" class="mt-3 text-[11px] text-slate-500 bg-white/30 rounded-lg px-3 py-2 border border-white/30 backdrop-blur-sm">
+                <div x-show="paymentStudent && !paymentStudent.cuota_fija" class="mt-3 text-[11px] text-slate-500 bg-white/40 rounded-lg px-3 py-2 border border-white/40">
                     <span class="font-bold" x-text="getCurrentTierLabel()"></span>: cuota de <span class="font-bold text-slate-700" x-text="formatMoney(getCurrentTierAmount(paymentStudent))"></span>
                 </div>
 
                 <div class="mt-4 text-left">
                     <label class="text-xs font-bold text-slate-500 uppercase">Monto a cobrar ($)</label>
-                    <input type="number" x-model="paymentAmount" class="w-full p-4 bg-white/40 border border-white/40 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-400 focus:bg-white/60 mt-2 text-xl text-center text-slate-800 backdrop-blur-sm">
+                    <input type="number" x-model="paymentAmount" class="w-full p-4 bg-white/60 border border-white/60 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-400 focus:bg-white mt-2 text-xl text-center text-slate-800">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mt-6">
-                    <button @click="showPaymentModal = false" class="py-3 bg-white/30 text-slate-600 border border-white/30 rounded-xl font-bold hover:bg-white/50 transition backdrop-blur-sm">Cancelar</button>
+                    <button @click="showPaymentModal = false" class="py-3 bg-white/40 text-slate-600 border border-white/40 rounded-xl font-bold hover:bg-white/60 transition">Cancelar</button>
                     <button @click="confirmPayment()" class="py-3 bg-green-600 text-white rounded-xl font-bold shadow-lg hover:bg-green-700 transition">Confirmar</button>
                 </div>
             </div>
@@ -703,7 +708,7 @@
 
         <!-- ===== MODAL: CONFIGURACIÓN DE CUOTAS (NUEVO) ===== -->
         <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showSettingsModal = false" x-transition.opacity></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showSettingsModal = false" x-transition.opacity></div>
             <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-8 md:pb-6 max-h-[85vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gear text-slate-400"></i> Ajustes de Cuotas</h3>

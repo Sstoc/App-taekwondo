@@ -1328,3 +1328,88 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js').catch(() => {});
     });
 }
+
+// ===================================
+// LIQUID GLASS CANVAS SHADER (PERFECT VSYNC & HIDPI)
+// ===================================
+(function initLiquidCanvas() {
+    function startCanvas() {
+        const canvas = document.getElementById('bg-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d', { alpha: true });
+        if (!ctx) return;
+
+        let width = 0, height = 0, dpr = 1;
+
+        function resize() {
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = Math.floor(width * dpr);
+            canvas.height = Math.floor(height * dpr);
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        window.addEventListener('resize', resize, { passive: true });
+        resize();
+
+        let lastTime = performance.now();
+        let t = 0;
+
+        function render(now) {
+            const dt = Math.min((now - lastTime) / 1000, 0.05);
+            lastTime = now;
+            t += dt * 0.18; // Delta-time continuo perfecto
+
+            ctx.clearRect(0, 0, width, height);
+
+            const isDark = document.documentElement.classList.contains('dark');
+
+            const r1 = Math.max(width, height) * 0.45;
+            const r2 = Math.max(width, height) * 0.40;
+            const r3 = Math.max(width, height) * 0.35;
+
+            const x1 = width * 0.3 + Math.sin(t * 0.7) * (width * 0.15);
+            const y1 = height * 0.3 + Math.cos(t * 0.5) * (height * 0.15);
+
+            const x2 = width * 0.7 + Math.cos(t * 0.6) * (width * 0.15);
+            const y2 = height * 0.7 + Math.sin(t * 0.8) * (height * 0.15);
+
+            const x3 = width * 0.5 + Math.sin(t * 1.0) * (width * 0.1);
+            const y3 = height * 0.5 + Math.cos(t * 0.4) * (height * 0.1);
+
+            // Esfera 1 (Indigo)
+            const g1 = ctx.createRadialGradient(x1, y1, 10, x1, y1, r1);
+            g1.addColorStop(0, isDark ? 'rgba(79, 70, 229, 0.35)' : 'rgba(129, 140, 248, 0.40)');
+            g1.addColorStop(1, 'rgba(129, 140, 248, 0)');
+            ctx.fillStyle = g1;
+            ctx.beginPath(); ctx.arc(x1, y1, r1, 0, Math.PI * 2); ctx.fill();
+
+            // Esfera 2 (Púrpura)
+            const g2 = ctx.createRadialGradient(x2, y2, 10, x2, y2, r2);
+            g2.addColorStop(0, isDark ? 'rgba(124, 58, 237, 0.30)' : 'rgba(192, 132, 252, 0.38)');
+            g2.addColorStop(1, 'rgba(192, 132, 252, 0)');
+            ctx.fillStyle = g2;
+            ctx.beginPath(); ctx.arc(x2, y2, r2, 0, Math.PI * 2); ctx.fill();
+
+            // Esfera 3 (Celeste)
+            const g3 = ctx.createRadialGradient(x3, y3, 10, x3, y3, r3);
+            g3.addColorStop(0, isDark ? 'rgba(14, 165, 233, 0.25)' : 'rgba(56, 189, 248, 0.35)');
+            g3.addColorStop(1, 'rgba(56, 189, 248, 0)');
+            ctx.fillStyle = g3;
+            ctx.beginPath(); ctx.arc(x3, y3, r3, 0, Math.PI * 2); ctx.fill();
+
+            requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startCanvas);
+    } else {
+        startCanvas();
+    }
+})();

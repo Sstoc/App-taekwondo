@@ -12,54 +12,54 @@ body {
     -webkit-tap-highlight-color: transparent;
     min-height: 100dvh;
     transition: background 0.5s ease, color 0.3s ease;
-    /* Gradiente suave pastel que "alimenta" el cristal */
+    /* Gradiente suave pastel optimizado sin repintado continuo */
     background: linear-gradient(135deg,
         #e8eeff 0%,
         #f3eeff 25%,
         #eef3ff 50%,
         #f5eeff 75%,
         #e8f0ff 100%);
-    background-size: 300% 300%;
-    animation: liquidBg 20s ease infinite;
 }
 
-@keyframes liquidBg {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* --- Clases de Vidrio (Liquid Glass) --- */
+/* --- Clases de Vidrio (Liquid Glass - Vidrio Esmerilado) --- */
 .glass {
-    background: rgba(255, 255, 255, 0.60);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.50);
+    background: rgba(255, 255, 255, 0.62);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
     box-shadow: 0 8px 32px rgba(99, 102, 241, 0.08), inset 0 1px 0 rgba(255,255,255,0.70);
+    transform: translateZ(0);
+    isolation: isolate;
 }
 
 .glass-heavy {
-    background: rgba(255, 255, 255, 0.82);
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    box-shadow: 0 24px 64px rgba(99, 102, 241, 0.12), inset 0 1px 0 rgba(255,255,255,0.80);
+    background: rgba(255, 255, 255, 0.80);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    box-shadow: 0 20px 48px rgba(99, 102, 241, 0.12), inset 0 1px 0 rgba(255,255,255,0.80);
+    transform: translateZ(0);
+    isolation: isolate;
 }
 
 .glass-dark-surface {
-    background: rgba(15, 23, 55, 0.60);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(15, 23, 55, 0.62);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.30);
+    transform: translateZ(0);
+    isolation: isolate;
 }
 
 .glass-indigo {
     background: linear-gradient(135deg, rgba(79, 70, 229, 0.85) 0%, rgba(124, 58, 237, 0.85) 100%);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.30);
-    box-shadow: 0 12px 36px rgba(79, 70, 229, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.40);
+    box-shadow: 0 12px 36px rgba(79, 70, 229, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.40);
+    transform: translateZ(0);
+    isolation: isolate;
 }
 
 .glass-cloud-header {
@@ -68,36 +68,46 @@ body {
         rgba(255, 255, 255, 0.75) 45%, 
         rgba(255, 255, 255, 0.30) 80%, 
         rgba(255, 255, 255, 0) 100%);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    transform: translateZ(0);
+    isolation: isolate;
 }
 
-/* --- Animaciones --- */
-.page-enter { animation: fadeSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
-@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+/* Tarjeta optimizada para elementos de lista con Scroll Ultra Fluido (0% lag) */
+.card-item {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.05);
+    transform: translateZ(0);
+}
 
-.modal-enter { animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+/* --- Animaciones de Apertura y Transición Ultra Fluida --- */
+.page-enter { animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+.modal-enter { animation: modalIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 @media (max-width: 767px) {
     .modal-enter { animation: bottomSheetIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
     @keyframes bottomSheetIn { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
 }
 
-@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.92) translateY(24px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-.toast-enter { animation: toastIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.toast-enter { animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 @keyframes toastIn { from { opacity: 0; transform: translateY(20px) translateX(-50%); } to { opacity: 1; transform: translateY(0) translateX(-50%); } }
 
 /* --- Floating Card --- */
 .floating-card {
-    transition: transform .2s ease, box-shadow .2s ease, background-color .3s ease;
-    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.06);
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.05);
 }
 .floating-card:active { transform: scale(0.98); }
 @media (hover: hover) {
     .floating-card:hover {
-        box-shadow: 0 8px 28px rgba(99, 102, 241, 0.13);
-        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.10);
+        transform: translateY(-1px);
     }
 }
 
@@ -108,27 +118,28 @@ body {
     left: 16px;
     right: 16px;
     border-radius: 9999px;
-    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.22), 0 8px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.75);
+    box-shadow: 0 16px 40px rgba(99, 102, 241, 0.18), 0 6px 18px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.75);
+    transform: translateZ(0);
 }
 
-/* --- Estilos Temáticos de Cinturones --- */
-.card-Blanco     { background: rgba(255,255,255,0.70); border-left: 6px solid #cbd5e1; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8); }
-.card-Amarillo   { background: rgba(254,252,232,0.72); border-left: 6px solid #facc15; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 4px 20px rgba(250,204,21,0.10), inset 0 1px 0 rgba(255,255,255,0.7); }
-.card-Azul       { background: rgba(239,246,255,0.72); border-left: 6px solid #60a5fa; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 4px 20px rgba(96,165,250,0.10), inset 0 1px 0 rgba(255,255,255,0.7); }
-.card-Rojo       { background: rgba(254,242,242,0.72); border-left: 6px solid #f87171; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 4px 20px rgba(248,113,113,0.10), inset 0 1px 0 rgba(255,255,255,0.7); }
-.card-Amarillo-Avz { background: rgba(254,240,138,0.72); border-left: 8px solid #ca8a04; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 4px 20px rgba(202,138,4,0.12), inset 0 1px 0 rgba(255,255,255,0.7); }
-.card-Azul-Avz   { background: rgba(219,234,254,0.72); border-left: 8px solid #2563eb; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 4px 20px rgba(37,99,235,0.12), inset 0 1px 0 rgba(255,255,255,0.7); }
-.card-Rojo-Avz   { background: rgba(254,226,226,0.72); border-left: 8px solid #dc2626; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 4px 20px rgba(220,38,38,0.12), inset 0 1px 0 rgba(255,255,255,0.7); }
-.card-Negro      { background: rgba(15,23,42,0.82); border-left: 6px solid #334155; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05); color: white; }
+/* --- Estilos Temáticos de Cinturones (Acelerados para Scroll Ultra Fluido) --- */
+.card-Blanco     { background: rgba(255,255,255,0.92); border-left: 6px solid #cbd5e1; box-shadow: 0 4px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transform: translateZ(0); }
+.card-Amarillo   { background: rgba(254,252,232,0.92); border-left: 6px solid #facc15; box-shadow: 0 4px 16px rgba(250,204,21,0.08), inset 0 1px 0 rgba(255,255,255,0.9); transform: translateZ(0); }
+.card-Azul       { background: rgba(239,246,255,0.92); border-left: 6px solid #60a5fa; box-shadow: 0 4px 16px rgba(96,165,250,0.08), inset 0 1px 0 rgba(255,255,255,0.9); transform: translateZ(0); }
+.card-Rojo       { background: rgba(254,242,242,0.92); border-left: 6px solid #f87171; box-shadow: 0 4px 16px rgba(248,113,113,0.08), inset 0 1px 0 rgba(255,255,255,0.9); transform: translateZ(0); }
+.card-Amarillo-Avz { background: rgba(254,240,138,0.92); border-left: 8px solid #ca8a04; box-shadow: 0 4px 16px rgba(202,138,4,0.10), inset 0 1px 0 rgba(255,255,255,0.9); transform: translateZ(0); }
+.card-Azul-Avz   { background: rgba(219,234,254,0.92); border-left: 8px solid #2563eb; box-shadow: 0 4px 16px rgba(37,99,235,0.10), inset 0 1px 0 rgba(255,255,255,0.9); transform: translateZ(0); }
+.card-Rojo-Avz   { background: rgba(254,226,226,0.92); border-left: 8px solid #dc2626; box-shadow: 0 4px 16px rgba(220,38,38,0.10), inset 0 1px 0 rgba(255,255,255,0.9); transform: translateZ(0); }
+.card-Negro      { background: rgba(15,23,42,0.95); border-left: 6px solid #334155; box-shadow: 0 4px 16px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.05); color: white; transform: translateZ(0); }
 
 /* --- Scrollbar personalizado --- */
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.5); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 10px; }
 
-/* --- Transiciones suaves globales --- */
-button, input, select { transition: all 0.2s ease; }
-input:focus, select:focus { transform: scale(1.01); }
+/* --- Transiciones suaves globales enfocadas --- */
+button, input, select { transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease; }
+input:focus, select:focus { transform: translateY(-1px); }
 
 /* --- Barra de gráfico animada --- */
 .chart-bar {
@@ -144,15 +155,13 @@ input:focus, select:focus { transform: scale(1.01); }
    DARK MODE
    =================================== */
 html.dark body {
-    /* Fondo navy profundo con gradiente sutil */
+    /* Fondo navy profundo con gradiente sutil optimizado */
     background: linear-gradient(135deg,
         #080d1a 0%,
         #0d1229 25%,
         #080e1c 50%,
         #0b1022 75%,
         #06091a 100%);
-    background-size: 300% 300%;
-    animation: liquidBgDark 20s ease infinite;
     color: #e2e8f0;
 }
 
@@ -182,6 +191,7 @@ html.dark .nav-pill {
 /* Backgrounds principales */
 html.dark .bg-white { background-color: rgba(20, 30, 60, 0.55) !important; }
 html.dark .floating-card { background-color: rgba(20, 30, 60, 0.55) !important; }
+html.dark .card-item { background-color: rgba(20, 30, 60, 0.70) !important; border-color: rgba(255,255,255,0.08) !important; }
 
 html.dark .bg-slate-50 { background-color: rgba(10, 15, 35, 0.6) !important; }
 html.dark .bg-\[\#f8fafc\] { background-color: transparent !important; }
@@ -258,5 +268,89 @@ html.dark .floating-card {
 @media (hover: hover) {
     html.dark .floating-card:hover {
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    }
+}
+
+/* ===================================
+   MODO OPTIMIZADO DESKTOP (PC)
+   (Animaciones sencillas + Fondo fijo elegante no blanco)
+   =================================== */
+@media (min-width: 768px) {
+    /* 1. Ocultar canvas animado en PC para 0% uso de GPU/CPU */
+    #bg-canvas {
+        display: none !important;
+    }
+
+    /* 2. Fondo fijo suave con matiz pastel elegante (NO es blanco puro) */
+    body {
+        background: linear-gradient(135deg, #eef2ff 0%, #f1f5f9 50%, #e8eeff 100%) fixed !important;
+    }
+    html.dark body {
+        background: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #0d1222 100%) fixed !important;
+    }
+
+    /* 3. Tarjetas y Paneles en PC (Limpios, elegantes y sin desenfoque pesado) */
+    .glass, .glass-heavy, .glass-dark-surface, .glass-indigo, .glass-cloud-header, .card-Blanco, .card-Amarillo, .card-Azul, .card-Rojo, .card-Amarillo-Avz, .card-Azul-Avz, .card-Rojo-Avz, .card-Negro {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    .glass {
+        background: rgba(255, 255, 255, 0.94) !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.04) !important;
+    }
+    html.dark .glass {
+        background: rgba(21, 29, 48, 0.94) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .glass-heavy {
+        background: rgba(255, 255, 255, 0.97) !important;
+        border: 1px solid rgba(203, 213, 225, 0.9) !important;
+        box-shadow: 0 12px 32px rgba(99, 102, 241, 0.08) !important;
+    }
+    html.dark .glass-heavy {
+        background: rgba(17, 24, 39, 0.97) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .glass-indigo {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+        border: 1px solid #4338ca !important;
+    }
+
+    /* 4. Animaciones sencillas, rápidas y fluidas en PC */
+    .page-enter {
+        animation: simpleFadeIn 0.18s ease-out forwards !important;
+    }
+    .modal-enter {
+        animation: simpleModalPop 0.20s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    }
+    .toast-enter {
+        animation: simpleToastIn 0.18s ease-out forwards !important;
+    }
+
+    @keyframes simpleFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes simpleModalPop {
+        from { opacity: 0; transform: scale(0.96) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes simpleToastIn {
+        from { opacity: 0; transform: translateY(10px) translateX(-50%); }
+        to { opacity: 1; transform: translateY(0) translateX(-50%); }
+    }
+
+    /* 5. Transiciones suaves de hover en botones e tarjetas */
+    button, input, select, .floating-card {
+        transition: transform 0.12s ease, background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease !important;
+    }
+    .floating-card:hover {
+        transform: translateY(-2px) !important;
     }
 }
