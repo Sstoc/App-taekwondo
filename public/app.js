@@ -85,7 +85,7 @@ function tkdApp() {
         studentProfileForm: { name: '', rank: '', dni: '', phone: '', dob: '', location: '' },
         showInstallBanner: false,
         deferredPrompt: null,
-        isPWAInstalled: window.matchMedia('(display-mode: standalone)').matches || (window.navigator && window.navigator.standalone === true) || localStorage.getItem('cmk-pwa-installed') === 'true',
+        isPWAInstalled: window.matchMedia('(display-mode: standalone)').matches || (window.navigator && window.navigator.standalone === true),
         studentSchedules: [
             { day: 'Lunes', time: '18:00 - 19:30', location: 'Dojo Principal' },
             { day: 'Miércoles', time: '18:00 - 19:30', location: 'Dojo Principal' },
@@ -164,6 +164,14 @@ function tkdApp() {
                     this.showInstallBanner = false;
                     this.deferredPrompt = null;
                 });
+
+                if (!this.isPWAInstalled) {
+                    setTimeout(() => {
+                        if (!this.isPWAInstalled && !sessionStorage.getItem('cmk-dismiss-pwa')) {
+                            this.showInstallBanner = true;
+                        }
+                    }, 1200);
+                }
 
                 // Aplicar tema guardado
                 this.themeMode = localStorage.getItem('cmk-theme') || 'dark';
