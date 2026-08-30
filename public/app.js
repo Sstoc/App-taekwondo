@@ -28,7 +28,9 @@ function tkdApp() {
                       this.showPaymentModal || 
                       this.showSettingsModal || 
                       this.showStudentProfileModal || 
-                      this.showMercadoPagoModal);
+                      this.showStudentMenuModal ||
+                      this.showMercadoPagoModal ||
+                      this.showInstallHelpModal);
         },
         
         // Auth & Supabase
@@ -50,6 +52,7 @@ function tkdApp() {
         showEditModal: false,
         isEditing: false,
         activeStudent: null,
+        showStudentMenuModal: false,
         
         // Modal Examen
         showExamModal: false,
@@ -533,8 +536,10 @@ function tkdApp() {
             }
         },
 
+        showInstallHelpModal: false,
+
         async installPWA() {
-            const promptEvent = this.deferredPrompt || globalDeferredPrompt;
+            const promptEvent = this.deferredPrompt || globalDeferredPrompt || window.deferredInstallPrompt;
             if (promptEvent) {
                 try {
                     promptEvent.prompt();
@@ -542,20 +547,17 @@ function tkdApp() {
                     if (choiceResult && choiceResult.outcome === 'accepted') {
                         this.isPWAInstalled = true;
                         this.showInstallBanner = false;
-                        this.showToast('¡Instalación de la app completada!');
+                        this.showToast('¡Instalando Taekwondo CMK!');
                     }
                     this.deferredPrompt = null;
                     globalDeferredPrompt = null;
+                    window.deferredInstallPrompt = null;
                 } catch (err) {
                     console.warn("PWA prompt error:", err);
+                    this.showInstallHelpModal = true;
                 }
             } else {
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                if (isIOS) {
-                    this.showToast('En iPhone: Tocá Compartir (cuadrado con flecha) y luego "Agregar a inicio"');
-                } else {
-                    this.showToast('Para instalar: Tocá los 3 puntos del navegador y seleccioná "Instalar aplicación"');
-                }
+                this.showInstallHelpModal = true;
             }
         },
 

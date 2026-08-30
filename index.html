@@ -12,6 +12,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Taekwondo - CMK">
     
+    <script>
+        window.deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            window.deferredInstallPrompt = e;
+            if (window.tkdAppInstance) {
+                window.tkdAppInstance.deferredPrompt = e;
+                window.tkdAppInstance.showInstallBanner = true;
+            }
+        });
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -659,17 +671,25 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- Botón 3 Rayitas / Configuración (Móvil) -->
+                    <button @click="showStudentMenuModal = true" 
+                            class="md:hidden w-10 h-10 rounded-2xl glass border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition shadow-sm" 
+                            title="Opciones y Configuración">
+                        <i class="fa-solid fa-bars text-lg text-indigo-600 dark:text-indigo-400"></i>
+                    </button>
+
+                    <!-- Botones rápidos Desktop -->
                     <!-- Botón Instalar App (PWA - Solo visible si no está instalada) -->
                     <button x-show="!isPWAInstalled" 
                             @click="installPWA()" 
-                            class="w-9 h-9 rounded-xl glass border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition shadow-sm" 
+                            class="hidden md:flex w-9 h-9 rounded-xl glass border border-slate-200 dark:border-white/10 items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition shadow-sm" 
                             title="Instalar App en el Teléfono">
                         <i class="fa-solid fa-download text-indigo-500"></i>
                     </button>
 
                     <!-- Selector de Tema (Claro / Oscuro) -->
                     <button @click="toggleTheme()" 
-                            class="w-9 h-9 rounded-xl glass border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition shadow-sm" 
+                            class="hidden md:flex w-9 h-9 rounded-xl glass border border-slate-200 dark:border-white/10 items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition shadow-sm" 
                             :title="'Cambiar tema (Actual: ' + theme + ')'">
                         <i :class="theme === 'dark' ? 'fa-solid fa-moon text-indigo-400' : (theme === 'light' ? 'fa-solid fa-sun text-amber-500' : 'fa-solid fa-desktop text-slate-500')"></i>
                     </button>
@@ -677,13 +697,13 @@
                     <!-- Botón Mis Datos Personales -->
                     <button x-show="linkedStudent" 
                             @click="openStudentSelfProfile()" 
-                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black shadow-sm hover:scale-105 active:scale-95 transition cursor-pointer" 
+                            class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black shadow-sm hover:scale-105 active:scale-95 transition cursor-pointer" 
                             :class="linkedStudent ? getCardStyle(linkedStudent.rank) : ''"
                             title="Ver y editar mis datos personales">
                         <span x-text="linkedStudent ? linkedStudent.rank : ''"></span>
                         <i class="fa-solid fa-user-pen text-[10px] opacity-70"></i>
                     </button>
-                    <button @click="signOut()" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 transition active:scale-95">
+                    <button @click="signOut()" class="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 transition active:scale-95">
                         <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Salir</span>
                     </button>
                 </div>
@@ -1602,6 +1622,106 @@
             </div>
         </div>
 
+        <!-- ===== MODAL: MENÚ DE OPCIONES DEL ALUMNO (3 RAYITAS / CONFIGURACIÓN) ===== -->
+        <div x-show="showStudentMenuModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 pt-16 pb-24 md:p-4 overflow-y-auto">
+            <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
+                 @click="showStudentMenuModal = false"
+                 x-show="showStudentMenuModal"
+                 x-transition:enter="backdrop-enter"
+                 x-transition:enter-start="backdrop-enter-start"
+                 x-transition:enter-end="backdrop-enter-end"
+                 x-transition:leave="backdrop-leave"
+                 x-transition:leave-start="backdrop-leave-start"
+                 x-transition:leave-end="backdrop-leave-end"></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden p-6 text-left max-h-[75vh] md:max-h-[85vh] my-auto overflow-y-auto"
+                 x-show="showStudentMenuModal"
+                 x-transition:enter="modal-card-enter"
+                 x-transition:enter-start="modal-card-enter-start"
+                 x-transition:enter-end="modal-card-enter-end"
+                 x-transition:leave="modal-card-leave"
+                 x-transition:leave-start="modal-card-leave-start"
+                 x-transition:leave-end="modal-card-leave-end">
+                
+                <!-- Encabezado Menú Alumno -->
+                <div class="flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 pb-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <img src="/logo.jpeg" alt="Logo" onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" class="w-10 h-10 rounded-xl object-cover shadow-md border border-slate-200 dark:border-slate-700">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white" x-text="linkedStudent ? linkedStudent.name : 'Opciones del Alumno'"></h3>
+                            <span x-show="linkedStudent" class="inline-block text-[10px] font-black px-2 py-0.5 rounded-lg border mt-0.5" :class="linkedStudent ? getCardStyle(linkedStudent.rank) : ''" x-text="linkedStudent?.rank"></span>
+                        </div>
+                    </div>
+                    <button @click="showStudentMenuModal = false" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Lista de Opciones -->
+                <div class="space-y-2.5">
+                    <!-- Opción 1: Mis Datos Personales -->
+                    <button @click="showStudentMenuModal = false; openStudentSelfProfile()" 
+                            class="w-full flex items-center justify-between p-3.5 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition text-left group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-600 flex items-center justify-center text-sm font-bold">
+                                <i class="fa-solid fa-user-gear"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-800 dark:text-white">Mis Datos Personales</p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400">Ver y editar DNI, teléfono, dirección</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-0.5 transition"></i>
+                    </button>
+
+                    <!-- Opción 2: Cambiar Tema Visual -->
+                    <button @click="toggleTheme()" 
+                            class="w-full flex items-center justify-between p-3.5 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 transition text-left group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center text-sm font-bold">
+                                <i :class="theme === 'dark' ? 'fa-solid fa-moon text-indigo-400' : 'fa-solid fa-sun text-amber-500'"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-800 dark:text-white">Tema Visual</p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400" x-text="theme === 'dark' ? 'Modo Oscuro (Tocá para cambiar)' : 'Modo Claro (Tocá para cambiar)'"></p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-200/70 dark:bg-slate-700 text-slate-700 dark:text-slate-200 uppercase" x-text="theme"></span>
+                    </button>
+
+                    <!-- Opción 3: Instalar App (PWA) -->
+                    <button x-show="!isPWAInstalled" 
+                            @click="showStudentMenuModal = false; installPWA()" 
+                            class="w-full flex items-center justify-between p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-300/30 hover:bg-indigo-500/20 transition text-left group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">
+                                <i class="fa-solid fa-download"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-indigo-700 dark:text-indigo-300">Instalar App en el Teléfono</p>
+                                <p class="text-[10px] text-indigo-500 dark:text-indigo-400">Acceso rápido en tu pantalla de inicio</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-down text-xs text-indigo-500 group-hover:translate-y-0.5 transition"></i>
+                    </button>
+
+                    <!-- Opción 4: Cerrar Sesión -->
+                    <button @click="showStudentMenuModal = false; signOut()" 
+                            class="w-full flex items-center justify-between p-3.5 rounded-2xl bg-red-500/10 border border-red-300/30 hover:bg-red-500/20 transition text-left group mt-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-red-500 text-white flex items-center justify-center text-sm font-bold">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-red-600 dark:text-red-400">Cerrar Sesión</p>
+                                <p class="text-[10px] text-red-500/80">Salir de mi cuenta de alumno</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-red-400"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- ===== MODAL: MIS DATOS PERSONALES (ALUMNO) ===== -->
         <div x-show="showStudentProfileModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 pt-16 pb-24 md:p-4 overflow-y-auto">
             <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
@@ -1696,6 +1816,50 @@
                 </button>
                 <button @click="showInstallBanner = false" class="w-7 h-7 text-slate-400 hover:text-slate-600 rounded-full flex items-center justify-center transition">
                     <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: GUÍA DE INSTALACIÓN PWA ===== -->
+        <div x-show="showInstallHelpModal" x-cloak class="fixed inset-0 z-[250] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-heavy rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center modal-enter relative">
+                <button @click="showInstallHelpModal = false" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 hover:bg-slate-300 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div class="w-16 h-16 bg-indigo-500/15 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
+
+                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white">Instalar Taekwondo CMK</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Para tener la app en tu pantalla de inicio:</p>
+
+                <div class="mt-4 text-left space-y-3">
+                    <!-- Instrucción Android -->
+                    <div class="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 space-y-1">
+                        <p class="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                            <i class="fa-brands fa-android"></i> En Android (Chrome / Brave):
+                        </p>
+                        <p class="text-[11px] text-slate-600 dark:text-slate-300">
+                            1. Tocá los <strong>3 puntitos</strong> (arriba a la derecha del navegador).<br>
+                            2. Seleccioná <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Instrucción iPhone -->
+                    <div class="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 space-y-1">
+                        <p class="text-xs font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
+                            <i class="fa-brands fa-apple"></i> En iPhone / iPad (Safari):
+                        </p>
+                        <p class="text-[11px] text-slate-600 dark:text-slate-300">
+                            1. Tocá el botón <strong>Compartir</strong> (cuadrado con flecha hacia arriba).<br>
+                            2. Seleccioná <strong>"Agregar a pantalla de inicio"</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <button @click="showInstallHelpModal = false" class="w-full py-3.5 mt-5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-lg transition active:scale-95">
+                    Entendido
                 </button>
             </div>
         </div>
