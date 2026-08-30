@@ -4,7 +4,7 @@
 
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || 'APP_USR-2016510188747825-083012-74eb27bde427365b0267e93f06601159-1169129348';
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',

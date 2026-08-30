@@ -841,9 +841,13 @@ function tkdApp() {
                 if (res.ok) {
                     const data = await res.json();
                     if (data?.init_point) {
-                        window.location.href = data.init_point;
+                        this.showToast('🥋 Redirigiendo a Mercado Pago...');
+                        window.location.assign(data.init_point);
                         return;
                     }
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    console.error("Netlify Function Error:", res.status, errData);
                 }
 
                 if (this.supabase?.functions) {
@@ -856,13 +860,15 @@ function tkdApp() {
                         }
                     });
                     if (!error && data?.init_point) {
-                        window.location.href = data.init_point;
+                        this.showToast('🥋 Redirigiendo a Mercado Pago...');
+                        window.location.assign(data.init_point);
                         return;
                     }
                 }
 
-                throw new Error('Fallback al modal');
+                this.showMercadoPagoModal = true;
             } catch (err) {
+                console.error("Payment error:", err);
                 this.showMercadoPagoModal = true;
             } finally {
                 this.mpLoading = false;
