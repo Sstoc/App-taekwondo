@@ -266,12 +266,19 @@ function tkdApp() {
 
                 if (paymentId && !localStorage.getItem('cmk-processed-mp-' + paymentId)) {
                     // Verificación OBLIGATORIA y estricta en el servidor con la API oficial de Mercado Pago
-                    try {
-                        const verifyRes = await fetch('/.netlify/functions/verify-payment', {
+                        let verifyRes = await fetch('/api/verify-payment', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ payment_id: paymentId })
-                        });
+                        }).catch(() => null);
+
+                        if (!verifyRes || !verifyRes.ok) {
+                            verifyRes = await fetch('/.netlify/functions/verify-payment', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ payment_id: paymentId })
+                            });
+                        }
 
                         if (verifyRes.ok) {
                             const verifyData = await verifyRes.json();
@@ -858,28 +865,38 @@ function tkdApp() {
             this.showPartialPayModal = false;
             this.mpLoading = true;
             try {
-                const res = await fetch('/.netlify/functions/create-preference', {
+                const reqPayload = {
+                    student_id: this.linkedStudent.id,
+                    student_name: this.linkedStudent.name,
+                    amount: this.mpPaymentAmount,
+                    type: type,
+                    origin_url: window.location.origin
+                };
+
+                let res = await fetch('/api/create-preference', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        student_id: this.linkedStudent.id,
-                        student_name: this.linkedStudent.name,
-                        amount: this.mpPaymentAmount,
-                        type: type,
-                        origin_url: window.location.origin
-                    })
-                });
+                    body: JSON.stringify(reqPayload)
+                }).catch(() => null);
 
-                if (res.ok) {
+                if (!res || !res.ok) {
+                    res = await fetch('/.netlify/functions/create-preference', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(reqPayload)
+                    }).catch(() => null);
+                }
+
+                if (res && res.ok) {
                     const data = await res.json();
                     if (data?.init_point) {
                         this.showToast('🥋 Redirigiendo a Mercado Pago...');
                         window.location.assign(data.init_point);
                         return;
                     }
-                } else {
+                } else if (res) {
                     const errData = await res.json().catch(() => ({}));
-                    console.error("Netlify Function Error:", res.status, errData);
+                    console.error("Function Error:", res.status, errData);
                 }
 
                 if (this.supabase?.functions) {
