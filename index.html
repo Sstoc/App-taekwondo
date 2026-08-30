@@ -11,19 +11,19 @@
     <meta name="apple-mobile-web-app-title" content="Taekwondo CMK">
     <meta name="application-name" content="Taekwondo CMK">
     <meta name="msapplication-TileColor" content="#0f172a">
-    <meta name="msapplication-TileImage" content="/icon-192.png">
+    <meta name="msapplication-TileImage" content="icon-192.png">
 
     <!-- Icons oficiales -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-    <link rel="icon" type="image/jpeg" href="/logo.jpeg">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="icon" type="image/jpeg" href="logo.jpeg">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
 
     <!-- Web App Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     
     <script>
         window.deferredInstallPrompt = null;
@@ -45,7 +45,7 @@
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/app.js"></script>
+    <script src="app.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
@@ -70,7 +70,7 @@
              x-transition:leave-end="opacity-0 scale-95"
              class="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center justify-center p-6 select-none">
             <div class="relative flex flex-col items-center">
-                <img src="/logo.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" class="w-24 h-24 rounded-3xl object-cover shadow-2xl mb-6 border border-white/10">
+                <img src="logo.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='logo.jpeg';" class="w-24 h-24 rounded-3xl object-cover shadow-2xl mb-6 border border-white/10">
                 <h1 class="text-2xl font-black text-white tracking-wider mb-1">CHANG MOO KWAN</h1>
                 <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-8">Sistema Oficial de Gestión</p>
                 
@@ -84,13 +84,13 @@
         <div x-show="!user" x-cloak class="fixed inset-0 z-[200] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
             <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden modal-enter">
                 <div class="p-8 bg-slate-900 text-white text-center">
-                    <img src="/logo.jpeg" alt="Chang Moo Kwan" onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" class="w-24 h-24 rounded-2xl mx-auto object-cover shadow-lg mb-4 border border-white/20">
+                    <img src="logo.jpeg" alt="Chang Moo Kwan" onerror="this.onerror=null;this.src='logo.jpeg';" class="w-24 h-24 rounded-2xl mx-auto object-cover shadow-lg mb-4 border border-white/20">
                     <h2 class="text-2xl font-extrabold" x-text="authMode === 'reset' ? 'Recuperar Clave' : 'Taekwondo'"></h2>
                     <p class="text-sm text-slate-300 mt-1" x-text="authMode === 'reset' ? 'Restablecimiento Seguro' : 'CHANG MOO KWAN'"></p>
                 </div>
 
                 <!-- Formulario Iniciar Sesión / Registro -->
-                <div x-show="authMode !== 'reset'" class="p-8 space-y-5">
+                <form @submit.prevent="signIn()" x-show="authMode !== 'reset'" class="p-8 space-y-5">
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Email</label>
                         <input type="email" x-model="authEmail" placeholder="tu-email@ejemplo.com" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
@@ -109,13 +109,13 @@
                     <p x-show="authError" x-text="authError" class="text-sm font-bold text-red-500 text-center bg-red-50 border border-red-200 py-3 px-2 rounded-xl"></p>
                     
                     <div class="grid grid-cols-2 gap-3 pt-2">
-                        <button @click="signIn()" :disabled="authLoading" class="py-4 rounded-xl bg-slate-900 text-white font-bold disabled:opacity-50 hover:bg-slate-800 transition">
+                        <button type="submit" :disabled="authLoading" class="py-4 rounded-xl bg-slate-900 text-white font-bold disabled:opacity-50 hover:bg-slate-800 transition">
                             <span x-show="!authLoading">Entrar</span>
                             <i x-show="authLoading" class="fa-solid fa-spinner fa-spin"></i>
                         </button>
-                        <button @click="signUp()" :disabled="authLoading" class="py-4 rounded-xl bg-indigo-600 text-white font-bold disabled:opacity-50 hover:bg-indigo-700 transition">Crear cuenta</button>
+                        <button type="button" @click="signUp()" :disabled="authLoading" class="py-4 rounded-xl bg-indigo-600 text-white font-bold disabled:opacity-50 hover:bg-indigo-700 transition">Crear cuenta</button>
                     </div>
-                </div>
+                </form>
 
                 <!-- Formulario Recuperar Contraseña -->
                 <div x-show="authMode === 'reset'" class="p-8 space-y-5">
@@ -180,7 +180,7 @@
         <aside class="hidden md:flex w-72 flex-col justify-between p-6 z-20 glass" x-show="user && (userRole === 'admin' || !userRole)">
             <div>
                 <div class="flex items-center gap-3 mb-10 text-indigo-700">
-                    <img src="/logo.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" class="w-10 h-10 rounded-xl object-cover shadow-lg border border-slate-200">
+                    <img src="logo.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='logo.jpeg';" class="w-10 h-10 rounded-xl object-cover shadow-lg border border-slate-200">
                     <div>
                         <h1 class="text-xl font-bold tracking-tight text-slate-900">Taekwondo</h1>
                         <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">CHANG MOO KWAN</p>
@@ -234,8 +234,8 @@
                 <!-- HEADER MOBILE -->
                 <header class="md:hidden glass sticky top-0 z-30 px-4 py-3 transition-all flex justify-between items-center border-b border-white/20 dark:border-white/10">
                     <div class="flex items-center gap-3">
-                        <img src="/logo.jpeg" alt="CMK Logo"
-                             onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" 
+                        <img src="logo.jpeg" alt="CMK Logo"
+                             onerror="this.onerror=null;this.src='logo.jpeg';" 
                              class="w-9 h-9 rounded-xl object-cover shadow-sm border border-slate-200/40">
                         <div>
                             <div class="flex items-center gap-1.5">
@@ -302,12 +302,12 @@
                             </div>
                             <div class="glass p-5 rounded-2xl floating-card relative">
                                 <div class="flex items-center justify-between">
-                                    <p class="text-xs font-bold uppercase text-green-600">Recaudado</p>
-                                    <button @click="showRevenue = !showRevenue" class="text-slate-300 hover:text-slate-600 transition w-6 h-6 flex items-center justify-center rounded-full hover:bg-slate-100">
+                                    <p class="text-xs font-bold uppercase text-green-600 dark:text-green-400">Recaudado</p>
+                                    <button @click="showRevenue = !showRevenue" class="text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-white transition w-6 h-6 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-white/10" title="Mostrar/Ocultar">
                                         <i :class="showRevenue ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" class="text-xs"></i>
                                     </button>
                                 </div>
-                                <p class="text-3xl font-black text-slate-800">
+                                <p class="text-3xl font-black text-slate-800 dark:text-white mt-1">
                                     <span x-show="showRevenue" x-text="formatMoney(getCurrentMonthRevenue())"></span>
                                     <span x-show="!showRevenue">$ ••••••</span>
                                 </p>
@@ -461,14 +461,14 @@
                     <div x-show="view === 'history'" class="page-enter space-y-4" x-cloak>
                         <!-- Selector de Sub-pestañas: Cobros vs Asistencias -->
                         <div class="flex items-center justify-between gap-4 mb-2">
-                            <div class="flex bg-slate-200/80 dark:bg-slate-800/90 rounded-2xl p-1 gap-1">
+                            <div class="flex bg-slate-200/80 dark:bg-slate-900/90 border border-slate-300/40 dark:border-white/10 rounded-2xl p-1 gap-1">
                                 <button @click="historyTab = 'payments'"
-                                        :class="historyTab === 'payments' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 font-black shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'"
+                                        :class="historyTab === 'payments' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white font-black shadow-sm border border-slate-200/60 dark:border-white/10' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-bold'"
                                         class="py-2 px-4 rounded-xl text-xs transition flex items-center gap-2">
                                     <i class="fa-solid fa-receipt"></i> Historial de Cobros
                                 </button>
                                 <button @click="historyTab = 'classes'"
-                                        :class="historyTab === 'classes' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 font-black shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'"
+                                        :class="historyTab === 'classes' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white font-black shadow-sm border border-slate-200/60 dark:border-white/10' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-bold'"
                                         class="py-2 px-4 rounded-xl text-xs transition flex items-center gap-2">
                                     <i class="fa-solid fa-clipboard-user"></i> Asistencias
                                 </button>
@@ -519,14 +519,16 @@
                         <!-- 2. SUB-VISTA: CLASES Y ASISTENCIAS -->
                         <div x-show="historyTab === 'classes'" class="space-y-4">
                             <template x-for="month in historyData" :key="month.id">
-                                <div class="card-item rounded-2xl overflow-hidden">
-                                    <button @click="month.open = !month.open" class="w-full flex items-center justify-between p-5 hover:bg-white/20 transition border-b border-white/20">
+                                <div class="card-item rounded-2xl overflow-hidden border border-slate-200/60 dark:border-white/10">
+                                    <button @click="month.open = !month.open" 
+                                            :class="month.open ? 'bg-slate-100/80 dark:bg-slate-950/70' : 'bg-transparent'"
+                                            class="w-full flex items-center justify-between p-5 hover:bg-slate-100/50 dark:hover:bg-slate-900/50 transition border-b border-slate-200/60 dark:border-white/5">
                                         <div class="flex items-center gap-3">
                                             <i class="fa-regular fa-calendar text-indigo-500"></i>
-                                            <span class="font-bold text-lg capitalize text-slate-800" x-text="month.name"></span>
+                                            <span class="font-bold text-lg capitalize text-slate-800 dark:text-white" x-text="month.name"></span>
                                         </div>
                                         <div class="flex items-center gap-3">
-                                            <span class="text-sm font-bold text-green-600" :class="showRevenue ? '' : 'text-slate-400'">
+                                            <span class="text-sm font-bold text-green-600 dark:text-green-400" :class="showRevenue ? '' : 'text-slate-400'">
                                                 <span x-show="showRevenue" x-text="formatMoney(month.revenue || 0)"></span>
                                                 <span x-show="!showRevenue">$ ••••••</span>
                                             </span>
@@ -535,10 +537,12 @@
                                     </button>
                                     
                                     <div x-show="month.open" x-collapse>
-                                        <div class="bg-slate-50/80 dark:bg-slate-950/60 divide-y divide-slate-200/60 dark:divide-slate-800/30">
+                                        <div class="bg-slate-50/90 dark:bg-slate-950/80 divide-y divide-slate-200/60 dark:divide-white/5">
                                             <template x-for="clase in month.classes" :key="clase.id || clase.date">
                                                 <div class="border-b border-slate-100 dark:border-white/5 last:border-0">
-                                                    <button @click="clase.open = !clase.open" class="w-full flex justify-between items-center p-4 hover:bg-indigo-50/50 dark:hover:bg-white/5 transition">
+                                                    <button @click="clase.open = !clase.open" 
+                                                            :class="clase.open ? 'bg-slate-200/50 dark:bg-slate-900/60' : 'hover:bg-slate-100/60 dark:hover:bg-slate-900/40'"
+                                                            class="w-full flex justify-between items-center p-4 transition">
                                                         <div class="flex items-center gap-3">
                                                             <div class="bg-slate-100 text-slate-700 border border-slate-200 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30 font-mono text-xs px-2.5 py-1 rounded-lg font-bold" x-text="clase.date"></div>
                                                             <span class="text-sm font-bold text-slate-800 dark:text-slate-200 capitalize" x-text="clase.dayOfWeek || 'Clase'"></span>
@@ -550,9 +554,9 @@
                                                     </button>
                                                     
                                                     <div x-show="clase.open" x-collapse>
-                                                        <div class="p-3 space-y-1.5 bg-slate-100/50 dark:bg-slate-950/50 pl-14 pr-4 pb-4">
+                                                        <div class="p-3 space-y-1.5 bg-slate-100/70 dark:bg-black/40 pl-14 pr-4 pb-4 border-t border-slate-200/50 dark:border-white/5">
                                                             <template x-for="name in getClassAttendeeNames(clase)" :key="name">
-                                                                <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 shadow-sm dark:shadow-none">
+                                                                <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-200 shadow-sm">
                                                                     <div class="w-2 h-2 rounded-full bg-green-500 shadow-sm shadow-green-500/50"></div>
                                                                     <span class="text-sm font-bold" x-text="name"></span>
                                                                 </div>
@@ -672,7 +676,7 @@
             <!-- Header Alumno -->
             <header class="glass px-6 py-4 flex items-center justify-between border-b border-white/20 dark:border-white/10 shrink-0">
                 <div class="flex items-center gap-3 cursor-pointer select-none" @click="linkedStudent && openStudentSelfProfile()" title="Ver y editar mis datos personales">
-                    <img src="/logo.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" class="w-10 h-10 rounded-xl object-cover shadow-lg border border-slate-200 dark:border-slate-700">
+                    <img src="logo.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='logo.jpeg';" class="w-10 h-10 rounded-xl object-cover shadow-lg border border-slate-200 dark:border-slate-700">
                     <div>
                         <p class="text-xs font-bold text-indigo-600 dark:text-indigo-400" x-text="getGreeting()"></p>
                         <div class="flex items-center gap-1.5">
@@ -1656,7 +1660,7 @@
                 <!-- Encabezado Menú Alumno -->
                 <div class="flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 pb-4 mb-4">
                     <div class="flex items-center gap-3">
-                        <img src="/logo.jpeg" alt="Logo" onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" class="w-10 h-10 rounded-xl object-cover shadow-md border border-slate-200 dark:border-slate-700">
+                        <img src="logo.jpeg" alt="Logo" onerror="this.onerror=null;this.src='logo.jpeg';" class="w-10 h-10 rounded-xl object-cover shadow-md border border-slate-200 dark:border-slate-700">
                         <div>
                             <h3 class="text-sm font-extrabold text-slate-900 dark:text-white" x-text="linkedStudent ? linkedStudent.name : 'Opciones del Alumno'"></h3>
                             <span x-show="linkedStudent" class="inline-block text-[10px] font-black px-2 py-0.5 rounded-lg border mt-0.5" :class="linkedStudent ? getCardStyle(linkedStudent.rank) : ''" x-text="linkedStudent?.rank"></span>
@@ -1815,7 +1819,7 @@
         <!-- ===== BANNER FLOTANTE DE INSTALACIÓN PWA ===== -->
         <div x-show="showInstallBanner" x-transition.duration.300ms class="fixed top-4 left-4 right-4 md:left-auto md:right-6 md:w-96 z-[120] glass-heavy p-4 rounded-3xl shadow-2xl border border-indigo-400/30 flex items-center justify-between gap-3 page-enter">
             <div class="flex items-center gap-3">
-                <img src="/logo.jpeg" alt="Logo" onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" class="w-11 h-11 rounded-2xl object-cover shadow-md border border-slate-200 dark:border-slate-700 shrink-0">
+                <img src="logo.jpeg" alt="Logo" onerror="this.onerror=null;this.src='logo.jpeg';" class="w-11 h-11 rounded-2xl object-cover shadow-md border border-slate-200 dark:border-slate-700 shrink-0">
                 <div>
                     <h4 class="text-xs font-black text-slate-900 dark:text-white">Instalar App CMK</h4>
                     <p class="text-[10px] text-slate-500 dark:text-slate-400">Accedé más rápido desde tu inicio</p>

@@ -30,6 +30,7 @@ function tkdApp() {
                       this.showStudentProfileModal || 
                       this.showStudentMenuModal ||
                       this.showMercadoPagoModal ||
+                      this.showUpdatePasswordModal ||
                       this.showInstallHelpModal);
         },
         
@@ -90,7 +91,7 @@ function tkdApp() {
         toastMsg: '',
         toastTimer: null,
         confirmReset: false,
-        showRevenue: false,
+        showRevenue: true,
         billingInProgress: false,
 
         // Tema (light / dark / system)
@@ -589,6 +590,11 @@ function tkdApp() {
                 }
 
                 await this.loadStudentPortalData(profile);
+            }
+
+            // Sugerir instalación de App si no está instalada
+            if (!this.isPWAInstalled && (this.deferredPrompt || globalDeferredPrompt || window.deferredInstallPrompt)) {
+                this.showInstallBanner = true;
             }
         },
 
@@ -1253,14 +1259,76 @@ function tkdApp() {
         getCurrentMonthRevenue() {
             try {
                 const dateObj = new Date();
-                const monthName = dateObj.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+                const currentMonthIdx = dateObj.getMonth();
+                const currentYear = dateObj.getFullYear();
+                const currentMonthName = dateObj.toLocaleDateString('es-AR', { month: 'long' }).toLowerCase();
+
+                let total = 0;
+
+                // 1. Buscar en historyData (caja por mes)
                 const historyArray = Array.isArray(this.historyData) ? this.historyData : [];
-                const monthGroup = historyArray.find(m => m && typeof m.name === 'string' && m.name.toLowerCase() === monthName.toLowerCase());
-                return monthGroup ? Number(monthGroup.revenue || 0) : 0;
+                const monthGroup = historyArray.find(m => {
+                    if (!m || typeof m.name !== 'string') return false;
+                    const nameLower = m.name.toLowerCase();
+                    return nameLower.includes(currentMonthName) || (nameLower.includes(String(currentYear)) && nameLower.includes(currentMonthName.slice(0, 4)));
+                });
+
+                if (monthGroup && typeof monthGroup.revenue === 'number' && monthGroup.revenue > 0) {
+                    total = monthGroup.revenue;
+                }
+
+                // 2. Si historyData es 0 o hay transacciones en paymentHistory del mes actual
+                if (total === 0 && Array.isArray(this.paymentHistory)) {
+                    this.paymentHistory.forEach(tx => {
+                        if (!tx) return;
+                        const txDate = tx.timestamp ? new Date(tx.timestamp) : null;
+                        if (txDate && txDate.getMonth() === currentMonthIdx && txDate.getFullYear() === currentYear) {
+                            total += Number(tx.amount || 0);
+                        } else if (tx.month && tx.month.toLowerCase().includes(currentMonthName)) {
+                            total += Number(tx.amount || 0);
+                        }
+                    });
+                }
+
+                return total;
             } catch (error) {
                 console.error("Error in getCurrentMonthRevenue:", error);
                 return 0;
             }
+        },
+
+        resetCaja() {
+            this.confirmReset = false;
+            const dateObj = new Date();
+            const currentMonthIdx = dateObj.getMonth();
+            const currentYear = dateObj.getFullYear();
+            const currentMonthName = dateObj.toLocaleDateString('es-AR', { month: 'long' }).toLowerCase();
+
+            if (Array.isArray(this.historyData)) {
+                this.historyData.forEach(m => {
+                    if (m && typeof m.name === 'string') {
+                        const nameLower = m.name.toLowerCase();
+                        if (nameLower.includes(currentMonthName) || (nameLower.includes(String(currentYear)) && nameLower.includes(currentMonthName.slice(0, 4)))) {
+                            m.revenue = 0;
+                        }
+                    }
+                });
+            }
+            if (Array.isArray(this.paymentHistory)) {
+                this.paymentHistory = this.paymentHistory.filter(tx => {
+                    if (!tx) return true;
+                    const txDate = tx.timestamp ? new Date(tx.timestamp) : null;
+                    if (txDate && txDate.getMonth() === currentMonthIdx && txDate.getFullYear() === currentYear) {
+                        return false;
+                    }
+                    if (tx.month && tx.month.toLowerCase().includes(currentMonthName)) {
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            this.saveSettingsToDB();
+            this.showToast('Caja mensual reiniciada.');
         },
 
         addMonthlyRevenue(amount) {
