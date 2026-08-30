@@ -53,6 +53,18 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Garantía estricta de Desenfoque (Chrome/Android + Safari/iOS) -->
+    <style>
+        .glass, .glass-cloud-header, .nav-pill {
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+            backdrop-filter: blur(24px) saturate(180%) !important;
+        }
+        html.dark .glass, html.dark .glass-cloud-header, html.dark .nav-pill {
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+            backdrop-filter: blur(24px) saturate(180%) !important;
+        }
+    </style>
 </head>
 
 <body class="text-slate-800 h-[100dvh] overflow-hidden selection:bg-indigo-100 selection:text-indigo-700 relative">
