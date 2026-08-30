@@ -57,23 +57,28 @@
             </div>
         </div>
 
-        <!-- LOGIN -->
-        <div x-show="!user" x-cloak class="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <!-- LOGIN & RECUPERACIÓN DE CONTRASEÑA -->
+        <div x-show="!user" x-cloak class="fixed inset-0 z-[200] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
             <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden modal-enter">
                 <div class="p-8 bg-slate-900 text-white text-center">
                     <img src="/logo.jpeg" alt="Chang Moo Kwan" onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" class="w-24 h-24 rounded-2xl mx-auto object-cover shadow-lg mb-4 border border-white/20">
-                    <h2 class="text-2xl font-extrabold">Taekwondo</h2>
-                    <p class="text-sm text-slate-300 mt-1">CHANG MOO KWAN</p>
+                    <h2 class="text-2xl font-extrabold" x-text="authMode === 'reset' ? 'Recuperar Clave' : 'Taekwondo'"></h2>
+                    <p class="text-sm text-slate-300 mt-1" x-text="authMode === 'reset' ? 'Restablecimiento Seguro' : 'CHANG MOO KWAN'"></p>
                 </div>
-                <div class="p-8 space-y-5">
+
+                <!-- Formulario Iniciar Sesión / Registro -->
+                <div x-show="authMode !== 'reset'" class="p-8 space-y-5">
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Email</label>
-                        <input type="email" x-model="authEmail" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
+                        <input type="email" x-model="authEmail" placeholder="tu-email@ejemplo.com" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Contraseña</label>
+                        <div class="flex items-center justify-between mb-1 ml-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Contraseña</label>
+                            <button type="button" @click="authMode = 'reset'; authError = ''; resetEmailSent = false" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline">¿Olvidaste tu contraseña?</button>
+                        </div>
                         <div class="relative">
-                            <input :type="showPassword ? 'text' : 'password'" x-model="authPassword" class="w-full p-4 pr-24 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
+                            <input :type="showPassword ? 'text' : 'password'" x-model="authPassword" placeholder="••••••••" class="w-full p-4 pr-24 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
                             <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg" x-text="showPassword ? 'Ocultar' : 'Ver'"></button>
                         </div>
                     </div>
@@ -88,11 +93,68 @@
                         <button @click="signUp()" :disabled="authLoading" class="py-4 rounded-xl bg-indigo-600 text-white font-bold disabled:opacity-50 hover:bg-indigo-700 transition">Crear cuenta</button>
                     </div>
                 </div>
+
+                <!-- Formulario Recuperar Contraseña -->
+                <div x-show="authMode === 'reset'" class="p-8 space-y-5">
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        Ingresá tu correo electrónico registrado y te enviaremos un enlace para que puedas definir una nueva contraseña.
+                    </p>
+
+                    <div x-show="!resetEmailSent">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Email Registrado</label>
+                        <input type="email" x-model="authEmail" placeholder="tu-email@ejemplo.com" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
+                    </div>
+
+                    <div x-show="resetEmailSent" class="p-4 bg-green-50 border border-green-200 rounded-2xl text-center space-y-2">
+                        <div class="w-10 h-10 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto text-lg">
+                            <i class="fa-solid fa-envelope-circle-check"></i>
+                        </div>
+                        <p class="text-sm font-bold text-green-800">¡Enlace enviado!</p>
+                        <p class="text-xs text-green-600">Revisá tu casilla de correo (incluyendo Spam) y hacé clic en el enlace para restablecer tu contraseña.</p>
+                    </div>
+
+                    <p x-show="authError" x-text="authError" class="text-sm font-bold text-red-500 text-center bg-red-50 border border-red-200 py-3 px-2 rounded-xl"></p>
+
+                    <div class="space-y-3 pt-2">
+                        <button x-show="!resetEmailSent" @click="sendPasswordReset()" :disabled="authLoading" class="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold disabled:opacity-50 transition shadow-lg shadow-indigo-500/25">
+                            <span x-show="!authLoading">Enviar Enlace de Recuperación</span>
+                            <i x-show="authLoading" class="fa-solid fa-spinner fa-spin"></i>
+                        </button>
+                        <button @click="authMode = 'signin'; authError = ''; resetEmailSent = false" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+                            <i class="fa-solid fa-arrow-left mr-1"></i> Volver a Iniciar Sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: ACTUALIZAR CONTRASEÑA (RECOVERY TOKEN) -->
+        <div x-show="showUpdatePasswordModal" x-cloak class="fixed inset-0 z-[250] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden modal-enter p-8 space-y-5 text-center">
+                <div class="w-16 h-16 bg-indigo-500/15 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mx-auto">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-extrabold text-slate-900">Definir Nueva Contraseña</h3>
+                    <p class="text-xs text-slate-500 mt-1">Ingresá tu nueva clave para acceder a tu cuenta:</p>
+                </div>
+                <div class="text-left">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Nueva Contraseña</label>
+                    <input type="password" x-model="newPassword" placeholder="Mínimo 6 caracteres" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
+                </div>
+                <p x-show="authError" x-text="authError" class="text-sm font-bold text-red-500 text-center bg-red-50 border border-red-200 py-3 px-2 rounded-xl"></p>
+                <div class="space-y-2">
+                    <button @click="updatePassword()" :disabled="authLoading" class="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg transition">
+                        <span x-show="!authLoading">Guardar Contraseña</span>
+                        <i x-show="authLoading" class="fa-solid fa-spinner fa-spin"></i>
+                    </button>
+                    <button @click="showUpdatePasswordModal = false" class="w-full py-2.5 text-xs text-slate-400 font-bold hover:text-slate-600">Cancelar</button>
+                </div>
             </div>
         </div>
 
         <!-- SIDEBAR DESKTOP -->
-        <aside class="hidden md:flex w-72 flex-col justify-between p-6 z-20 glass" x-show="userRole === 'admin' || !userRole">
+        <aside class="hidden md:flex w-72 flex-col justify-between p-6 z-20 glass" x-show="user && (userRole === 'admin' || !userRole)">
             <div>
                 <div class="flex items-center gap-3 mb-10 text-indigo-700">
                     <img src="/logo.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='logo chang moo kwan.jpeg';" class="w-10 h-10 rounded-xl object-cover shadow-lg border border-slate-200">
@@ -143,7 +205,7 @@
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main class="flex-1 flex min-h-0 flex-col h-full relative" x-show="userRole === 'admin' || !userRole">
+        <main class="flex-1 flex min-h-0 flex-col h-full relative" x-show="user && (userRole === 'admin' || !userRole)">
             <div class="flex-1 min-h-0 overflow-y-auto relative">
                 
                 <!-- HEADER MOBILE -->
@@ -544,7 +606,14 @@
 
             <!-- NAV MOBILE -->
             <!-- NAV MOBILE FLOTANTE (fixed, pill) -->
-            <nav class="md:hidden nav-pill glass flex justify-around py-3 px-4 z-[100]">
+            <nav x-show="user && userRole === 'admin' && !hasAnyModalOpen"
+                 x-transition:enter="transition ease-out duration-300 transform"
+                 x-transition:enter-start="translate-y-24 opacity-0"
+                 x-transition:enter-end="translate-y-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-250 transform"
+                 x-transition:leave-start="translate-y-0 opacity-100"
+                 x-transition:leave-end="translate-y-24 opacity-0"
+                 class="md:hidden nav-pill glass flex justify-around py-3 px-4 z-40">
                 <template x-for="item in menu" :key="item.id">
                     <button @click="view = item.id"
                             :class="view === item.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'"
@@ -558,7 +627,13 @@
                 </template>
             </nav>
 
-            <button x-show="view === 'students' || view === 'dashboard'"
+            <button x-show="user && userRole === 'admin' && (view === 'students' || view === 'dashboard') && !hasAnyModalOpen"
+                    x-transition:enter="transition ease-out duration-300 transform"
+                    x-transition:enter-start="translate-y-24 scale-75 opacity-0"
+                    x-transition:enter-end="translate-y-0 scale-100 opacity-100"
+                    x-transition:leave="transition ease-in duration-250 transform"
+                    x-transition:leave-start="translate-y-0 scale-100 opacity-100"
+                    x-transition:leave-end="translate-y-24 scale-75 opacity-0"
                     @click="openEditModal(null)"
                     class="md:hidden fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+7.5rem)] w-14 h-14 rounded-full glass-indigo text-white shadow-2xl flex items-center justify-center z-40 active:scale-95 transition"
                     aria-label="Nuevo Alumno">
@@ -570,7 +645,7 @@
         <!-- ============================================== -->
         <!-- PORTAL PARA USUARIOS CLIENTES (ALUMNOS)       -->
         <!-- ============================================== -->
-        <div x-show="userRole === 'student'" x-cloak class="flex-1 flex flex-col h-full overflow-hidden relative z-20">
+        <div x-show="user && userRole === 'student'" x-cloak class="flex-1 flex flex-col h-full overflow-hidden relative z-20">
             <!-- Header Alumno -->
             <header class="glass px-6 py-4 flex items-center justify-between border-b border-white/20 dark:border-white/10 shrink-0">
                 <div class="flex items-center gap-3 cursor-pointer select-none" @click="linkedStudent && openStudentSelfProfile()" title="Ver y editar mis datos personales">
@@ -916,7 +991,14 @@
             </div>
 
             <!-- NAV MOBILE FLOTANTE DEL ALUMNO (Píldora Liquid Glass idéntica al Admin) -->
-            <nav class="md:hidden nav-pill glass flex justify-around py-3 px-4 z-[100]">
+            <nav x-show="user && userRole === 'student' && !hasAnyModalOpen"
+                 x-transition:enter="transition ease-out duration-300 transform"
+                 x-transition:enter-start="translate-y-24 opacity-0"
+                 x-transition:enter-end="translate-y-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-250 transform"
+                 x-transition:leave-start="translate-y-0 opacity-100"
+                 x-transition:leave-end="translate-y-24 opacity-0"
+                 class="md:hidden nav-pill glass flex justify-around py-3 px-4 z-40">
                 <button @click="studentView = 'status'"
                         :class="studentView === 'status' ? 'text-indigo-600 dark:text-indigo-400 font-bold scale-105' : 'text-slate-400'"
                         class="flex flex-col items-center gap-1 transition-all duration-200 relative px-3 py-1">

@@ -2,6 +2,16 @@
 // Taekwondo CMK - Lógica Principal
 // ===================================
 
+let globalDeferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    globalDeferredPrompt = e;
+    if (window.tkdAppInstance) {
+        window.tkdAppInstance.deferredPrompt = e;
+        window.tkdAppInstance.showInstallBanner = true;
+    }
+});
+
 // CONFIGURACIÓN SUPABASE
 const SUPABASE_URL = 'https://ihxvrsdyxhslwahkklmh.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iCPuyn5_jTXvtPl4zwwbVA_uf-F3W05';
@@ -11,6 +21,16 @@ function tkdApp() {
         view: 'dashboard',
         search: '',
         
+        get hasAnyModalOpen() {
+            return !!(this.showProfileModal || 
+                      this.showEditModal || 
+                      this.showExamModal || 
+                      this.showPaymentModal || 
+                      this.showSettingsModal || 
+                      this.showStudentProfileModal || 
+                      this.showMercadoPagoModal);
+        },
+        
         // Auth & Supabase
         supabase: null,
         user: null,
@@ -19,6 +39,10 @@ function tkdApp() {
         authError: '',
         authLoading: false,
         showPassword: false,
+        authMode: 'signin', // 'signin' | 'signup' | 'reset'
+        resetEmailSent: false,
+        newPassword: '',
+        showUpdatePasswordModal: false,
         lastBilled: null,
         
         // Modales
@@ -150,12 +174,19 @@ function tkdApp() {
                     }
                 });
 
+                window.tkdAppInstance = this;
+                if (globalDeferredPrompt) {
+                    this.deferredPrompt = globalDeferredPrompt;
+                    this.showInstallBanner = true;
+                }
+
                 // Registro PWA & Instalación
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register('/sw.js').catch(() => {});
                 }
                 window.addEventListener('beforeinstallprompt', (e) => {
                     e.preventDefault();
+                    globalDeferredPrompt = e;
                     this.deferredPrompt = e;
                     this.showInstallBanner = true;
                 });
@@ -163,6 +194,7 @@ function tkdApp() {
                     this.isPWAInstalled = true;
                     this.showInstallBanner = false;
                     this.deferredPrompt = null;
+                    globalDeferredPrompt = null;
                 });
 
                 if (!this.isPWAInstalled) {
@@ -187,7 +219,10 @@ function tkdApp() {
                     await this.checkMercadoPagoReturn();
                 }
 
-                this.supabase.auth.onAuthStateChange(async (_event, session) => {
+                this.supabase.auth.onAuthStateChange(async (event, session) => {
+                    if (event === 'PASSWORD_RECOVERY') {
+                        this.showUpdatePasswordModal = true;
+                    }
                     if (session?.user) {
                         if (!this.user) {
                             await this.startUserSession(session.user);
@@ -445,6 +480,83 @@ function tkdApp() {
 
         async signOut() {
             if (this.supabase) await this.supabase.auth.signOut();
+        },
+
+        async sendPasswordReset() {
+            if (!this.supabase) return;
+            this.authError = '';
+            const email = (this.authEmail || '').trim();
+            if (!email) {
+                this.authError = 'Por favor ingresá tu email para recuperar la contraseña.';
+                return;
+            }
+            this.authLoading = true;
+            try {
+                const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin
+                });
+                this.authLoading = false;
+                if (error) {
+                    this.authError = this.formatAuthError(error.message);
+                } else {
+                    this.resetEmailSent = true;
+                    this.showToast('¡Enlace de recuperación enviado! Revisá tu correo.');
+                }
+            } catch (e) {
+                this.authLoading = false;
+                this.authError = 'Error al enviar enlace de recuperación.';
+            }
+        },
+
+        async updatePassword() {
+            if (!this.supabase) return;
+            this.authError = '';
+            const newPass = (this.newPassword || '').trim();
+            if (!newPass || newPass.length < 6) {
+                this.authError = 'La nueva contraseña debe tener al menos 6 caracteres.';
+                return;
+            }
+            this.authLoading = true;
+            try {
+                const { error } = await this.supabase.auth.updateUser({ password: newPass });
+                this.authLoading = false;
+                if (error) {
+                    this.authError = this.formatAuthError(error.message);
+                } else {
+                    this.showUpdatePasswordModal = false;
+                    this.newPassword = '';
+                    this.showToast('¡Contraseña actualizada exitosamente!');
+                }
+            } catch (e) {
+                this.authLoading = false;
+                this.authError = 'Error al actualizar contraseña.';
+            }
+        },
+
+        async installPWA() {
+            const promptEvent = this.deferredPrompt || globalDeferredPrompt;
+            if (promptEvent) {
+                try {
+                    promptEvent.prompt();
+                    const choiceResult = await promptEvent.userChoice;
+                    if (choiceResult && choiceResult.outcome === 'accepted') {
+                        this.isPWAInstalled = true;
+                        this.showInstallBanner = false;
+                        this.showToast('¡Instalación de la app completada!');
+                    }
+                    this.deferredPrompt = null;
+                    globalDeferredPrompt = null;
+                } catch (err) {
+                    console.warn("PWA prompt error:", err);
+                }
+            } else {
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    this.showToast('En iPhone: Tocá Compartir (cuadrado con flecha) y luego "Agregar a inicio"');
+                } else {
+                    this.showToast('Para instalar: Tocá los 3 puntos del navegador y seleccioná "Instalar aplicación"');
+                }
+            }
         },
 
         async startUserSession(user) {
