@@ -379,15 +379,15 @@
                     <!-- ===== STUDENTS ===== -->
                     <div x-show="view === 'students'" class="page-enter" x-cloak>
                         <!-- Tabs de filtro de archivado -->
-                        <div class="flex glass p-1 rounded-xl mb-4 max-w-xs">
+                        <div class="flex bg-slate-200/80 dark:bg-slate-900/90 border border-slate-300/40 dark:border-white/10 rounded-2xl p-1 gap-1 mb-4 max-w-xs">
                             <button @click="archiveFilter = 'active'"
-                                    :class="archiveFilter === 'active' ? 'bg-white text-slate-850 shadow-sm font-extrabold' : 'text-slate-500 hover:text-slate-700 font-bold'"
-                                    class="flex-1 py-2 text-xs rounded-lg transition">
+                                    :class="archiveFilter === 'active' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white font-black shadow-sm border border-slate-200/60 dark:border-white/10' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-bold'"
+                                    class="flex-1 py-2 px-3 text-xs rounded-xl transition text-center">
                                 Activos (<span x-text="students.filter(s => !s.archived).length"></span>)
                             </button>
                             <button @click="archiveFilter = 'archived'"
-                                    :class="archiveFilter === 'archived' ? 'bg-white text-slate-850 shadow-sm font-extrabold' : 'text-slate-500 hover:text-slate-700 font-bold'"
-                                    class="flex-1 py-2 text-xs rounded-lg transition">
+                                    :class="archiveFilter === 'archived' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white font-black shadow-sm border border-slate-200/60 dark:border-white/10' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-bold'"
+                                    class="flex-1 py-2 px-3 text-xs rounded-xl transition text-center">
                                 Archivados (<span x-text="students.filter(s => !!s.archived).length"></span>)
                             </button>
                         </div>
@@ -1122,7 +1122,7 @@
                             <i class="fa-solid fa-lock text-xs"></i>
                             <span class="text-xs font-bold">Cuota fija: <span x-text="formatMoney(activeStudent?.tuition)"></span></span>
                         </div>
-                        <a :href="activeStudent?.phone ? 'https://wa.me/' + activeStudent.phone : '#'" target="_blank" class="w-full mt-2 py-3.5 bg-[#25D366] text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-md hover:brightness-105 transition">
+                        <a :href="(() => { if (!activeStudent?.phone) return '#'; let p = String(activeStudent.phone).replace(/\D/g, ''); if (p.startsWith('0')) p = p.slice(1); if (p.startsWith('15') && p.length === 10) p = '11' + p.slice(2); if (p.length === 10) p = '549' + p; else if (p.length === 11 && p.startsWith('54')) p = '549' + p.slice(2); else if (!p.startsWith('54') && p.length >= 8) p = '549' + p; return 'https://wa.me/' + p; })()" target="_blank" class="w-full mt-2 py-3.5 bg-[#25D366] text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-md hover:brightness-105 transition">
                             <i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp
                         </a>
                     </div>
@@ -1244,13 +1244,8 @@
                                 </template>
                             </select>
                         </div>
-                         <div>
-                            <div class="flex items-center justify-between">
-                                <label class="text-xs font-bold text-slate-500 uppercase">Cuota Mensual ($)</label>
-                                <button type="button" @click="form.tuition = priceTiers.tier1" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
-                                    Base: <span x-text="formatMoney(priceTiers.tier1)"></span>
-                                </button>
-                            </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase">Cuota Mensual ($)</label>
                             <input type="number" x-model="form.tuition" :placeholder="priceTiers.tier1" class="w-full p-3 bg-white/60 dark:bg-slate-800/80 border border-white/60 dark:border-white/10 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white text-slate-800 dark:text-white mt-1">
                         </div>
                     </div>

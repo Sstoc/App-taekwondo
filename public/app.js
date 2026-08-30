@@ -257,19 +257,44 @@ function tkdApp() {
             try {
                 const params = new URLSearchParams(window.location.search);
                 const mpStatus = params.get('mp_status') || params.get('collection_status') || params.get('status');
-                const paymentId = params.get('payment_id') || params.get('collection_id') || params.get('preference_id');
+                const paymentId = params.get('payment_id') || params.get('collection_id');
                 const type = params.get('type') || 'cuota';
                 const studentId = params.get('student_id');
-                const amount = Number(params.get('amount') || 0);
+                const fallbackAmount = Number(params.get('amount') || 0);
 
-                if (mpStatus === 'approved' && !localStorage.getItem('cmk-processed-mp-' + paymentId)) {
-                    if (paymentId) localStorage.setItem('cmk-processed-mp-' + paymentId, 'true');
-                    await this.processMercadoPagoApproval({
-                        paymentId,
-                        type,
-                        studentId: studentId || this.linkedStudent?.id,
-                        amount
-                    });
+                if ((mpStatus === 'approved' || paymentId) && paymentId && !localStorage.getItem('cmk-processed-mp-' + paymentId)) {
+                    // Verificación segura en el servidor (Netlify Function)
+                    let verifiedAmount = fallbackAmount;
+                    let isVerified = false;
+
+                    try {
+                        const verifyRes = await fetch('/.netlify/functions/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ payment_id: paymentId })
+                        });
+
+                        if (verifyRes.ok) {
+                            const verifyData = await verifyRes.json();
+                            if (verifyData.verified && verifyData.amount > 0) {
+                                isVerified = true;
+                                verifiedAmount = verifyData.amount;
+                            }
+                        }
+                    } catch (err) {
+                        console.warn("Server verification network warning, fallback to parameter check:", err);
+                    }
+
+                    // Si se verificó con el servidor o si el estado de retorno de MP es approved
+                    if (isVerified || mpStatus === 'approved') {
+                        localStorage.setItem('cmk-processed-mp-' + paymentId, 'true');
+                        await this.processMercadoPagoApproval({
+                            paymentId,
+                            type,
+                            studentId: studentId || this.linkedStudent?.id,
+                            amount: verifiedAmount
+                        });
+                    }
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
             } catch (e) {
@@ -277,43 +302,6 @@ function tkdApp() {
             }
         },
 
-        async payWithMercadoPago(type = 'cuota') {
-            if (!this.linkedStudent) {
-                this.showToast('No tenés un perfil vinculado. Avisale al profe.');
-                return;
-            }
-            this.mpPaymentType = type;
-            this.mpPaymentAmount = type === 'examen' 
-                ? this.getExamFeeForStudent(this.linkedStudent) 
-                : this.calcStudentDebt(this.linkedStudent.id);
-
-            if (this.mpPaymentAmount <= 0) {
-                this.showToast('¡No tenés saldo pendiente para abonar!');
-                return;
-            }
-
-            this.mpLoading = true;
-            try {
-                const { data, error } = await this.supabase.functions.invoke('create-mp-preference', {
-                    body: {
-                        student_id: this.linkedStudent.id,
-                        student_name: this.linkedStudent.name,
-                        amount: this.mpPaymentAmount,
-                        type: type
-                    }
-                });
-                if (!error && data?.init_point) {
-                    window.location.href = data.init_point;
-                    return;
-                }
-            } catch (err) {
-                // Fallback a modal de checkout de MP con validación directa y automática
-            } finally {
-                this.mpLoading = false;
-            }
-
-            this.showMercadoPagoModal = true;
-        },
 
         async processMercadoPagoApproval(opts = {}) {
             const studentId = opts.studentId || this.linkedStudent?.id;
@@ -534,28 +522,6 @@ function tkdApp() {
 
         showInstallHelpModal: false,
 
-        async installPWA() {
-            const promptEvent = this.deferredPrompt || globalDeferredPrompt || window.deferredInstallPrompt;
-            if (promptEvent) {
-                try {
-                    promptEvent.prompt();
-                    const choiceResult = await promptEvent.userChoice;
-                    if (choiceResult && choiceResult.outcome === 'accepted') {
-                        this.isPWAInstalled = true;
-                        this.showInstallBanner = false;
-                        this.showToast('¡Instalando Taekwondo CMK!');
-                    }
-                    this.deferredPrompt = null;
-                    globalDeferredPrompt = null;
-                    window.deferredInstallPrompt = null;
-                } catch (err) {
-                    console.warn("PWA prompt error:", err);
-                    this.showInstallHelpModal = true;
-                }
-            } else {
-                this.showInstallHelpModal = true;
-            }
-        },
 
         async startUserSession(user) {
             this.user = user;
@@ -629,6 +595,9 @@ function tkdApp() {
 
                 // Cargar ajustes, deudas y asistencias del alumno
                 const { data: settingsRows } = await this.supabase.from('tkd_settings').select('*');
+                if (settingsRows && settingsRows.length > 0 && settingsRows[0].user_id) {
+                    this.adminUserId = settingsRows[0].user_id;
+                }
                 const settingsData = this.pickLatestSettingsRow(settingsRows || []);
                 if (settingsData) {
                     if (settingsData.price_tiers) this.priceTiers = { ...this.priceTiers, ...settingsData.price_tiers };
@@ -706,7 +675,7 @@ function tkdApp() {
                     const { data, error } = await this.supabase
                         .from('tkd_students')
                         .select('*')
-                        .ilike('dni', `%${cleanDni}%`)
+                        .eq('dni', cleanDni)
                         .limit(1);
 
                     if (data && data.length > 0) {
@@ -809,20 +778,27 @@ function tkdApp() {
         },
 
         // --- INSTALACIÓN PWA ---
-        installPWA() {
-            if (this.deferredPrompt) {
-                this.deferredPrompt.prompt();
-                this.deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
+        async installPWA() {
+            const promptEvent = this.deferredPrompt || globalDeferredPrompt || window.deferredInstallPrompt;
+            if (promptEvent) {
+                try {
+                    promptEvent.prompt();
+                    const choiceResult = await promptEvent.userChoice;
+                    if (choiceResult && choiceResult.outcome === 'accepted') {
                         this.isPWAInstalled = true;
                         this.showInstallBanner = false;
                         localStorage.setItem('cmk-pwa-installed', 'true');
                         this.showToast('🥋 ¡Gracias por instalar la app de Taekwondo CMK!');
                     }
                     this.deferredPrompt = null;
-                });
+                    globalDeferredPrompt = null;
+                    window.deferredInstallPrompt = null;
+                } catch (err) {
+                    console.warn('PWA prompt error:', err);
+                    this.showInstallHelpModal = true;
+                }
             } else {
-                this.showToast('Para instalar: Tocá los 3 puntos del navegador o "Compartir" y seleccioná "Agregar a pantalla principal" 📲');
+                this.showInstallHelpModal = true;
             }
         },
 
@@ -831,25 +807,56 @@ function tkdApp() {
                 this.showToast('No tenés un perfil vinculado. Avisale al profe.');
                 return;
             }
+            this.mpPaymentType = type;
+            this.mpPaymentAmount = type === 'examen' 
+                ? this.getExamFeeForStudent(this.linkedStudent) 
+                : this.calcStudentDebt(this.linkedStudent.id);
+
+            if (this.mpPaymentAmount <= 0) {
+                this.showToast('¡No tenés saldo pendiente para abonar!');
+                return;
+            }
+
             this.mpLoading = true;
             try {
-                const amount = type === 'examen' ? (this.linkedStudent.exam_paid_amount || 15000) : (this.linkedStudent.debt || this.getCurrentTierAmount(this.linkedStudent));
-                const { data, error } = await this.supabase.functions.invoke('create-mp-preference', {
-                    body: {
+                const res = await fetch('/.netlify/functions/create-preference', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
                         student_id: this.linkedStudent.id,
                         student_name: this.linkedStudent.name,
-                        amount: amount,
-                        type: type
-                    }
+                        amount: this.mpPaymentAmount,
+                        type: type,
+                        origin_url: window.location.origin
+                    })
                 });
-                if (error) throw error;
-                if (data?.init_point) {
-                    window.location.href = data.init_point;
-                } else {
-                    throw new Error('Error al generar checkout');
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data?.init_point) {
+                        window.location.href = data.init_point;
+                        return;
+                    }
                 }
+
+                if (this.supabase?.functions) {
+                    const { data, error } = await this.supabase.functions.invoke('create-mp-preference', {
+                        body: {
+                            student_id: this.linkedStudent.id,
+                            student_name: this.linkedStudent.name,
+                            amount: this.mpPaymentAmount,
+                            type: type
+                        }
+                    });
+                    if (!error && data?.init_point) {
+                        window.location.href = data.init_point;
+                        return;
+                    }
+                }
+
+                throw new Error('Fallback al modal');
             } catch (err) {
-                this.showToast('El pago con Mercado Pago se habilitará en breve.');
+                this.showMercadoPagoModal = true;
             } finally {
                 this.mpLoading = false;
             }
@@ -1120,8 +1127,10 @@ function tkdApp() {
                 payment_history: this.paymentHistory
             };
 
+            const targetUserId = (this.userRole === 'student' && this.adminUserId) ? this.adminUserId : this.user.id;
+
             const payload = {
-                user_id: this.user.id,
+                user_id: targetUserId,
                 revenue: 0,
                 history_data: historyCopy,
                 last_billed: this.lastBilled,
@@ -1135,13 +1144,13 @@ function tkdApp() {
             const { data: updatedRows, error: updateError } = await this.supabase
                 .from('tkd_settings')
                 .update(payload)
-                .eq('user_id', this.user.id)
+                .eq('user_id', targetUserId)
                 .select('user_id');
             
             if (updateError) {
                 // Fallback si alguna columna no existe aún en Supabase: guardamos en history_data
                 const simplifiedPayload = {
-                    user_id: this.user.id,
+                    user_id: targetUserId,
                     revenue: 0,
                     history_data: historyCopy,
                     last_billed: this.lastBilled
@@ -1149,7 +1158,7 @@ function tkdApp() {
                 const retryRes = await this.supabase
                     .from('tkd_settings')
                     .update(simplifiedPayload)
-                    .eq('user_id', this.user.id)
+                    .eq('user_id', targetUserId)
                     .select('user_id');
                 
                 if (retryRes.error || !retryRes.data?.length) {
@@ -1159,7 +1168,7 @@ function tkdApp() {
                 const { error: insertError } = await this.supabase.from('tkd_settings').insert(payload);
                 if (insertError) {
                     await this.supabase.from('tkd_settings').insert({
-                        user_id: this.user.id,
+                        user_id: targetUserId,
                         revenue: 0,
                         history_data: historyCopy,
                         last_billed: this.lastBilled
@@ -1297,39 +1306,6 @@ function tkdApp() {
             }
         },
 
-        resetCaja() {
-            this.confirmReset = false;
-            const dateObj = new Date();
-            const currentMonthIdx = dateObj.getMonth();
-            const currentYear = dateObj.getFullYear();
-            const currentMonthName = dateObj.toLocaleDateString('es-AR', { month: 'long' }).toLowerCase();
-
-            if (Array.isArray(this.historyData)) {
-                this.historyData.forEach(m => {
-                    if (m && typeof m.name === 'string') {
-                        const nameLower = m.name.toLowerCase();
-                        if (nameLower.includes(currentMonthName) || (nameLower.includes(String(currentYear)) && nameLower.includes(currentMonthName.slice(0, 4)))) {
-                            m.revenue = 0;
-                        }
-                    }
-                });
-            }
-            if (Array.isArray(this.paymentHistory)) {
-                this.paymentHistory = this.paymentHistory.filter(tx => {
-                    if (!tx) return true;
-                    const txDate = tx.timestamp ? new Date(tx.timestamp) : null;
-                    if (txDate && txDate.getMonth() === currentMonthIdx && txDate.getFullYear() === currentYear) {
-                        return false;
-                    }
-                    if (tx.month && tx.month.toLowerCase().includes(currentMonthName)) {
-                        return false;
-                    }
-                    return true;
-                });
-            }
-            this.saveSettingsToDB();
-            this.showToast('Caja mensual reiniciada.');
-        },
 
         addMonthlyRevenue(amount) {
             try {
@@ -1722,19 +1698,35 @@ function tkdApp() {
 
         async resetCaja() {
             const dateObj = new Date();
+            const currentMonthIdx = dateObj.getMonth();
+            const currentYear = dateObj.getFullYear();
             const monthName = dateObj.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+            const currentMonthNameLower = dateObj.toLocaleDateString('es-AR', { month: 'long' }).toLowerCase();
             let monthGroup = this.historyData.find(m => m.name.toLowerCase() === monthName.toLowerCase());
             
-            if (!monthGroup) return; // Nada que reiniciar
+            if (!monthGroup) return;
             
             const previousRevenue = Number(monthGroup.revenue || 0);
+            const previousPaymentHistory = Array.isArray(this.paymentHistory) ? [...this.paymentHistory] : [];
             monthGroup.revenue = 0;
             this.historyData = [...this.historyData];
+
+            // Limpiar transacciones del mes actual del historial de cobros
+            if (Array.isArray(this.paymentHistory)) {
+                this.paymentHistory = this.paymentHistory.filter(tx => {
+                    if (!tx) return true;
+                    const txDate = tx.timestamp ? new Date(tx.timestamp) : null;
+                    if (txDate && txDate.getMonth() === currentMonthIdx && txDate.getFullYear() === currentYear) return false;
+                    if (tx.month && tx.month.toLowerCase().includes(currentMonthNameLower)) return false;
+                    return true;
+                });
+            }
             
             this.confirmReset = false;
             const saved = await this.saveSettingsToDB();
             if (!saved) {
                 monthGroup.revenue = previousRevenue;
+                this.paymentHistory = previousPaymentHistory;
                 this.historyData = [...this.historyData];
                 return;
             }
@@ -1748,7 +1740,11 @@ function tkdApp() {
         },
         closeProfileModal() {
             this.showProfileModal = false;
-            this.activeStudent = null;
+            setTimeout(() => {
+                if (!this.showProfileModal) {
+                    this.activeStudent = null;
+                }
+            }, 350);
         },
 
         openEditModal(student = null) {
@@ -2049,7 +2045,7 @@ function tkdApp() {
                 return;
             }
 
-            if (!confirm('Â¿Estás seguro de que querés promocionar a los ' + paidStudents.length + ' alumnos que pagaron al siguiente cinturón?')) {
+            if (!confirm('¿Estás seguro de que querés promocionar a los ' + paidStudents.length + ' alumnos que pagaron al siguiente cinturón?')) {
                 return;
             }
 
