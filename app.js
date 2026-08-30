@@ -6,8 +6,8 @@
 const SUPABASE_URL = 'https://ihxvrsdyxhslwahkklmh.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iCPuyn5_jTXvtPl4zwwbVA_uf-F3W05';
 
-document.addEventListener('alpine:init', () => {
-    Alpine.data('tkdApp', () => ({
+function tkdApp() {
+    return {
         view: 'dashboard',
         search: '',
         
@@ -2118,13 +2118,23 @@ document.addEventListener('alpine:init', () => {
             
             return 'card-Blanco';
         }
-    }));
-});
+    };
+}
+
+// Registro global seguro en window y en Alpine
+window.tkdApp = tkdApp;
+if (window.Alpine) {
+    window.Alpine.data('tkdApp', tkdApp);
+} else {
+    document.addEventListener('alpine:init', () => {
+        window.Alpine.data('tkdApp', tkdApp);
+    });
+}
 
 // --- Registro del Service Worker ---
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js').catch(() => {});
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
     });
 }
 
