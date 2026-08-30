@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <clipPath id="round">
-      <circle cx="256" cy="256" r="256"/>
-    </clipPath>
-  </defs>
-  <image href="logo%20chang%20moo%20kwan.jpeg" x="0" y="0" width="512" height="512" preserveAspectRatio="xMidYMid slice" clip-path="url(#round)"/>
-</svg>

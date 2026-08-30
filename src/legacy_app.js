@@ -1,8 +1,8 @@
-// ===================================
-// Taekwondo CMK - Lógica Principal
+﻿// ===================================
+// Taekwondo CMK - LÃ³gica Principal
 // ===================================
 
-// CONFIGURACIÓN SUPABASE
+// CONFIGURACIÃ“N SUPABASE
 const SUPABASE_URL = 'https://ihxvrsdyxhslwahkklmh.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iCPuyn5_jTXvtPl4zwwbVA_uf-F3W05';
 
@@ -37,29 +37,14 @@ document.addEventListener('alpine:init', () => {
         paymentStudent: null,
         paymentAmount: 0,
 
-        // Modal de Configuración (nuevo)
+        // Modal de ConfiguraciÃ³n (nuevo)
         showSettingsModal: false,
 
         // Cuotas escalonadas (nuevo)
         priceTiers: { tier1: 12500, tier2: 15000, tier3: 18000 },
         editTiers: { tier1: 12500, tier2: 15000, tier3: 18000 },
 
-        // Valores de Examen escalonados por cinturón de destino
-        examTiers: { amarillos: 12000, azules: 15000, rojos: 18000, negros: 25000 },
-        editExamTiers: { amarillos: 12000, azules: 15000, rojos: 18000, negros: 25000 },
-        editSchedules: [],
-        settingsTab: 'tuition', // 'tuition' | 'exams' | 'schedules' | 'theme'
-
-        // Métodos de pago y Registro de transacciones
-        paymentMethod: 'efectivo', // 'efectivo' | 'transferencia'
-        historyTab: 'payments', // 'payments' | 'classes'
-        paymentHistory: [],
-        showMercadoPagoModal: false,
-        mpPaymentType: 'cuota',
-        mpPaymentAmount: 0,
-
         // Misc
-        appReady: false,
         toastMsg: '',
         toastTimer: null,
         confirmReset: false,
@@ -67,31 +52,8 @@ document.addEventListener('alpine:init', () => {
         billingInProgress: false,
 
         // Tema (light / dark / system)
-        theme: localStorage.getItem('cmk-theme') || 'light',
-        themeMode: localStorage.getItem('cmk-theme') || 'light',
-
-        // Roles y Portal de Alumnos
-        userRole: 'admin', // 'admin' | 'student'
-        studentView: 'status', // 'status' | 'payments' | 'exam' | 'attendance' | 'schedule'
-        linkedStudent: null,
-        availableStudentsToLink: [],
-        studentAttendanceDates: [],
-        inputDni: '',
-        linkByDniError: '',
-        linkByDniLoading: false,
-        studentAttendances: [],
-        mpLoading: false,
-        showStudentProfileModal: false,
-        studentProfileForm: { name: '', rank: '', dni: '', phone: '', dob: '', location: '' },
-        showInstallBanner: false,
-        deferredPrompt: null,
-        isPWAInstalled: window.matchMedia('(display-mode: standalone)').matches || (window.navigator && window.navigator.standalone === true) || localStorage.getItem('cmk-pwa-installed') === 'true',
-        studentSchedules: [
-            { day: 'Lunes', time: '18:00 - 19:30', location: 'Dojo Principal' },
-            { day: 'Miércoles', time: '18:00 - 19:30', location: 'Dojo Principal' },
-            { day: 'Viernes', time: '18:00 - 19:30', location: 'Dojo Principal' }
-        ],
-
+        themeMode: 'system',
+        
         form: { id: null, name: '', dob: '', rank: 'Blanco', tuition: 12500, debt: 12500, phone: '', location: '', dni: '', cuota_fija: false, exam_paid: false, exam_paid_amount: 0, archived: false },
         archiveFilter: 'active',
         
@@ -115,8 +77,7 @@ document.addEventListener('alpine:init', () => {
 
         async init() {
             if (SUPABASE_URL === 'TU_URL_AQUI' || !SUPABASE_URL.startsWith('http')) {
-                this.authError = "ADVERTENCIA: Debes colocar tus credenciales reales de Supabase en el código para iniciar sesión.";
-                this.appReady = true;
+                this.authError = "ADVERTENCIA: Debes colocar tus credenciales reales de Supabase en el cÃ³digo para iniciar sesiÃ³n.";
                 return;
             }
 
@@ -126,47 +87,21 @@ document.addEventListener('alpine:init', () => {
                 // Carga optimista desde cache local
                 this.loadLocalCache();
 
-                // Listeners de conexión
+                // Listeners de conexiÃ³n
                 window.addEventListener('online', () => {
                     this.isOnline = true;
                     if (this.offlineQueue.length > 0) {
-                        this.showToast('Conexión restaurada. Sincronizando...');
+                        this.showToast('ConexiÃ³n restaurada. Sincronizando...');
                         this.syncOfflineQueue();
                     }
                 });
                 window.addEventListener('offline', () => {
                     this.isOnline = false;
-                    this.showToast('Mala conexión. Modo Offline activado.');
-                });
-
-                // Auto-actualización al regresar a la pestaña (visibilidad)
-                document.addEventListener('visibilitychange', () => {
-                    if (document.visibilityState === 'visible') {
-                        if (this.userRole === 'student') {
-                            this.loadStudentPortalData();
-                        } else if (this.userRole === 'admin' && this.user) {
-                            this.loadDataFromDB();
-                        }
-                    }
-                });
-
-                // Registro PWA & Instalación
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.register('/sw.js').catch(() => {});
-                }
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault();
-                    this.deferredPrompt = e;
-                    this.showInstallBanner = true;
-                });
-                window.addEventListener('appinstalled', () => {
-                    this.isPWAInstalled = true;
-                    this.showInstallBanner = false;
-                    this.deferredPrompt = null;
+                    this.showToast('Mala conexiÃ³n. Modo Offline activado.');
                 });
 
                 // Aplicar tema guardado
-                this.themeMode = localStorage.getItem('cmk-theme') || 'dark';
+                this.themeMode = localStorage.getItem('cmk-theme') || 'system';
                 this.applyTheme();
                 // Escuchar cambios del sistema
                 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
@@ -175,16 +110,12 @@ document.addEventListener('alpine:init', () => {
 
                 const { data: { session } } = await this.supabase.auth.getSession();
                 if (session?.user) {
-                    await this.startUserSession(session.user);
-                    await this.checkMercadoPagoReturn();
+                    this.startUserSession(session.user);
                 }
 
-                this.supabase.auth.onAuthStateChange(async (_event, session) => {
+                this.supabase.auth.onAuthStateChange((_event, session) => {
                     if (session?.user) {
-                        if (!this.user) {
-                            await this.startUserSession(session.user);
-                            await this.checkMercadoPagoReturn();
-                        }
+                        if (!this.user) this.startUserSession(session.user);
                     } else {
                         this.user = null;
                         this.students = [];
@@ -193,246 +124,24 @@ document.addEventListener('alpine:init', () => {
                 });
             } catch (e) {
                 this.authError = "Error al conectar con Supabase. Verifica las credenciales.";
-            } finally {
-                setTimeout(() => {
-                    this.appReady = true;
-                }, 400);
             }
         },
 
-        getStudentPaymentTransactions(studentId) {
-            if (!studentId || !Array.isArray(this.paymentHistory)) return [];
-            const st = this.students.find(s => s.id === studentId) || this.linkedStudent;
-            const targetName = (st?.name || '').trim().toLowerCase();
-            return this.paymentHistory.filter(tx => {
-                if (tx.studentId && tx.studentId === studentId) return true;
-                if (targetName && (tx.studentName || '').trim().toLowerCase() === targetName) return true;
-                return false;
-            });
-        },
-
-        async checkMercadoPagoReturn() {
-            try {
-                const params = new URLSearchParams(window.location.search);
-                const mpStatus = params.get('mp_status') || params.get('collection_status') || params.get('status');
-                const paymentId = params.get('payment_id') || params.get('collection_id') || params.get('preference_id');
-                const type = params.get('type') || 'cuota';
-                const studentId = params.get('student_id');
-                const amount = Number(params.get('amount') || 0);
-
-                if (mpStatus === 'approved' && !localStorage.getItem('cmk-processed-mp-' + paymentId)) {
-                    if (paymentId) localStorage.setItem('cmk-processed-mp-' + paymentId, 'true');
-                    await this.processMercadoPagoApproval({
-                        paymentId,
-                        type,
-                        studentId: studentId || this.linkedStudent?.id,
-                        amount
-                    });
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }
-            } catch (e) {
-                console.warn("Mercado Pago return check:", e);
-            }
-        },
-
-        async payWithMercadoPago(type = 'cuota') {
-            if (!this.linkedStudent) {
-                this.showToast('No tenés un perfil vinculado. Avisale al profe.');
-                return;
-            }
-            this.mpPaymentType = type;
-            this.mpPaymentAmount = type === 'examen' 
-                ? this.getExamFeeForStudent(this.linkedStudent) 
-                : this.calcStudentDebt(this.linkedStudent.id);
-
-            if (this.mpPaymentAmount <= 0) {
-                this.showToast('¡No tenés saldo pendiente para abonar!');
-                return;
-            }
-
-            this.mpLoading = true;
-            try {
-                const { data, error } = await this.supabase.functions.invoke('create-mp-preference', {
-                    body: {
-                        student_id: this.linkedStudent.id,
-                        student_name: this.linkedStudent.name,
-                        amount: this.mpPaymentAmount,
-                        type: type
-                    }
-                });
-                if (!error && data?.init_point) {
-                    window.location.href = data.init_point;
-                    return;
-                }
-            } catch (err) {
-                // Fallback a modal de checkout de MP con validación directa y automática
-            } finally {
-                this.mpLoading = false;
-            }
-
-            this.showMercadoPagoModal = true;
-        },
-
-        async processMercadoPagoApproval(opts = {}) {
-            const studentId = opts.studentId || this.linkedStudent?.id;
-            let targetStudent = this.students.find(s => s.id === studentId);
-            if (!targetStudent && this.linkedStudent?.id === studentId) {
-                targetStudent = this.linkedStudent;
-            }
-            if (!targetStudent) return;
-
-            const type = opts.type || this.mpPaymentType || 'cuota';
-            const amount = Number(opts.amount || this.mpPaymentAmount || (type === 'examen' ? this.getExamFeeForStudent(targetStudent) : this.calcStudentDebt(studentId)));
-            if (amount <= 0) return;
-
-            const dateObj = new Date();
-            const displayDate = dateObj.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
-            const dayOfWeek = dateObj.toLocaleDateString('es-AR', { weekday: 'long' });
-            const monthName = dateObj.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-
-            if (type === 'cuota') {
-                const prevDebt = Number(targetStudent.debt || 0);
-                const newDebt = Math.max(0, prevDebt - amount);
-                targetStudent.debt = newDebt;
-
-                // FIFO a desglose mensual
-                let remaining = amount;
-                const entries = this.getStudentMonthlyDebts(targetStudent.id);
-                for (let entry of entries) {
-                    if (entry.paid || remaining <= 0) continue;
-                    if (remaining >= entry.amount) {
-                        remaining -= entry.amount;
-                        entry.paid = true;
-                    } else {
-                        entry.amount -= remaining;
-                        remaining = 0;
-                    }
-                }
-                this.debtDetails = { ...this.debtDetails };
-
-                try {
-                    await this.supabase.from('tkd_students').update({ debt: newDebt }).eq('id', targetStudent.id);
-                } catch (e) {}
-            } else if (type === 'examen') {
-                targetStudent.exam_paid = true;
-                targetStudent.exam_paid_amount = amount;
-                try {
-                    await this.supabase.from('tkd_students').update({ exam_paid: true, exam_paid_amount: amount }).eq('id', targetStudent.id);
-                } catch (e) {}
-            }
-
-            this.addMonthlyRevenue(amount);
-
-            // Registrar transacción en el historial de cobros con método Transferencia (Mercado Pago)
-            const tx = {
-                id: opts.paymentId ? `mp-${opts.paymentId}` : this.createId(),
-                studentId: targetStudent.id,
-                studentName: targetStudent.name,
-                amount: amount,
-                type: type === 'examen' ? 'Derecho a Examen' : 'Cuota Mensual',
-                rank: type === 'examen' ? this.getNextRank(targetStudent.rank) : null,
-                method: 'transferencia',
-                date: displayDate,
-                dayOfWeek: dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1),
-                month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
-                timestamp: Date.now(),
-                source: 'Mercado Pago'
-            };
-
-            if (!Array.isArray(this.paymentHistory)) this.paymentHistory = [];
-            this.paymentHistory.unshift(tx);
-
-            await this.saveSettingsToDB();
-            this.showMercadoPagoModal = false;
-            this.triggerHaptic('success');
-            this.showToast(`🎉 ¡Pago de ${this.formatMoney(amount)} acreditado por Mercado Pago!`);
-            
-            if (this.userRole === 'student') {
-                await this.loadStudentPortalData();
-            }
-        },
-
-        // --- AUTENTICACIÓN ---
-        formatAuthError(msg) {
-            if (!msg) return 'Error al procesar la solicitud.';
-            const m = String(msg).toLowerCase();
-            if (m.includes('anonymous sign-ins are disabled') || m.includes('missing email') || m.includes('cannot be empty')) {
-                return 'Por favor ingresá tu email y contraseña.';
-            }
-            if (m.includes('invalid login credentials') || m.includes('invalid email or password')) {
-                return 'Email o contraseña incorrectos.';
-            }
-            if (m.includes('email not confirmed')) {
-                return 'Confirmá tu email antes de entrar (revisá tu casilla de correo).';
-            }
-            if (m.includes('user already registered') || m.includes('already exists')) {
-                return 'Ya existe una cuenta con este email. Probá iniciando sesión.';
-            }
-            if (m.includes('password should be at least') || m.includes('password is too short')) {
-                return 'La contraseña debe tener al menos 6 caracteres.';
-            }
-            if (m.includes('rate limit')) {
-                return 'Demasiados intentos seguidos. Por favor esperá unos minutos.';
-            }
-            if (m.includes('unable to validate email address') || m.includes('invalid email')) {
-                return 'El formato de email no es válido (ej: nombre@correo.com).';
-            }
-            return 'Verificá tus credenciales e intentá nuevamente.';
-        },
-
+        // --- AUTENTICACIÃ“N ---
         async signIn() {
             if (!this.supabase) return;
-            this.authError = '';
-            
-            const email = (this.authEmail || '').trim();
-            const pass = this.authPassword || '';
-
-            if (!email) {
-                this.authError = 'Por favor ingresá tu email.';
-                return;
-            }
-            if (!pass) {
-                this.authError = 'Por favor ingresá tu contraseña.';
-                return;
-            }
-
-            this.authLoading = true;
-            const { error } = await this.supabase.auth.signInWithPassword({ email, password: pass });
+            this.authError = ''; this.authLoading = true;
+            const { error } = await this.supabase.auth.signInWithPassword({ email: this.authEmail, password: this.authPassword });
             this.authLoading = false;
-            if (error) {
-                this.authError = this.formatAuthError(error.message);
-            }
+            if (error) this.authError = 'Error: verifica tus credenciales';
         },
 
         async signUp() {
             if (!this.supabase) return;
-            this.authError = '';
-
-            const email = (this.authEmail || '').trim();
-            const pass = this.authPassword || '';
-
-            if (!email) {
-                this.authError = 'Por favor ingresá un email para registrarte.';
-                return;
-            }
-            if (!pass) {
-                this.authError = 'Por favor ingresá una contraseña (mínimo 6 caracteres).';
-                return;
-            }
-            if (pass.length < 6) {
-                this.authError = 'La contraseña debe tener al menos 6 caracteres.';
-                return;
-            }
-
-            this.authLoading = true;
-            const { error } = await this.supabase.auth.signUp({ email, password: pass });
+            this.authError = ''; this.authLoading = true;
+            const { error } = await this.supabase.auth.signUp({ email: this.authEmail, password: this.authPassword });
             this.authLoading = false;
-            if (error) {
-                this.authError = this.formatAuthError(error.message);
-            } else {
-                this.showToast('¡Cuenta creada! Iniciando sesión...');
-                await this.signIn();
-            }
+            if (error) this.authError = error.message; else await this.signIn();
         },
 
         async signOut() {
@@ -442,297 +151,12 @@ document.addEventListener('alpine:init', () => {
         async startUserSession(user) {
             this.user = user;
             this.authError = '';
-            
-            // Si es el admin principal
-            if (user.email === 'aandres.moreno3@gmail.com') {
-                this.userRole = 'admin';
-                await this.loadDataFromDB();
-                if (this.isOnline) this.syncOfflineQueue();
-                this.checkNewMonthBilling();
-            } else {
-                // Cualquier otra cuenta entra en el Portal de Alumno
-                this.userRole = 'student';
-                let profile = null;
-                try {
-                    const { data } = await this.supabase
-                        .from('profiles')
-                        .select('*')
-                        .eq('id', user.id)
-                        .maybeSingle();
-                    profile = data;
-                } catch (e) {
-                    console.warn("Profiles check fallback:", e);
-                }
-
-                if (!profile) {
-                    profile = { id: user.id, role: 'alumno' };
-                    try {
-                        await this.supabase.from('profiles').upsert(profile);
-                    } catch (e) {}
-                }
-
-                await this.loadStudentPortalData(profile);
-            }
+            await this.loadDataFromDB();
+            if (this.isOnline) this.syncOfflineQueue();
+            this.checkNewMonthBilling();
         },
 
-        async loadStudentPortalData(profile = null) {
-            try {
-                // Cargar lista de alumnos para vincular y refrescar
-                const { data: allStudents } = await this.supabase.from('tkd_students').select('*');
-                this.availableStudentsToLink = Array.isArray(allStudents) ? allStudents.filter(s => !s.archived) : [];
-
-                let st = null;
-                const savedStudentId = profile?.student_id || localStorage.getItem(`cmk-student-link-${this.user?.id}`) || this.linkedStudent?.id;
-                
-                if (savedStudentId) {
-                    st = this.availableStudentsToLink.find(s => s.id === savedStudentId);
-                    if (!st) {
-                        const { data: singleSt } = await this.supabase.from('tkd_students').select('*').eq('id', savedStudentId).maybeSingle();
-                        if (singleSt) st = singleSt;
-                    }
-                }
-
-                if (st) {
-                    this.linkedStudent = {
-                        ...st,
-                        dni: st.dni || '',
-                        cuota_fija: !!st.cuota_fija,
-                        exam_paid: !!st.exam_paid,
-                        exam_paid_amount: Number(st.exam_paid_amount || 0),
-                        debt: Number(st.debt || 0)
-                    };
-                    if (this.user?.id) localStorage.setItem(`cmk-student-link-${this.user?.id}`, st.id);
-                }
-
-                // Cargar ajustes, deudas y asistencias del alumno
-                const { data: settingsRows } = await this.supabase.from('tkd_settings').select('*');
-                const settingsData = this.pickLatestSettingsRow(settingsRows || []);
-                if (settingsData) {
-                    if (settingsData.price_tiers) this.priceTiers = { ...this.priceTiers, ...settingsData.price_tiers };
-                    if (settingsData.exam_tiers) this.examTiers = { ...this.examTiers, ...settingsData.exam_tiers };
-                    if (Array.isArray(settingsData.schedules) && settingsData.schedules.length > 0) this.studentSchedules = settingsData.schedules;
-                    if (settingsData.debt_details) this.debtDetails = settingsData.debt_details;
-                    if (Array.isArray(settingsData.payment_history)) this.paymentHistory = settingsData.payment_history;
-                    if (settingsData.classes) this.classes = Array.isArray(settingsData.classes) ? settingsData.classes : [];
-                    if (settingsData.current_month) this.currentMonth = settingsData.current_month;
-
-                    if (st) {
-                        const attendances = [];
-                        const seenClassKeys = new Set();
-                        const stNameLower = (st.name || '').trim().toLowerCase();
-                        const stIdStr = String(st.id || '');
-
-                        const checkAndAdd = (c, monthName, isCurrent) => {
-                            if (!c) return;
-                            const key = `${c.id || c.date}-${c.dayOfWeek || ''}-${monthName}`;
-                            if (seenClassKeys.has(key)) return;
-
-                            const matchedById = Array.isArray(c.attendeeIds) && c.attendeeIds.some(id => String(id) === stIdStr);
-                            const matchedByName = Array.isArray(c.attendees) && c.attendees.some(name => String(name).trim().toLowerCase() === stNameLower);
-
-                            if (matchedById || matchedByName) {
-                                seenClassKeys.add(key);
-                                attendances.push({
-                                    date: c.date,
-                                    day: c.dayOfWeek || 'Clase',
-                                    month: monthName || 'Mes en curso',
-                                    isCurrent: !!isCurrent
-                                });
-                            }
-                        };
-
-                        // 1. Clases del mes en curso
-                        if (Array.isArray(this.classes)) {
-                            this.classes.forEach(c => checkAndAdd(c, this.currentMonth || 'Mes en curso', true));
-                        }
-
-                        // 2. Clases históricas
-                        if (settingsData.history_data) {
-                            const history = this.normalizeHistoryData(settingsData.history_data);
-                            history.forEach(m => {
-                                if (Array.isArray(m.classes)) {
-                                    m.classes.forEach(c => checkAndAdd(c, m.name, false));
-                                }
-                            });
-                        }
-                        this.studentAttendanceDates = attendances;
-                    }
-                }
-            } catch (err) {
-                console.error("Error loading student portal data:", err);
-            }
-        },
-
-        async linkStudentByDni(dniInput) {
-            this.linkByDniError = '';
-            const cleanDni = String(dniInput || '').replace(/\D/g, '').trim();
-            if (!cleanDni || cleanDni.length < 6) {
-                this.linkByDniError = 'Por favor ingresá un número de DNI válido (mínimo 6 dígitos).';
-                return;
-            }
-
-            this.linkByDniLoading = true;
-            try {
-                // 1. Buscar en la lista activa o consultar Supabase directamente
-                let st = this.availableStudentsToLink.find(s => {
-                    const studentDni = String(s.dni || '').replace(/\D/g, '').trim();
-                    return studentDni === cleanDni;
-                });
-
-                if (!st && this.supabase) {
-                    const { data, error } = await this.supabase
-                        .from('tkd_students')
-                        .select('*')
-                        .ilike('dni', `%${cleanDni}%`)
-                        .limit(1);
-
-                    if (data && data.length > 0) {
-                        st = data[0];
-                    }
-                }
-
-                if (!st) {
-                    this.linkByDniError = 'No encontramos ningún alumno registrado con el DNI ingresado. Verificá los números o pedile a tu profesor que registre tu ficha.';
-                    this.linkByDniLoading = false;
-                    return;
-                }
-
-                // 2. Guardar vinculación
-                this.linkedStudent = st;
-                if (this.user?.id) {
-                    localStorage.setItem(`cmk-student-link-${this.user.id}`, st.id);
-                    try {
-                        await this.supabase.from('profiles').upsert({
-                            id: this.user.id,
-                            role: 'alumno',
-                            student_id: st.id
-                        });
-                    } catch (e) {
-                        console.warn("Could not persist student_id:", e);
-                    }
-                }
-
-                this.showToast(`🥋 ¡Hola ${st.name}! Cuenta vinculada con éxito.`);
-                await this.loadStudentPortalData({ student_id: st.id });
-            } catch (err) {
-                console.error("Error linking student by DNI:", err);
-                this.linkByDniError = 'Ocurrió un error al verificar tu DNI. Intentá nuevamente.';
-            } finally {
-                this.linkByDniLoading = false;
-            }
-        },
-
-        // --- GESTIÓN DE PERFIL PROPIO (ALUMNO) ---
-        openStudentSelfProfile() {
-            if (!this.linkedStudent) {
-                const savedStudentId = localStorage.getItem(`cmk-student-link-${this.user?.id}`);
-                if (savedStudentId) {
-                    this.linkedStudent = this.availableStudentsToLink?.find(s => s.id === savedStudentId) || this.students?.find(s => s.id === savedStudentId) || null;
-                }
-            }
-            if (!this.linkedStudent) {
-                this.showToast('Primero identificá tu DNI para vincular tu perfil.');
-                return;
-            }
-            this.studentProfileForm = {
-                name: this.linkedStudent.name || '',
-                rank: this.linkedStudent.rank || 'Blanco',
-                dni: this.linkedStudent.dni || '',
-                phone: this.linkedStudent.phone || '',
-                dob: this.linkedStudent.dob || '',
-                location: this.linkedStudent.location || ''
-            };
-            this.showStudentProfileModal = true;
-        },
-
-        async saveStudentSelfProfile() {
-            if (!this.linkedStudent) return;
-            const cleanDni = (this.studentProfileForm.dni || '').trim();
-            const cleanPhone = (this.studentProfileForm.phone || '').trim();
-            const cleanDob = (this.studentProfileForm.dob || '').trim();
-            const cleanLocation = (this.studentProfileForm.location || '').trim();
-
-            this.linkedStudent.dni = cleanDni;
-            this.linkedStudent.phone = cleanPhone;
-            this.linkedStudent.dob = cleanDob;
-            this.linkedStudent.location = cleanLocation;
-
-            try {
-                if (this.supabase) {
-                    await this.supabase
-                        .from('tkd_students')
-                        .update({
-                            dni: cleanDni,
-                            phone: cleanPhone,
-                            dob: cleanDob || null,
-                            location: cleanLocation
-                        })
-                        .eq('id', this.linkedStudent.id);
-                }
-
-                // Sincronizar en array local
-                const idx = this.students.findIndex(s => s.id === this.linkedStudent.id);
-                if (idx !== -1) {
-                    this.students[idx] = { ...this.students[idx], ...this.linkedStudent };
-                }
-
-                this.showStudentProfileModal = false;
-                this.triggerHaptic('success');
-                this.showToast('✅ ¡Tus datos personales se actualizaron correctamente!');
-            } catch (err) {
-                console.error("Error saving personal data:", err);
-                this.showToast('Error al guardar datos personales.');
-            }
-        },
-
-        // --- INSTALACIÓN PWA ---
-        installPWA() {
-            if (this.deferredPrompt) {
-                this.deferredPrompt.prompt();
-                this.deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        this.isPWAInstalled = true;
-                        this.showInstallBanner = false;
-                        localStorage.setItem('cmk-pwa-installed', 'true');
-                        this.showToast('🥋 ¡Gracias por instalar la app de Taekwondo CMK!');
-                    }
-                    this.deferredPrompt = null;
-                });
-            } else {
-                this.showToast('Para instalar: Tocá los 3 puntos del navegador o "Compartir" y seleccioná "Agregar a pantalla principal" 📲');
-            }
-        },
-
-        async payWithMercadoPago(type = 'cuota') {
-            if (!this.linkedStudent) {
-                this.showToast('No tenés un perfil vinculado. Avisale al profe.');
-                return;
-            }
-            this.mpLoading = true;
-            try {
-                const amount = type === 'examen' ? (this.linkedStudent.exam_paid_amount || 15000) : (this.linkedStudent.debt || this.getCurrentTierAmount(this.linkedStudent));
-                const { data, error } = await this.supabase.functions.invoke('create-mp-preference', {
-                    body: {
-                        student_id: this.linkedStudent.id,
-                        student_name: this.linkedStudent.name,
-                        amount: amount,
-                        type: type
-                    }
-                });
-                if (error) throw error;
-                if (data?.init_point) {
-                    window.location.href = data.init_point;
-                } else {
-                    throw new Error('Error al generar checkout');
-                }
-            } catch (err) {
-                this.showToast('El pago con Mercado Pago se habilitará en breve.');
-            } finally {
-                this.mpLoading = false;
-            }
-        },
-
-        // --- CONEXIÓN A DB ESTRICTA (SUPABASE) ---
+        // --- CONEXIÃ“N A DB ESTRICTA (SUPABASE) ---
         async loadDataFromDB() {
             try {
                 const { data: studentsData } = await this.supabase.from('tkd_students').select('*').eq('user_id', this.user.id).order('name');
@@ -756,7 +180,7 @@ document.addEventListener('alpine:init', () => {
                     this.historyData = this.normalizeHistoryData(settingsData.history_data || []);
                     this.lastBilled = settingsData.last_billed;
 
-                    // MIGRACIÓN: Mover el recaudo global viejo al mes actual si existe
+                    // MIGRACIÃ“N: Mover el recaudo global viejo al mes actual si existe
                     const oldGlobalRevenue = Number(settingsData.revenue || 0);
                     if (oldGlobalRevenue > 0) {
                         const dateObj = new Date();
@@ -767,7 +191,7 @@ document.addEventListener('alpine:init', () => {
                             currentMonth = { id: this.createId(), name: monthName, open: true, revenue: oldGlobalRevenue, classes: [] };
                             this.historyData.unshift(currentMonth);
                         } else if ((currentMonth.revenue || 0) === 0) {
-                            // Solo si el mes actual aún no tenía recaudo migrado
+                            // Solo si el mes actual aÃºn no tenÃ­a recaudo migrado
                             currentMonth.revenue = oldGlobalRevenue;
                         }
                     }
@@ -780,31 +204,6 @@ document.addEventListener('alpine:init', () => {
                             tier3: Number(settingsData.price_tiers.tier3) || 18000,
                             lastApplied: Number(settingsData.price_tiers.lastApplied) || 1
                         };
-                    }
-
-                    // Cargar valores de examen escalonados
-                    if (settingsData.exam_tiers && typeof settingsData.exam_tiers === 'object') {
-                        this.examTiers = {
-                            amarillos: Number(settingsData.exam_tiers.amarillos) || 12000,
-                            azules: Number(settingsData.exam_tiers.azules) || 15000,
-                            rojos: Number(settingsData.exam_tiers.rojos) || 18000,
-                            negros: Number(settingsData.exam_tiers.negros) || 25000
-                        };
-                    }
-
-                    // Cargar horarios de clases
-                    if (Array.isArray(settingsData.schedules) && settingsData.schedules.length > 0) {
-                        this.studentSchedules = settingsData.schedules;
-                    }
-
-                    // Sincronizar copias de edición con los datos cargados
-                    this.editTiers = { ...this.priceTiers };
-                    this.editExamTiers = { ...this.examTiers };
-                    this.editSchedules = JSON.parse(JSON.stringify(this.studentSchedules || []));
-
-                    // Cargar historial de pagos
-                    if (Array.isArray(settingsData.payment_history)) {
-                        this.paymentHistory = settingsData.payment_history;
                     }
 
                     // Cargar desglose de deudas
@@ -827,12 +226,6 @@ document.addEventListener('alpine:init', () => {
                 if (cachedHis) this.historyData = JSON.parse(cachedHis);
                 const cachedTiers = localStorage.getItem('cmk-cache-tiers');
                 if (cachedTiers) this.priceTiers = JSON.parse(cachedTiers);
-                const cachedExamTiers = localStorage.getItem('cmk-cache-exam-tiers');
-                if (cachedExamTiers) this.examTiers = JSON.parse(cachedExamTiers);
-                const cachedSchedules = localStorage.getItem('cmk-cache-schedules');
-                if (cachedSchedules) this.studentSchedules = JSON.parse(cachedSchedules);
-                const cachedPayments = localStorage.getItem('cmk-cache-payments');
-                if (cachedPayments) this.paymentHistory = JSON.parse(cachedPayments);
                 const cachedDebts = localStorage.getItem('cmk-cache-debts');
                 if (cachedDebts) this.debtDetails = JSON.parse(cachedDebts);
             } catch(e) {}
@@ -842,9 +235,6 @@ document.addEventListener('alpine:init', () => {
             localStorage.setItem('cmk-cache-students', JSON.stringify(this.students));
             localStorage.setItem('cmk-cache-history', JSON.stringify(this.historyData));
             localStorage.setItem('cmk-cache-tiers', JSON.stringify(this.priceTiers));
-            localStorage.setItem('cmk-cache-exam-tiers', JSON.stringify(this.examTiers));
-            localStorage.setItem('cmk-cache-schedules', JSON.stringify(this.studentSchedules));
-            localStorage.setItem('cmk-cache-payments', JSON.stringify(this.paymentHistory));
             localStorage.setItem('cmk-cache-debts', JSON.stringify(this.debtDetails));
         },
 
@@ -869,12 +259,12 @@ document.addEventListener('alpine:init', () => {
                 } catch(e) { console.error("Sync error:", e); }
             }
             if (needsSettingsSync) await this.saveSettingsToDB(true);
-            this.showToast('Sincronización completada');
+            this.showToast('SincronizaciÃ³n completada');
         },
 
         pickLatestSettingsRow(rows) {
             if (!Array.isArray(rows) || rows.length === 0) return null;
-            if (rows.length === 1) return this.unwrapSettingsMeta(rows[0]);
+            if (rows.length === 1) return rows[0];
 
             const rowTime = (row) => {
                 const updated = Date.parse(row?.updated_at || '');
@@ -885,32 +275,17 @@ document.addEventListener('alpine:init', () => {
             };
 
             const withTime = rows.filter(r => rowTime(r) >= 0);
-            const bestRow = withTime.length > 0
-                ? withTime.reduce((best, row) => rowTime(row) > rowTime(best) ? row : best, withTime[0])
-                : rows.reduce((best, row) => {
-                    const bestHistory = Array.isArray(best?.history_data) ? best.history_data.length : 0;
-                    const rowHistory = Array.isArray(row?.history_data) ? row.history_data.length : 0;
-                    if (rowHistory > bestHistory) return row;
-                    if (Number(row?.revenue || 0) > Number(best?.revenue || 0)) return row;
-                    return best;
-                }, rows[0]);
-
-            return this.unwrapSettingsMeta(bestRow);
-        },
-
-        unwrapSettingsMeta(row) {
-            if (!row) return null;
-            const res = { ...row };
-            // Extraer metadatos resilientes de history_data si están presentes
-            const meta = Array.isArray(res.history_data) && res.history_data[0]?._cmk_meta ? res.history_data[0]._cmk_meta : null;
-            if (meta) {
-                if (!res.price_tiers && meta.price_tiers) res.price_tiers = meta.price_tiers;
-                if (!res.exam_tiers && meta.exam_tiers) res.exam_tiers = meta.exam_tiers;
-                if (!res.schedules && meta.schedules) res.schedules = meta.schedules;
-                if (!res.debt_details && meta.debt_details) res.debt_details = meta.debt_details;
-                if (!res.payment_history && meta.payment_history) res.payment_history = meta.payment_history;
+            if (withTime.length > 0) {
+                return withTime.reduce((best, row) => rowTime(row) > rowTime(best) ? row : best, withTime[0]);
             }
-            return res;
+
+            return rows.reduce((best, row) => {
+                const bestHistory = Array.isArray(best?.history_data) ? best.history_data.length : 0;
+                const rowHistory = Array.isArray(row?.history_data) ? row.history_data.length : 0;
+                if (rowHistory > bestHistory) return row;
+                if (Number(row?.revenue || 0) > Number(best?.revenue || 0)) return row;
+                return best;
+            }, rows[0]);
         },
 
         normalizeHistoryData(rawHistory) {
@@ -961,7 +336,7 @@ document.addEventListener('alpine:init', () => {
                 const merged = {
                     id: current.id || idKey,
                     date: current.date || clase?.date || '',
-                    dayOfWeek: current.dayOfWeek || clase?.dayOfWeek || 'Clase',
+                    dayOfWeek: current.dayOfWeek !== 'Clase' ? current.dayOfWeek : (clase?.dayOfWeek || 'Clase'),
                     open: current.open || !!clase?.open,
                     attendees: [...new Set([...(current.attendees || []), ...((Array.isArray(clase?.attendees) ? clase.attendees : []).filter(Boolean))])],
                     attendeeIds: [...new Set([...(current.attendeeIds || []), ...((Array.isArray(clase?.attendeeIds) ? clase.attendeeIds : []).filter(Boolean))])]
@@ -987,26 +362,13 @@ document.addEventListener('alpine:init', () => {
                 return true;
             }
 
-            const historyCopy = Array.isArray(this.historyData) ? JSON.parse(JSON.stringify(this.historyData)) : [];
-            if (historyCopy.length === 0) historyCopy.push({ id: 'cmk-meta', name: 'Ajustes', open: false, classes: [] });
-            historyCopy[0]._cmk_meta = {
-                price_tiers: this.priceTiers,
-                debt_details: this.debtDetails,
-                exam_tiers: this.examTiers,
-                schedules: this.studentSchedules,
-                payment_history: this.paymentHistory
-            };
-
             const payload = {
                 user_id: this.user.id,
-                revenue: 0,
-                history_data: historyCopy,
+                revenue: 0, // Lo forzamos a 0 para no volver a migrarlo la prÃ³xima vez
+                history_data: this.historyData,
                 last_billed: this.lastBilled,
                 price_tiers: this.priceTiers,
-                debt_details: this.debtDetails,
-                exam_tiers: this.examTiers,
-                schedules: this.studentSchedules,
-                payment_history: this.paymentHistory
+                debt_details: this.debtDetails
             };
 
             const { data: updatedRows, error: updateError } = await this.supabase
@@ -1015,96 +377,18 @@ document.addEventListener('alpine:init', () => {
                 .eq('user_id', this.user.id)
                 .select('user_id');
             
-            if (updateError) {
-                // Fallback si alguna columna no existe aún en Supabase: guardamos en history_data
-                const simplifiedPayload = {
-                    user_id: this.user.id,
-                    revenue: 0,
-                    history_data: historyCopy,
-                    last_billed: this.lastBilled
-                };
-                const retryRes = await this.supabase
-                    .from('tkd_settings')
-                    .update(simplifiedPayload)
-                    .eq('user_id', this.user.id)
-                    .select('user_id');
-                
-                if (retryRes.error || !retryRes.data?.length) {
-                    await this.supabase.from('tkd_settings').insert(simplifiedPayload);
-                }
-            } else if (!updatedRows || updatedRows.length === 0) {
+            let error = updateError;
+            if (!error && (!updatedRows || updatedRows.length === 0)) {
                 const { error: insertError } = await this.supabase.from('tkd_settings').insert(payload);
-                if (insertError) {
-                    await this.supabase.from('tkd_settings').insert({
-                        user_id: this.user.id,
-                        revenue: 0,
-                        history_data: historyCopy,
-                        last_billed: this.lastBilled
-                    });
-                }
+                error = insertError;
+            }
+            
+            if (error) {
+                console.error(error);
+                this.showToast('Error al guardar en Supabase');
+                return false;
             }
             return true;
-        },
-
-        getExamFeeForStudent(student) {
-            if (!student) return Number(this.examTiers?.amarillos || 12000);
-            const nextRank = (this.getNextRank(student.rank) || '').toLowerCase();
-            if (nextRank.includes('amarillo')) return Number(this.examTiers?.amarillos || 12000);
-            if (nextRank.includes('azul')) return Number(this.examTiers?.azules || 15000);
-            if (nextRank.includes('rojo')) return Number(this.examTiers?.rojos || 18000);
-            if (nextRank.includes('negro') || nextRank.includes('dan')) return Number(this.examTiers?.negros || 25000);
-            return Number(this.examTiers?.amarillos || 12000);
-        },
-
-        openSettingsModal() {
-            this.editTiers = {
-                tier1: Number(this.priceTiers?.tier1) || 12500,
-                tier2: Number(this.priceTiers?.tier2) || 15000,
-                tier3: Number(this.priceTiers?.tier3) || 18000
-            };
-            this.editExamTiers = {
-                amarillos: Number(this.examTiers?.amarillos) || 12000,
-                azules: Number(this.examTiers?.azules) || 15000,
-                rojos: Number(this.examTiers?.rojos) || 18000,
-                negros: Number(this.examTiers?.negros) || 25000
-            };
-            this.editSchedules = JSON.parse(JSON.stringify(this.studentSchedules || []));
-            this.settingsTab = 'tuition';
-            this.showSettingsModal = true;
-        },
-
-        addScheduleRow() {
-            this.editSchedules.push({ day: 'Sábado', time: '10:00 - 11:30', location: 'Dojo Principal' });
-        },
-
-        removeScheduleRow(index) {
-            this.editSchedules.splice(index, 1);
-        },
-
-        async saveSettings() {
-            this.priceTiers = {
-                tier1: Number(this.editTiers.tier1) || 12500,
-                tier2: Number(this.editTiers.tier2) || 15000,
-                tier3: Number(this.editTiers.tier3) || 18000,
-                lastApplied: Number(this.priceTiers.lastApplied) || 1
-            };
-            this.examTiers = {
-                amarillos: Number(this.editExamTiers.amarillos) || 12000,
-                azules: Number(this.editExamTiers.azules) || 15000,
-                rojos: Number(this.editExamTiers.rojos) || 18000,
-                negros: Number(this.editExamTiers.negros) || 25000
-            };
-            this.studentSchedules = JSON.parse(JSON.stringify(this.editSchedules));
-            this.editTiers = { ...this.priceTiers };
-            this.editExamTiers = { ...this.examTiers };
-            
-            this.updateLocalCache();
-            const ok = await this.saveSettingsToDB(true);
-            if (ok) {
-                this.showSettingsModal = false;
-                this.triggerHaptic('success');
-                this.showToast('Ajustes y valores de examen guardados correctamente');
-            }
         },
 
         showToast(msg) {
@@ -1127,12 +411,31 @@ document.addEventListener('alpine:init', () => {
 
         getCurrentTierLabel() {
             const day = new Date().getDate();
-            if (day <= 10) return 'Días 1-10';
-            if (day <= 20) return 'Días 11-20';
-            return 'Días 21+';
+            if (day <= 10) return 'DÃ­as 1-10';
+            if (day <= 20) return 'DÃ­as 11-20';
+            return 'DÃ­as 21+';
         },
 
-        // --- RECAUDACIÓN MENSUAL ---
+        openSettingsModal() {
+            this.editTiers = { tier1: this.priceTiers.tier1, tier2: this.priceTiers.tier2, tier3: this.priceTiers.tier3 };
+            this.showSettingsModal = true;
+        },
+
+        async savePriceTiers() {
+            this.priceTiers = {
+                tier1: Number(this.editTiers.tier1) || 12500,
+                tier2: Number(this.editTiers.tier2) || 15000,
+                tier3: Number(this.editTiers.tier3) || 18000,
+                lastApplied: this.priceTiers.lastApplied || 1
+            };
+            const saved = await this.saveSettingsToDB();
+            if (saved) {
+                this.showSettingsModal = false;
+                this.showToast('Ajustes guardados correctamente');
+            }
+        },
+
+        // --- RECAUDACIÃ“N MENSUAL ---
         getCurrentMonthRevenue() {
             try {
                 const dateObj = new Date();
@@ -1176,54 +479,15 @@ document.addEventListener('alpine:init', () => {
 
         // --- DESGLOSE DE DEUDA MENSUAL ---
         getStudentMonthlyDebts(studentId) {
-            if (!studentId) return [];
             return Array.isArray(this.debtDetails[studentId]) ? this.debtDetails[studentId] : [];
         },
 
         getUnpaidMonths(studentId) {
-            if (!studentId) return [];
             return this.getStudentMonthlyDebts(studentId).filter(d => !d.paid && d.amount > 0);
         },
 
-        getPaidMonths(studentId) {
-            if (!studentId) return [];
-            return this.getStudentMonthlyDebts(studentId).filter(d => d.paid);
-        },
-
         calcStudentDebt(studentId) {
-            const unpaidTotal = this.getUnpaidMonths(studentId).reduce((sum, d) => sum + Number(d.amount || 0), 0);
-            if (unpaidTotal === 0) {
-                const s = this.students.find(st => st.id === studentId);
-                if (s && Number(s.debt || 0) > 0) return Number(s.debt);
-            }
-            return unpaidTotal;
-        },
-
-        // --- SISTEMA DE TEMAS (LIGHT / DARK / SYSTEM) ---
-        applyTheme() {
-            let isDark = false;
-            const mode = this.themeMode || 'light';
-            this.theme = mode;
-            if (mode === 'dark') isDark = true;
-            else if (mode === 'system') isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            document.documentElement.classList.toggle('dark', isDark);
-            const meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
-            localStorage.setItem('cmk-theme', mode);
-        },
-
-        setTheme(mode) {
-            this.themeMode = mode;
-            this.applyTheme();
-        },
-
-        toggleTheme() {
-            const isDark = document.documentElement.classList.contains('dark');
-            const next = isDark ? 'light' : 'dark';
-            this.themeMode = next;
-            this.applyTheme();
-            this.showToast(`Modo ${next === 'dark' ? 'Oscuro' : 'Claro'} activado`);
+            return this.getUnpaidMonths(studentId).reduce((sum, d) => sum + Number(d.amount || 0), 0);
         },
 
         getMonthLabel(monthKey) {
@@ -1259,25 +523,32 @@ document.addEventListener('alpine:init', () => {
             const unpaid = this.getUnpaidMonths(student.id);
             if (unpaid.length === 0) return '#';
 
-            let rawPhone = String(student.phone).replace(/\D/g, '');
-            // Normalizar formato celular Argentina: 549 + código de área + número
-            if (rawPhone.startsWith('0')) rawPhone = rawPhone.slice(1);
-            if (rawPhone.startsWith('15') && rawPhone.length === 10) rawPhone = '11' + rawPhone.slice(2);
-            if (rawPhone.length === 10) rawPhone = '549' + rawPhone;
-            else if (rawPhone.length === 11 && rawPhone.startsWith('54')) rawPhone = '549' + rawPhone.slice(2);
-            else if (!rawPhone.startsWith('54') && rawPhone.length >= 8) rawPhone = '549' + rawPhone;
-
-            const firstName = (student.name || '').trim().split(' ')[0];
-            const lines = unpaid.map(d => `• ${d.label}: ${this.formatMoney(d.amount)}`);
+            const lines = unpaid.map(d => '- ' + d.label + ': ' + this.formatMoney(d.amount));
             const total = unpaid.reduce((sum, d) => sum + Number(d.amount || 0), 0);
 
-            const msg = `🥋 *Taekwondo Chang Moo Kwan*\n\n`
-                + `Hola ${firstName}! Te paso el detalle de tus cuotas pendientes:\n\n`
-                + lines.join('\n') + `\n\n`
-                + `*Total a abonar:* ${this.formatMoney(total)}\n\n`
-                + `¡Muchas gracias! 🙏🥋`;
+            const msg = 'Hola ' + student.name.split(' ')[0] + '! Te paso el detalle de las cuotas pendientes de Taekwondo:\n\n'
+                + lines.join('\n') + '\n\n'
+                + 'Total: ' + this.formatMoney(total) + '\n\n'
+                + 'Muchas gracias! ðŸ¥‹';
 
-            return 'https://wa.me/' + rawPhone + '?text=' + encodeURIComponent(msg);
+            return 'https://wa.me/' + student.phone + '?text=' + encodeURIComponent(msg);
+        },
+
+        // --- TEMA ---
+        applyTheme() {
+            let isDark = false;
+            if (this.themeMode === 'dark') isDark = true;
+            else if (this.themeMode === 'system') isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+            // Actualizar meta theme-color
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
+        },
+
+        setTheme(mode) {
+            this.themeMode = mode;
+            localStorage.setItem('cmk-theme', mode);
+            this.applyTheme();
         },
 
         // --- MOTOR DE MESES ---
@@ -1325,14 +596,14 @@ document.addEventListener('alpine:init', () => {
                     if (!saved) this.lastBilled = null;
                 }
 
-                // Aplicar ajuste de tier si cambió el rango de días
+                // Aplicar ajuste de tier si cambiÃ³ el rango de dÃ­as
                 await this.applyTierAdjustment();
             } finally {
                 this.billingInProgress = false;
             }
         },
 
-        // Ajuste automático: si pasamos de tier (días 11-20 o días 21+), sumar la diferencia a quienes no pagaron la cuota actual
+        // Ajuste automÃ¡tico: si pasamos de tier (dÃ­as 11-20 o dÃ­as 21+), sumar la diferencia a quienes no pagaron la cuota actual
         async applyTierAdjustment() {
             if (!this.isOnline) return;
             const today = new Date();
@@ -1364,7 +635,7 @@ document.addEventListener('alpine:init', () => {
                         const currentMonthEntry = monthEntries.find(d => d.month === currentMonthKey);
 
                         // Aplica recargo si:
-                        // 1) Existe la entrada del mes actual y no está pagada completamente (!currentMonthEntry.paid)
+                        // 1) Existe la entrada del mes actual y no estÃ¡ pagada completamente (!currentMonthEntry.paid)
                         // 2) O no existe entrada del mes actual pero el alumno tiene deuda acumulada (> 0)
                         let shouldAdjust = false;
                         if (currentMonthEntry && !currentMonthEntry.paid) {
@@ -1403,7 +674,7 @@ document.addEventListener('alpine:init', () => {
                     }
 
                     if (adjusted > 0) {
-                        const tierRangeName = currentTier === 2 ? 'días 11-20' : 'días 21+';
+                        const tierRangeName = currentTier === 2 ? 'dÃ­as 11-20' : 'dÃ­as 21+';
                         this.showToast(`Recargo (${tierRangeName}) aplicado: +${this.formatMoney(diff)} a ${adjusted} alumno${adjusted > 1 ? 's' : ''}`);
                     }
                 }
@@ -1416,7 +687,6 @@ document.addEventListener('alpine:init', () => {
             this.paymentStudent = student;
             // Sugerir cobrar exactamente el total de la deuda calculada
             this.paymentAmount = this.calcStudentDebt(student.id);
-            this.paymentMethod = 'efectivo';
             this.showPaymentModal = true;
         },
 
@@ -1424,7 +694,7 @@ document.addEventListener('alpine:init', () => {
             if (!this.paymentStudent) return;
             const amount = Number(this.paymentAmount) || 0;
             if (amount <= 0) {
-                this.showToast('Ingresá un monto válido');
+                this.showToast('IngresÃ¡ un monto vÃ¡lido');
                 return;
             }
 
@@ -1434,63 +704,22 @@ document.addEventListener('alpine:init', () => {
             const newDebt = Math.max(0, previousDebt - amount);
             this.paymentStudent.debt = newDebt;
 
-            // Aplicar pago FIFO a desglose mensual y registrar qué meses se cubrieron
+            // Aplicar pago FIFO a desglose mensual
             let remaining = amount;
             const entries = this.getStudentMonthlyDebts(this.paymentStudent.id);
-            const affectedMonths = [];
-            let hadPartial = false;
-
             for (let entry of entries) {
                 if (entry.paid || remaining <= 0) continue;
-                const prevEntryAmount = Number(entry.amount || 0);
-                const monthLabel = entry.label || this.getMonthLabel(entry.month);
-
-                if (remaining >= prevEntryAmount) {
-                    remaining -= prevEntryAmount;
+                if (remaining >= entry.amount) {
+                    remaining -= entry.amount;
                     entry.paid = true;
-                    entry.paidAmount = (entry.paidAmount || 0) + prevEntryAmount;
-                    affectedMonths.push(monthLabel);
                 } else {
-                    entry.amount = prevEntryAmount - remaining;
-                    entry.paidAmount = (entry.paidAmount || 0) + remaining;
-                    hadPartial = true;
-                    affectedMonths.push(`${monthLabel} (Parcial)`);
+                    entry.amount -= remaining;
                     remaining = 0;
                 }
             }
             this.debtDetails = { ...this.debtDetails };
 
             this.addMonthlyRevenue(amount);
-
-            // Registrar transacción en el historial de cobros con fecha, día, método y mes exacto
-            const dateObj = new Date();
-            const displayDate = dateObj.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
-            const dayOfWeek = dateObj.toLocaleDateString('es-AR', { weekday: 'long' });
-            const currentMonthName = dateObj.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-            const currentMonthCapitalized = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
-
-            let typeLabel = 'Cuota Mensual';
-            if (affectedMonths.length > 0) {
-                typeLabel = hadPartial ? `Pago Parcial - ${affectedMonths.join(', ')}` : `Cuota ${affectedMonths.join(', ')}`;
-            } else {
-                typeLabel = `Cuota ${currentMonthCapitalized}`;
-            }
-
-            const tx = {
-                id: this.createId(),
-                studentId: this.paymentStudent.id,
-                studentName: this.paymentStudent.name,
-                amount: amount,
-                type: typeLabel,
-                concept: typeLabel,
-                method: this.paymentMethod || 'efectivo',
-                date: displayDate,
-                dayOfWeek: dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1),
-                month: currentMonthCapitalized,
-                timestamp: Date.now()
-            };
-            if (!Array.isArray(this.paymentHistory)) this.paymentHistory = [];
-            this.paymentHistory.unshift(tx);
 
             // Actualizar en la lista de students
             const index = this.students.findIndex(s => s.id === this.paymentStudent.id);
@@ -1519,19 +748,19 @@ document.addEventListener('alpine:init', () => {
                 }
             }
 
-            // Actualizar activeStudent si está abierto el perfil
+            // Actualizar activeStudent si estÃ¡ abierto el perfil
             if (this.activeStudent && this.activeStudent.id === this.paymentStudent.id) {
                 this.activeStudent.debt = newDebt;
             }
 
             this.showPaymentModal = false;
-            // Cerrar también el perfil del alumno al confirmar cobro
+            // Cerrar tambiÃ©n el perfil del alumno al confirmar cobro
             this.closeProfileModal();
             this.triggerHaptic('success');
             if (newDebt > 0) {
                 this.showToast('Pago parcial registrado. Resta: ' + this.formatMoney(newDebt));
             } else {
-                this.showToast('Cobro registrado. Cuota al día');
+                this.showToast('Cobro registrado. Cuota al dÃ­a');
             }
         },
 
@@ -1568,18 +797,13 @@ document.addEventListener('alpine:init', () => {
 
         openEditModal(student = null) {
             this.showProfileModal = false;
-            const baseAmount = Number(this.priceTiers.tier1) || 15000;
             if (student) {
                 this.isEditing = true;
-                this.form = { 
-                    ...student, 
-                    dni: student.dni || '', 
-                    tuition: student.tuition ? Number(student.tuition) : baseAmount,
-                    cuota_fija: !!student.cuota_fija 
-                };
+                this.form = { ...student, dni: student.dni || '', cuota_fija: !!student.cuota_fija };
             } else {
                 this.isEditing = false;
-                this.form = { id: this.createId(), name: '', dob: '', rank: 'Blanco', tuition: baseAmount, debt: baseAmount, phone: '', location: '', dni: '', cuota_fija: false, exam_paid: false, exam_paid_amount: 0 };
+                const currentAmount = this.getCurrentTierAmount(null);
+                this.form = { id: this.createId(), name: '', dob: '', rank: 'Blanco', tuition: currentAmount, debt: currentAmount, phone: '', location: '', dni: '', cuota_fija: false, exam_paid: false, exam_paid_amount: 0 };
             }
             setTimeout(() => { this.showEditModal = true; }, 100);
         },
@@ -1676,7 +900,7 @@ document.addEventListener('alpine:init', () => {
                 this.updateLocalCache();
                 this.triggerHaptic('heavy');
                 this.closeProfileModal();
-                this.showToast('Alumno eliminado con éxito');
+                this.showToast('Alumno eliminado con Ã©xito');
             }
         },
 
@@ -1707,14 +931,14 @@ document.addEventListener('alpine:init', () => {
                 }
             }
 
-            // Actualizar activeStudent si está abierto el perfil
+            // Actualizar activeStudent si estÃ¡ abierto el perfil
             if (this.activeStudent && this.activeStudent.id === student.id) {
                 this.activeStudent.archived = newArchived;
             }
 
             this.triggerHaptic('heavy');
             this.closeProfileModal();
-            this.showToast(newArchived ? 'Alumno archivado con éxito' : 'Alumno desarchivado con éxito');
+            this.showToast(newArchived ? 'Alumno archivado con Ã©xito' : 'Alumno desarchivado con Ã©xito');
         },
 
         // --- ASISTENCIA INTELIGENTE ---
@@ -1842,7 +1066,7 @@ document.addEventListener('alpine:init', () => {
             const saved = await this.saveSettingsToDB();
             if (!saved) return;
             this.attendanceBuffer = [];
-            this.showToast('Asistencia guardada con éxito');
+            this.showToast('Asistencia guardada con Ã©xito');
             this.view = 'history';
         },
 
@@ -1860,18 +1084,18 @@ document.addEventListener('alpine:init', () => {
         async promotePaidStudents() {
             const paidStudents = this.students.filter(s => s.exam_paid);
             if (paidStudents.length === 0) {
-                this.showToast('No hay ningún alumno con examen pagado para promocionar');
+                this.showToast('No hay ningÃºn alumno con examen pagado para promocionar');
                 return;
             }
 
-            if (!confirm('Â¿Estás seguro de que querés promocionar a los ' + paidStudents.length + ' alumnos que pagaron al siguiente cinturón?')) {
+            if (!confirm('Â¿EstÃ¡s seguro de que querÃ©s promocionar a los ' + paidStudents.length + ' alumnos que pagaron al siguiente cinturÃ³n?')) {
                 return;
             }
 
             let promotedCount = 0;
             for (let s of paidStudents) {
                 const nextRank = this.getNextRank(s.rank);
-                if (nextRank && nextRank !== 'Dan (Máximo)') {
+                if (nextRank && nextRank !== 'Dan (MÃ¡ximo)') {
                     s.rank = nextRank;
                 }
                 s.exam_paid = false;
@@ -1893,14 +1117,13 @@ document.addEventListener('alpine:init', () => {
             await this.saveSettingsToDB();
             this.students = [...this.students];
             this.triggerHaptic('success');
-            this.showToast('Promoción completada: ' + promotedCount + ' alumnos pasaron al siguiente cinturón');
+            this.showToast('PromociÃ³n completada: ' + promotedCount + ' alumnos pasaron al siguiente cinturÃ³n');
         },
 
         openExamPayment(student) {
             if (!student) return;
             this.examPaymentStudent = student;
-            this.examPaymentAmount = this.getExamFeeForStudent(student);
-            this.paymentMethod = 'efectivo';
+            this.examPaymentAmount = 15000;
             this.showExamModal = true;
         },
 
@@ -1908,7 +1131,7 @@ document.addEventListener('alpine:init', () => {
             if (!this.examPaymentStudent) return;
             const amount = Number(this.examPaymentAmount) || 0;
             if (amount <= 0) {
-                this.showToast('Ingresá un monto válido');
+                this.showToast('IngresÃ¡ un monto vÃ¡lido');
                 return;
             }
             const previousPaid = !!this.examPaymentStudent.exam_paid;
@@ -1917,28 +1140,6 @@ document.addEventListener('alpine:init', () => {
             this.addMonthlyRevenue(amount);
             this.examPaymentStudent.exam_paid = true;
             this.examPaymentStudent.exam_paid_amount = amount;
-
-            // Registrar transacción de examen en el historial de cobros
-            const dateObj = new Date();
-            const displayDate = dateObj.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
-            const dayOfWeek = dateObj.toLocaleDateString('es-AR', { weekday: 'long' });
-            const monthName = dateObj.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-
-            const tx = {
-                id: this.createId(),
-                studentId: this.examPaymentStudent.id,
-                studentName: this.examPaymentStudent.name,
-                amount: amount,
-                type: 'Derecho a Examen',
-                rank: this.getNextRank(this.examPaymentStudent.rank),
-                method: this.paymentMethod || 'efectivo',
-                date: displayDate,
-                dayOfWeek: dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1),
-                month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
-                timestamp: Date.now()
-            };
-            if (!Array.isArray(this.paymentHistory)) this.paymentHistory = [];
-            this.paymentHistory.unshift(tx);
             
             if (this.user) {
                 if (!this.isOnline) {
@@ -2046,14 +1247,14 @@ document.addEventListener('alpine:init', () => {
                 new Date(year, 11, 10)
             ];
             
-            // Buscamos la primera fecha de examen del año que todavía no haya pasado
+            // Buscamos la primera fecha de examen del aÃ±o que todavÃ­a no haya pasado
             for (let i = 0; i < dates.length; i++) {
                 if (today <= dates[i]) {
                     return dates[i];
                 }
             }
             
-            // Si ya pasaron los 3 del año, el próximo es abril del año que viene
+            // Si ya pasaron los 3 del aÃ±o, el prÃ³ximo es abril del aÃ±o que viene
             return new Date(year + 1, 3, 10);
         },
 
@@ -2067,9 +1268,9 @@ document.addEventListener('alpine:init', () => {
 
         getGreeting() {
             const h = new Date().getHours();
-            if (h < 12) return '☀️ Buen día';
-            if (h < 19) return '🌤️ Buenas tardes';
-            return '🌙 Buenas noches';
+            if (h < 12) return 'â˜€ï¸ Buen dÃ­a';
+            if (h < 19) return 'ðŸŒ¤ï¸ Buenas tardes';
+            return 'ðŸŒ™ Buenas noches';
         },
 
         getPageTitle() {
@@ -2077,8 +1278,8 @@ document.addEventListener('alpine:init', () => {
             return map[this.view];
         },
         getPageSubtitle() {
-            if (this.view === 'attendance') return 'Seleccioná a los presentes';
-            if (this.view === 'students') return 'Tocá un alumno para ver su perfil';
+            if (this.view === 'attendance') return 'SeleccionÃ¡ a los presentes';
+            if (this.view === 'students') return 'TocÃ¡ un alumno para ver su perfil';
             return new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
         },
 
@@ -2099,7 +1300,7 @@ document.addEventListener('alpine:init', () => {
 
         getNextRank(rank) {
             const idx = this.ranks.indexOf(rank);
-            return (idx !== -1 && idx < this.ranks.length - 1) ? this.ranks[idx+1] : 'Dan (Máximo)';
+            return (idx !== -1 && idx < this.ranks.length - 1) ? this.ranks[idx+1] : 'Dan (MÃ¡ximo)';
         },
 
         formatMoney(amount) { 
@@ -2186,7 +1387,7 @@ if ('serviceWorker' in navigator) {
             ctx.fillStyle = g1;
             ctx.beginPath(); ctx.arc(x1, y1, r1, 0, Math.PI * 2); ctx.fill();
 
-            // Esfera 2 (Púrpura)
+            // Esfera 2 (PÃºrpura)
             const g2 = ctx.createRadialGradient(x2, y2, 10, x2, y2, r2);
             g2.addColorStop(0, isDark ? 'rgba(124, 58, 237, 0.30)' : 'rgba(192, 132, 252, 0.38)');
             g2.addColorStop(1, 'rgba(192, 132, 252, 0)');

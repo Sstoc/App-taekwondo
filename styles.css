@@ -82,33 +82,133 @@ body {
     transform: translateZ(0);
 }
 
-/* --- Animaciones de Apertura y Transición Ultra Fluida --- */
-.page-enter { animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
-@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+/* --- Animaciones de Apertura y Cierre en Reversa Estilo iOS (Spring Physics) --- */
+.page-enter { 
+    animation: iosAppOpen 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; 
+    will-change: transform, opacity;
+}
+@keyframes iosAppOpen { 
+    0% { opacity: 0; transform: scale(0.96) translateY(10px); filter: blur(4px); } 
+    100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); } 
+}
 
-.modal-enter { animation: modalIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-progress {
+    animation: splashProgressBar 1.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes splashProgressBar {
+    0% { width: 0%; transform: translateX(-20%); }
+    50% { width: 75%; transform: translateX(25%); }
+    100% { width: 100%; transform: translateX(100%); }
+}
+
+/* --- Alpine Modal Transitions & Progressive Backdrop Blur Engine --- */
+.modal-backdrop-base {
+    background-color: rgba(10, 15, 30, 0.52) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.backdrop-enter {
+    transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.32s cubic-bezier(0.16, 1, 0.3, 1), -webkit-backdrop-filter 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.backdrop-enter-start {
+    opacity: 0 !important;
+    backdrop-filter: blur(0px) !important;
+    -webkit-backdrop-filter: blur(0px) !important;
+}
+.backdrop-enter-end {
+    opacity: 1 !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.backdrop-leave {
+    transition: opacity 0.22s cubic-bezier(0.32, 0.72, 0, 1), backdrop-filter 0.22s cubic-bezier(0.32, 0.72, 0, 1), -webkit-backdrop-filter 0.22s cubic-bezier(0.32, 0.72, 0, 1) !important;
+}
+.backdrop-leave-start {
+    opacity: 1 !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+}
+.backdrop-leave-end {
+    opacity: 0 !important;
+    backdrop-filter: blur(0px) !important;
+    -webkit-backdrop-filter: blur(0px) !important;
+}
+
+/* Modal Dialog Card Transition States */
+.modal-card-enter {
+    transition: transform 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.15), opacity 0.3s ease-out !important;
+    will-change: transform, opacity;
+}
+.modal-card-enter-start {
+    opacity: 0 !important;
+    transform: scale(0.90) translateY(24px) !important;
+}
+.modal-card-enter-end {
+    opacity: 1 !important;
+    transform: scale(1) translateY(0) !important;
+}
+
+.modal-card-leave {
+    transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease-in !important;
+    will-change: transform, opacity;
+}
+.modal-card-leave-start {
+    opacity: 1 !important;
+    transform: scale(1) translateY(0) !important;
+}
+.modal-card-leave-end {
+    opacity: 0 !important;
+    transform: scale(0.92) translateY(18px) !important;
+}
 
 @media (max-width: 767px) {
-    .modal-enter { animation: bottomSheetIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-    @keyframes bottomSheetIn { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+    .modal-card-enter {
+        transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease-out !important;
+    }
+    .modal-card-enter-start {
+        opacity: 0.7 !important;
+        transform: translateY(100%) scale(0.96) !important;
+    }
+    .modal-card-enter-end {
+        opacity: 1 !important;
+        transform: translateY(0) scale(1) !important;
+    }
+    .modal-card-leave {
+        transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease-in !important;
+    }
+    .modal-card-leave-start {
+        opacity: 1 !important;
+        transform: translateY(0) scale(1) !important;
+    }
+    .modal-card-leave-end {
+        opacity: 0 !important;
+        transform: translateY(100%) scale(0.96) !important;
+    }
 }
 
-@keyframes modalIn { from { opacity: 0; transform: scale(0.92) translateY(24px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-
-.toast-enter { animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes toastIn { from { opacity: 0; transform: translateY(20px) translateX(-50%); } to { opacity: 1; transform: translateY(0) translateX(-50%); } }
-
-/* --- Floating Card --- */
+/* --- Floating Card con Tactile Haptic Press iOS --- */
 .floating-card {
-    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
-    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.05);
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease, background-color 0.2s ease;
+    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.06);
+    will-change: transform;
 }
-.floating-card:active { transform: scale(0.98); }
+.floating-card:active { 
+    transform: scale(0.96) !important; 
+    transition-duration: 0.1s;
+}
 @media (hover: hover) {
     .floating-card:hover {
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.10);
-        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.14);
+        transform: translateY(-2px) scale(1.01);
     }
+}
+
+/* Tacto y micro-interacción iOS para todos los botones */
+button:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease-out;
 }
 
 /* --- Navegación flotante móvil (píldora Liquid Glass FIXED) --- */

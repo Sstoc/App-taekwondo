@@ -13,6 +13,11 @@
     <meta name="apple-mobile-web-app-title" content="Taekwondo - CMK">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -31,6 +36,26 @@
     <canvas id="bg-canvas" class="fixed inset-0 pointer-events-none opacity-70 dark:opacity-50 transition-opacity duration-700 z-0"></canvas>
 
     <div x-data="tkdApp()" x-init="init()" class="h-full min-h-0 flex flex-col md:flex-row relative z-10">
+
+        <!-- SPLASH SCREEN / ANIMACIÓN DE INICIO ELEGANTE -->
+        <div id="splash-screen" 
+             x-show="!appReady" 
+             x-transition:leave="transition ease-out duration-500" 
+             x-transition:leave-start="opacity-100 scale-100" 
+             x-transition:leave-end="opacity-0 scale-95"
+             class="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center justify-center p-6 select-none">
+            <div class="relative flex flex-col items-center">
+                <div class="w-24 h-24 rounded-3xl p-1 bg-gradient-to-tr from-indigo-500 via-purple-500 to-sky-400 shadow-2xl shadow-indigo-500/40 mb-6 flex items-center justify-center overflow-hidden">
+                    <img src="logo%20chang%20moo%20kwan.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%2210%22 fill=%220f172a%22/%3E%3Ctext x=%2220%22 y=%2225%22 font-size=%2214%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-family=%22Arial%22%3ECMK%3C/text%3E%3C/svg%3E';" class="w-full h-full object-cover rounded-[1.3rem]">
+                </div>
+                <h1 class="text-2xl font-black text-white tracking-wider mb-1">CHANG MOO KWAN</h1>
+                <p class="text-[11px] font-bold text-indigo-400 uppercase tracking-widest mb-8">Sistema Oficial de Gestión</p>
+                
+                <div class="w-44 h-1.5 bg-slate-800/80 rounded-full overflow-hidden relative">
+                    <div class="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-sky-400 rounded-full animate-progress"></div>
+                </div>
+            </div>
+        </div>
 
         <!-- LOGIN -->
         <div x-show="!user" x-cloak class="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -67,7 +92,7 @@
         </div>
 
         <!-- SIDEBAR DESKTOP -->
-        <aside class="hidden md:flex w-72 flex-col justify-between p-6 z-20 glass">
+        <aside class="hidden md:flex w-72 flex-col justify-between p-6 z-20 glass" x-show="userRole === 'admin' || !userRole">
             <div>
                 <div class="flex items-center gap-3 mb-10 text-indigo-700">
                     <img src="logo%20chang%20moo%20kwan.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%2210%22 fill=%220f172a%22/%3E%3Ctext x=%2220%22 y=%2225%22 font-size=%2214%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-family=%22Arial%22%3ECMK%3C/text%3E%3C/svg%3E';" class="w-10 h-10 rounded-xl object-cover shadow-lg border border-slate-200">
@@ -118,7 +143,7 @@
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main class="flex-1 flex min-h-0 flex-col h-full relative">
+        <main class="flex-1 flex min-h-0 flex-col h-full relative" x-show="userRole === 'admin' || !userRole">
             <div class="flex-1 min-h-0 overflow-y-auto relative">
                 
                 <!-- HEADER MOBILE -->
@@ -349,62 +374,122 @@
 
                     <!-- ===== HISTORY ===== -->
                     <div x-show="view === 'history'" class="page-enter space-y-4" x-cloak>
-                        <template x-for="month in historyData" :key="month.id">
-                            <div class="card-item rounded-2xl overflow-hidden">
-                                <button @click="month.open = !month.open" class="w-full flex items-center justify-between p-5 hover:bg-white/20 transition border-b border-white/20">
-                                    <div class="flex items-center gap-3">
-                                        <i class="fa-regular fa-calendar text-indigo-500"></i>
-                                        <span class="font-bold text-lg capitalize text-slate-800" x-text="month.name"></span>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-sm font-bold text-green-600" :class="showRevenue ? '' : 'text-slate-400'">
-                                            <span x-show="showRevenue" x-text="formatMoney(month.revenue || 0)"></span>
-                                            <span x-show="!showRevenue">$ ••••••</span>
-                                        </span>
-                                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform" :class="month.open ? 'rotate-180' : ''"></i>
-                                    </div>
+                        <!-- Selector de Sub-pestañas: Cobros vs Asistencias -->
+                        <div class="flex items-center justify-between gap-4 mb-2">
+                            <div class="flex bg-slate-200/80 dark:bg-slate-800/90 rounded-2xl p-1 gap-1">
+                                <button @click="historyTab = 'payments'"
+                                        :class="historyTab === 'payments' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 font-black shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'"
+                                        class="py-2 px-4 rounded-xl text-xs transition flex items-center gap-2">
+                                    <i class="fa-solid fa-receipt"></i> Historial de Cobros
                                 </button>
-                                
-                                <div x-show="month.open" x-collapse>
-                                    <div class="bg-slate-50/50">
-                                        <template x-for="clase in month.classes" :key="clase.id || clase.date">
-                                            <div class="border-b border-slate-100 last:border-0">
-                                                <button @click="clase.open = !clase.open" class="w-full flex justify-between items-center p-4 hover:bg-white transition">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="bg-slate-200 text-slate-700 font-mono text-xs px-2 py-1 rounded font-bold" x-text="clase.date"></div>
-                                                        <span class="text-sm font-bold text-slate-800 capitalize" x-text="clase.dayOfWeek || 'Clase'"></span>
-                                                    </div>
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="text-xs font-bold text-indigo-600" x-text="getClassAttendeeNames(clase).length + ' alumnos presentes'"></span>
-                                                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" :class="clase.open ? 'rotate-180' : ''"></i>
-                                                    </div>
-                                                </button>
-                                                
-                                                <div x-show="clase.open" x-collapse>
-                                                    <div class="p-2 space-y-1 bg-white pl-14 pr-4 pb-4">
-                                                        <template x-for="name in getClassAttendeeNames(clase)" :key="name">
-                                                            <div class="flex items-center gap-3 p-2 rounded-lg bg-slate-50 border border-slate-100">
-                                                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                                                <span class="text-sm font-bold text-slate-700" x-text="name"></span>
+                                <button @click="historyTab = 'classes'"
+                                        :class="historyTab === 'classes' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 font-black shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'"
+                                        class="py-2 px-4 rounded-xl text-xs transition flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-user"></i> Asistencias
+                                </button>
+                            </div>
+                            
+                            <span class="text-xs font-bold text-slate-400" x-text="historyTab === 'payments' ? (paymentHistory.length + ' cobros') : (historyData.length + ' meses')"></span>
+                        </div>
+
+                        <!-- 1. SUB-VISTA: COBROS Y PAGOS (Efectivo / Transferencia, Fecha, Día) -->
+                        <div x-show="historyTab === 'payments'" class="space-y-3">
+                            <template x-for="tx in paymentHistory" :key="tx.id || tx.timestamp">
+                                <div class="card-item p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 floating-card border border-white/40 dark:border-white/10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-lg font-bold shrink-0 shadow-sm"
+                                             :class="tx.method === 'efectivo' ? 'bg-green-500/15 text-green-600' : 'bg-indigo-500/15 text-indigo-600'">
+                                            <i :class="tx.method === 'efectivo' ? 'fa-solid fa-money-bill-wave' : 'fa-solid fa-building-columns'"></i>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-extrabold text-sm text-slate-900 dark:text-white" x-text="tx.studentName"></h4>
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase" x-text="tx.type"></span>
+                                            </div>
+                                            <div class="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                                                <span class="font-bold text-indigo-600 dark:text-indigo-400 capitalize" x-text="tx.dayOfWeek"></span>
+                                                <span>•</span>
+                                                <span class="font-mono text-slate-600 dark:text-slate-300 font-semibold" x-text="tx.date"></span>
+                                                <span x-show="tx.rank" class="text-[10px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 px-1.5 py-0.5 rounded font-semibold" x-text="'Rindió a ' + tx.rank"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-white/5">
+                                        <span class="text-xs font-black px-3 py-1 rounded-xl flex items-center gap-1.5"
+                                              :class="tx.method === 'efectivo' ? 'bg-green-500/15 text-green-700 dark:text-green-400 border border-green-300/30' : 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border border-indigo-300/30'">
+                                            <i :class="tx.method === 'efectivo' ? 'fa-solid fa-money-bill-wave' : 'fa-solid fa-building-columns'"></i>
+                                            <span x-text="tx.method === 'efectivo' ? 'Efectivo' : 'Transferencia'"></span>
+                                        </span>
+                                        <span class="text-base font-black text-slate-900 dark:text-white" x-text="formatMoney(tx.amount)"></span>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="paymentHistory.length === 0" class="card-item p-10 text-center text-slate-400 rounded-2xl">
+                                <i class="fa-solid fa-receipt text-3xl mb-2 text-slate-300 dark:text-slate-600"></i>
+                                <p class="font-bold">Aún no hay cobros registrados en el historial.</p>
+                            </div>
+                        </div>
+
+                        <!-- 2. SUB-VISTA: CLASES Y ASISTENCIAS -->
+                        <div x-show="historyTab === 'classes'" class="space-y-4">
+                            <template x-for="month in historyData" :key="month.id">
+                                <div class="card-item rounded-2xl overflow-hidden">
+                                    <button @click="month.open = !month.open" class="w-full flex items-center justify-between p-5 hover:bg-white/20 transition border-b border-white/20">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fa-regular fa-calendar text-indigo-500"></i>
+                                            <span class="font-bold text-lg capitalize text-slate-800" x-text="month.name"></span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-sm font-bold text-green-600" :class="showRevenue ? '' : 'text-slate-400'">
+                                                <span x-show="showRevenue" x-text="formatMoney(month.revenue || 0)"></span>
+                                                <span x-show="!showRevenue">$ ••••••</span>
+                                            </span>
+                                            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform" :class="month.open ? 'rotate-180' : ''"></i>
+                                        </div>
+                                    </button>
+                                    
+                                    <div x-show="month.open" x-collapse>
+                                        <div class="bg-slate-50/80 dark:bg-slate-950/60 divide-y divide-slate-200/60 dark:divide-slate-800/30">
+                                            <template x-for="clase in month.classes" :key="clase.id || clase.date">
+                                                <div class="border-b border-slate-100 dark:border-white/5 last:border-0">
+                                                    <button @click="clase.open = !clase.open" class="w-full flex justify-between items-center p-4 hover:bg-indigo-50/50 dark:hover:bg-white/5 transition">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="bg-slate-100 text-slate-700 border border-slate-200 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30 font-mono text-xs px-2.5 py-1 rounded-lg font-bold" x-text="clase.date"></div>
+                                                            <span class="text-sm font-bold text-slate-800 dark:text-slate-200 capitalize" x-text="clase.dayOfWeek || 'Clase'"></span>
+                                                        </div>
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400" x-text="getClassAttendeeNames(clase).length + ' alumnos presentes'"></span>
+                                                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" :class="clase.open ? 'rotate-180' : ''"></i>
+                                                        </div>
+                                                    </button>
+                                                    
+                                                    <div x-show="clase.open" x-collapse>
+                                                        <div class="p-3 space-y-1.5 bg-slate-100/50 dark:bg-slate-950/50 pl-14 pr-4 pb-4">
+                                                            <template x-for="name in getClassAttendeeNames(clase)" :key="name">
+                                                                <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 shadow-sm dark:shadow-none">
+                                                                    <div class="w-2 h-2 rounded-full bg-green-500 shadow-sm shadow-green-500/50"></div>
+                                                                    <span class="text-sm font-bold" x-text="name"></span>
+                                                                </div>
+                                                            </template>
+                                                            <div x-show="getClassAttendeeNames(clase).length === 0" class="text-xs text-slate-400 py-2">
+                                                                Nadie asistió a esta clase.
                                                             </div>
-                                                        </template>
-                                                        <div x-show="getClassAttendeeNames(clase).length === 0" class="text-xs text-slate-400 py-2">
-                                                            Nadie asistió a esta clase.
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </template>
+                                            <div x-show="month.classes.length === 0" class="text-center py-6 text-sm text-slate-400">
+                                                Sin registros este mes.
                                             </div>
-                                        </template>
-                                        <div x-show="month.classes.length === 0" class="text-center py-6 text-sm text-slate-400">
-                                            Sin registros este mes.
                                         </div>
                                     </div>
                                 </div>
+                            </template>
+                            
+                            <div x-show="historyData.length === 0" class="text-center py-10 text-slate-400 font-bold">
+                                Aún no guardaste ninguna asistencia.
                             </div>
-                        </template>
-                        
-                        <div x-show="historyData.length === 0" class="text-center py-10 text-slate-400 font-bold">
-                            Aún no guardaste ninguna asistencia.
                         </div>
                     </div>
 
@@ -482,10 +567,411 @@
             </div>
         </main>
 
+        <!-- ============================================== -->
+        <!-- PORTAL PARA USUARIOS CLIENTES (ALUMNOS)       -->
+        <!-- ============================================== -->
+        <div x-show="userRole === 'student'" x-cloak class="flex-1 flex flex-col h-full overflow-hidden relative z-20">
+            <!-- Header Alumno -->
+            <header class="glass px-6 py-4 flex items-center justify-between border-b border-white/20 dark:border-white/10 shrink-0">
+                <div class="flex items-center gap-3 cursor-pointer select-none" @click="linkedStudent && openStudentSelfProfile()" title="Ver y editar mis datos personales">
+                    <img src="logo%20chang%20moo%20kwan.jpeg" alt="CMK Logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%2210%22 fill=%220f172a%22/%3E%3Ctext x=%2220%22 y=%2225%22 font-size=%2214%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-family=%22Arial%22%3ECMK%3C/text%3E%3C/svg%3E';" class="w-10 h-10 rounded-xl object-cover shadow-lg border border-slate-200 dark:border-slate-700">
+                    <div>
+                        <p class="text-xs font-bold text-indigo-600 dark:text-indigo-400" x-text="getGreeting()"></p>
+                        <div class="flex items-center gap-1.5">
+                            <h1 class="text-lg font-black tracking-tight text-slate-900 dark:text-white" x-text="linkedStudent ? linkedStudent.name : 'Portal del Alumno'"></h1>
+                            <i x-show="linkedStudent" class="fa-solid fa-pen text-[10px] text-indigo-500 opacity-80"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- Botón Instalar App (PWA - Solo visible si no está instalada) -->
+                    <button x-show="!isPWAInstalled" 
+                            @click="installPWA()" 
+                            class="w-9 h-9 rounded-xl glass border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition shadow-sm" 
+                            title="Instalar App en el Teléfono">
+                        <i class="fa-solid fa-download text-indigo-500"></i>
+                    </button>
+
+                    <!-- Selector de Tema (Claro / Oscuro) -->
+                    <button @click="toggleTheme()" 
+                            class="w-9 h-9 rounded-xl glass border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition shadow-sm" 
+                            :title="'Cambiar tema (Actual: ' + theme + ')'">
+                        <i :class="theme === 'dark' ? 'fa-solid fa-moon text-indigo-400' : (theme === 'light' ? 'fa-solid fa-sun text-amber-500' : 'fa-solid fa-desktop text-slate-500')"></i>
+                    </button>
+
+                    <!-- Botón Mis Datos Personales -->
+                    <button x-show="linkedStudent" 
+                            @click="openStudentSelfProfile()" 
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black shadow-sm hover:scale-105 active:scale-95 transition cursor-pointer" 
+                            :class="linkedStudent ? getCardStyle(linkedStudent.rank) : ''"
+                            title="Ver y editar mis datos personales">
+                        <span x-text="linkedStudent ? linkedStudent.rank : ''"></span>
+                        <i class="fa-solid fa-user-pen text-[10px] opacity-70"></i>
+                    </button>
+                    <button @click="signOut()" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 transition active:scale-95">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Salir</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Contenido Principal Portal Alumno -->
+            <div class="p-4 md:p-6 max-w-4xl mx-auto w-full flex-1 overflow-y-auto space-y-6 pb-28 md:pb-8">
+                
+                <!-- Selector de Vistas en Desktop (Oculto en móvil) -->
+                <div class="hidden md:flex glass p-1.5 rounded-2xl max-w-lg mx-auto shadow-sm">
+                    <button @click="studentView = 'status'" :class="studentView === 'status' ? 'bg-indigo-600 text-white shadow-md font-bold' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-semibold'" class="flex-1 py-2.5 text-xs rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wallet"></i> Mi Cuota
+                    </button>
+                    <button @click="studentView = 'exam'" :class="studentView === 'exam' ? 'bg-indigo-600 text-white shadow-md font-bold' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-semibold'" class="flex-1 py-2.5 text-xs rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-graduation-cap"></i> Examen
+                    </button>
+                    <button @click="studentView = 'attendance'" :class="studentView === 'attendance' ? 'bg-indigo-600 text-white shadow-md font-bold' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-semibold'" class="flex-1 py-2.5 text-xs rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-clipboard-check"></i> Asistencia
+                    </button>
+                    <button @click="studentView = 'schedule'" :class="studentView === 'schedule' ? 'bg-indigo-600 text-white shadow-md font-bold' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-semibold'" class="flex-1 py-2.5 text-xs rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-clock"></i> Horarios
+                    </button>
+                </div>
+
+                <!-- Si la cuenta no está vinculada aún (Identificación por DNI - Opción A) -->
+                <div x-show="!linkedStudent" class="glass-heavy p-8 rounded-3xl text-center max-w-md mx-auto page-enter shadow-2xl border border-white/20">
+                    <div class="w-16 h-16 bg-indigo-500/15 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-slate-800 dark:text-white mb-2">Ingresá tu DNI</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Ingresá tu número de Documento con el que fuiste registrado/a para acceder a tu perfil:</p>
+                    
+                    <form @submit.prevent="linkStudentByDni(inputDni)" class="space-y-4 text-left">
+                        <div>
+                            <label class="text-xs font-bold uppercase text-slate-400">Número de DNI (sin puntos):</label>
+                            <input type="text" 
+                                   inputmode="numeric" 
+                                   x-model="inputDni" 
+                                   placeholder="Ej: 42123456" 
+                                   class="w-full p-4 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-white text-lg tracking-wider outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+                        </div>
+
+                        <!-- Mensaje de Error Amigable -->
+                        <div x-show="linkByDniError" class="p-3.5 bg-red-500/10 border border-red-300/30 rounded-xl text-xs font-semibold text-red-600 space-y-1">
+                            <p class="flex items-center gap-1.5"><i class="fa-solid fa-circle-exclamation"></i> <span x-text="linkByDniError"></span></p>
+                        </div>
+                        
+                        <button type="submit" 
+                                :disabled="!inputDni || linkByDniLoading"
+                                :class="inputDni && !linkByDniLoading ? 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer shadow-indigo-500/25' : 'bg-slate-200 text-slate-400 cursor-not-allowed'"
+                                class="w-full py-4 rounded-xl font-extrabold text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-arrow-right-to-bracket" x-show="!linkByDniLoading"></i>
+                            <i class="fa-solid fa-spinner fa-spin" x-show="linkByDniLoading"></i>
+                            <span x-text="linkByDniLoading ? 'Verificando DNI...' : 'Ingresar a mi Perfil'"></span>
+                        </button>
+                    </form>
+                    
+                    <p class="text-xs text-slate-400 font-mono mt-6" x-text="'Sesión: ' + (user ? user.email : '')"></p>
+                </div>
+
+                <!-- 1. VISTA: MI CUOTA / ESTADO DE CUENTA -->
+                <div x-show="linkedStudent && studentView === 'status'" class="space-y-5 page-enter">
+                    
+                    <!-- Tarjetas de Métricas Resumen -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="glass p-5 rounded-2xl floating-card">
+                            <p class="text-xs font-bold uppercase" :class="calcStudentDebt(linkedStudent?.id) > 0 ? 'text-red-500' : 'text-green-600'">Mi Estado</p>
+                            <p class="text-2xl font-black mt-1 text-slate-800 dark:text-white" x-text="calcStudentDebt(linkedStudent?.id) > 0 ? formatMoney(calcStudentDebt(linkedStudent?.id)) : 'Al día'"></p>
+                        </div>
+                        <div class="glass p-5 rounded-2xl floating-card">
+                            <p class="text-xs font-bold uppercase text-indigo-500">Cuota Hoy</p>
+                            <p class="text-2xl font-black mt-1 text-indigo-600 dark:text-indigo-400" x-text="formatMoney(getCurrentTierAmount(linkedStudent))"></p>
+                        </div>
+                        <div class="glass-indigo text-white p-5 rounded-2xl floating-card cursor-pointer" @click="studentView='exam'">
+                            <p class="text-xs font-bold uppercase text-indigo-200">Próximo Examen</p>
+                            <p class="text-lg font-bold mt-1 truncate" x-text="formatExamDate(getUpcomingExamDate())"></p>
+                            <p class="text-xs text-indigo-200 mt-0.5">Faltan <span class="font-bold text-white" x-text="countSaturdays(getUpcomingExamDate())"></span> Sábados</p>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Principal de Pago / Estado -->
+                    <div class="glass p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div class="space-y-2 text-center md:text-left">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold"
+                                 :class="calcStudentDebt(linkedStudent?.id) > 0 ? 'bg-red-500/15 text-red-600' : 'bg-green-500/15 text-green-600'">
+                                <span class="w-2 h-2 rounded-full" :class="calcStudentDebt(linkedStudent?.id) > 0 ? 'bg-red-500' : 'bg-green-500'"></span>
+                                <span x-text="calcStudentDebt(linkedStudent?.id) > 0 ? 'Cuota pendiente de pago' : 'Cuota al día'"></span>
+                            </div>
+                            <h2 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white" x-text="calcStudentDebt(linkedStudent?.id) > 0 ? formatMoney(calcStudentDebt(linkedStudent?.id)) : '¡Estás al día!'"></h2>
+                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 max-w-md">
+                                <span x-show="calcStudentDebt(linkedStudent?.id) > 0">Podés abonar de forma segura con tarjeta de débito, crédito o dinero en cuenta a través de Mercado Pago.</span>
+                                <span x-show="calcStudentDebt(linkedStudent?.id) === 0">Tu cuenta se encuentra regularizada. ¡Muchas gracias por tu constancia y dedicación!</span>
+                            </p>
+                        </div>
+
+                        <template x-if="calcStudentDebt(linkedStudent?.id) > 0">
+                            <div class="w-full md:w-auto shrink-0">
+                                <button @click="payWithMercadoPago('cuota')" 
+                                        :disabled="mpLoading" 
+                                        class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-blue-500/25 active:scale-95 transition flex items-center justify-center gap-3">
+                                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                                    <span x-show="!mpLoading">Pagar con Mercado Pago</span>
+                                    <span x-show="mpLoading"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Desglose de Meses (Adeudados vs Pagados) Plegable -->
+                    <div x-data="{ openHistory: false }" class="card-item rounded-3xl overflow-hidden shadow-lg">
+                        <button @click="openHistory = !openHistory" 
+                                type="button"
+                                class="w-full flex items-center justify-between p-5 hover:bg-white/20 transition cursor-pointer select-none border-b border-slate-100 dark:border-white/10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-600 flex items-center justify-center text-sm font-bold">
+                                    <i class="fa-solid fa-receipt"></i>
+                                </div>
+                                <div class="text-left">
+                                    <h3 class="text-base font-extrabold text-slate-800 dark:text-white">Historial de Cuotas</h3>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Desglose de meses abonados y pendientes</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold text-slate-400" x-text="getStudentMonthlyDebts(linkedStudent?.id).length + ' registros'"></span>
+                                <i class="fa-solid fa-chevron-down text-slate-400 transition-transform" :class="openHistory ? 'rotate-180' : ''"></i>
+                            </div>
+                        </button>
+
+                        <div x-show="openHistory" x-collapse>
+                            <div class="p-5 space-y-4 bg-slate-50/50 dark:bg-slate-950/40">
+                                <!-- Lista de meses adeudados -->
+                                <div x-show="getUnpaidMonths(linkedStudent?.id).length > 0" class="space-y-2">
+                                    <p class="text-[11px] font-black uppercase text-red-500 tracking-wider">Meses Pendientes</p>
+                                    <template x-for="d in getUnpaidMonths(linkedStudent?.id)" :key="d.month">
+                                        <div class="flex items-center justify-between bg-red-500/10 dark:bg-red-500/15 p-3.5 rounded-2xl border border-red-300/30">
+                                            <div class="flex items-center gap-2.5">
+                                                <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                                                <div>
+                                                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200" x-text="d.label"></span>
+                                                    <span x-show="d.paidAmount && d.paidAmount > 0" class="block text-[10px] text-amber-600 dark:text-amber-400 font-semibold" x-text="'Abonado parcial previo: ' + formatMoney(d.paidAmount)"></span>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-xs font-black text-red-600 dark:text-red-400" x-text="formatMoney(d.amount)"></span>
+                                                <span class="block text-[10px] font-bold text-red-500 uppercase" x-text="d.paidAmount && d.paidAmount > 0 ? 'Resta Abonar' : 'Pendiente'"></span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Lista de meses pagados -->
+                                <div x-show="getPaidMonths(linkedStudent?.id).length > 0" class="space-y-2">
+                                    <p class="text-[11px] font-black uppercase text-green-600 tracking-wider">Meses Abonados</p>
+                                    <template x-for="p in getPaidMonths(linkedStudent?.id)" :key="p.month">
+                                        <div class="flex items-center justify-between bg-green-500/10 dark:bg-green-500/15 p-3.5 rounded-2xl border border-green-300/30">
+                                            <div class="flex items-center gap-2.5">
+                                                <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200" x-text="p.label"></span>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-xs font-black text-green-700 dark:text-green-400" x-text="formatMoney(p.paidAmount || p.amount)"></span>
+                                                <span class="block text-[10px] font-bold text-green-600">Abonado ✓</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div x-show="getStudentMonthlyDebts(linkedStudent?.id).length === 0" class="text-center py-4 text-xs font-medium text-slate-400">
+                                    No hay historial de cuotas registradas aún para este perfil.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Escala de precios del mes informativa -->
+                    <div class="glass rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-bold uppercase text-indigo-500">Valores de Cuota del Mes</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Vencimientos escalonados oficiales</p>
+                        </div>
+                        <div class="flex items-center gap-4 text-xs">
+                            <div class="px-3 py-1.5 rounded-xl transition" :class="new Date().getDate() <= 10 ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/30' : 'text-slate-500'">
+                                Días 1-10: <span class="font-black" x-text="formatMoney(priceTiers.tier1)"></span>
+                            </div>
+                            <div class="px-3 py-1.5 rounded-xl transition" :class="new Date().getDate() > 10 && new Date().getDate() <= 20 ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/30' : 'text-slate-500'">
+                                Días 11-20: <span class="font-black" x-text="formatMoney(priceTiers.tier2)"></span>
+                            </div>
+                            <div class="px-3 py-1.5 rounded-xl transition" :class="new Date().getDate() > 20 ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/30' : 'text-slate-500'">
+                                Días 21+: <span class="font-black" x-text="formatMoney(priceTiers.tier3)"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta de Ficha y Datos Personales del Alumno -->
+                    <div class="glass rounded-3xl p-6 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-500/15 text-indigo-600 flex items-center justify-center text-xl font-bold shrink-0">
+                                <i class="fa-solid fa-address-card"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-extrabold text-slate-800 dark:text-white">Mis Datos Personales</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                    <span x-text="linkedStudent?.phone ? 'WhatsApp: ' + linkedStudent.phone : 'Teléfono no registrado'"></span> • <span x-text="linkedStudent?.dni ? 'DNI: ' + linkedStudent.dni : 'Sin DNI'"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <button @click="openStudentSelfProfile()" 
+                                type="button"
+                                class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-user-pen"></i>
+                            <span>Editar Mis Datos</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. VISTA: EXAMEN -->
+                <div x-show="linkedStudent && studentView === 'exam'" class="space-y-5 page-enter">
+                    <div class="glass-indigo text-white p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div>
+                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Próxima Mesa de Examen</span>
+                            <h2 class="text-3xl md:text-4xl font-black mt-2" x-text="formatExamDate(getUpcomingExamDate())"></h2>
+                            <p class="text-indigo-200 text-sm mt-1">Faltan <span class="font-black text-white text-lg" x-text="countSaturdays(getUpcomingExamDate())"></span> Sábados de entrenamiento</p>
+                        </div>
+                        <div class="text-center md:text-right bg-white/10 px-5 py-4 rounded-2xl backdrop-blur-md">
+                            <p class="text-xs uppercase font-bold text-indigo-200">Aspirante a</p>
+                            <p class="text-2xl font-black text-white mt-1" x-text="getNextRank(linkedStudent?.rank)"></p>
+                        </div>
+                    </div>
+
+                    <div class="card-item p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div>
+                            <p class="text-xs font-bold uppercase text-slate-400">Derecho a Examen</p>
+                            <p class="text-2xl font-black text-slate-800 dark:text-white mt-1" x-text="linkedStudent?.exam_paid ? 'Abonado ✓' : formatMoney(getExamFeeForStudent(linkedStudent))"></p>
+                        </div>
+                        <template x-if="!linkedStudent?.exam_paid">
+                            <button @click="payWithMercadoPago('examen')" 
+                                    :disabled="mpLoading" 
+                                    class="w-full sm:w-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-credit-card"></i> 
+                                <span x-show="!mpLoading">Pagar Derecho de Examen</span>
+                                <span x-show="mpLoading"><i class="fa-solid fa-spinner fa-spin"></i> Procesando...</span>
+                            </button>
+                        </template>
+                        <template x-if="linkedStudent?.exam_paid">
+                            <span class="bg-green-500/15 text-green-700 dark:text-green-400 font-extrabold text-xs px-4 py-2 rounded-xl border border-green-300/30 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check"></i> Examen Pagado
+                            </span>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- 3. VISTA: ASISTENCIA -->
+                <div x-show="linkedStudent && studentView === 'attendance'" class="space-y-5 page-enter">
+                    <div class="glass p-6 rounded-3xl shadow-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Asistencias</p>
+                            <h2 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mt-1" x-text="studentAttendanceDates.length + ' clases'"></h2>
+                        </div>
+                        <div class="w-16 h-16 bg-green-500/15 text-green-600 rounded-2xl flex items-center justify-center text-3xl font-bold">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <template x-for="att in studentAttendanceDates" :key="att.date + att.month">
+                            <div class="card-item p-4 rounded-xl flex items-center justify-between floating-card">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-green-500/15 text-green-600 rounded-lg flex items-center justify-center font-bold text-xs">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-slate-800 dark:text-slate-200" x-text="att.day + ', ' + att.date"></p>
+                                        <p class="text-[10px] font-semibold text-slate-400 capitalize" x-text="att.month"></p>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-extrabold text-green-600 bg-green-500/10 px-2.5 py-1 rounded-md">Presente</span>
+                            </div>
+                        </template>
+                        <div x-show="studentAttendanceDates.length === 0" class="card-item p-8 text-center text-slate-400 rounded-2xl">
+                            Aún no se registraron asistencias para tu perfil.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. VISTA: HORARIOS -->
+                <div x-show="studentView === 'schedule'" class="space-y-5 page-enter">
+                    <div class="glass p-6 rounded-3xl shadow-xl mb-4">
+                        <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-1">Días y Horarios de Clase</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Horarios oficiales Chang Moo Kwan</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <template x-for="sch in studentSchedules" :key="sch.day + sch.time">
+                            <div class="glass p-5 rounded-2xl floating-card space-y-2 border border-white/20">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="font-extrabold text-base text-indigo-600 dark:text-indigo-400" x-text="sch.day"></h3>
+                                    <i class="fa-regular fa-clock text-slate-400 text-sm"></i>
+                                </div>
+                                <p class="text-lg font-black text-slate-800 dark:text-white" x-text="sch.time"></p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-slate-400 text-xs"></i> <span x-text="sch.location"></span></p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAV MOBILE FLOTANTE DEL ALUMNO (Píldora Liquid Glass idéntica al Admin) -->
+            <nav class="md:hidden nav-pill glass flex justify-around py-3 px-4 z-[100]">
+                <button @click="studentView = 'status'"
+                        :class="studentView === 'status' ? 'text-indigo-600 dark:text-indigo-400 font-bold scale-105' : 'text-slate-400'"
+                        class="flex flex-col items-center gap-1 transition-all duration-200 relative px-3 py-1">
+                    <div class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200">
+                        <i class="fa-solid fa-wallet text-xl"></i>
+                    </div>
+                    <span class="text-[9px] font-bold">Cuota</span>
+                    <span x-show="calcStudentDebt(linkedStudent?.id) > 0" class="absolute top-0 right-1 bg-red-500 w-2.5 h-2.5 rounded-full shadow-sm"></span>
+                </button>
+                <button @click="studentView = 'exam'"
+                        :class="studentView === 'exam' ? 'text-indigo-600 dark:text-indigo-400 font-bold scale-105' : 'text-slate-400'"
+                        class="flex flex-col items-center gap-1 transition-all duration-200 relative px-3 py-1">
+                    <div class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <span class="text-[9px] font-bold">Examen</span>
+                </button>
+                <button @click="studentView = 'attendance'"
+                        :class="studentView === 'attendance' ? 'text-indigo-600 dark:text-indigo-400 font-bold scale-105' : 'text-slate-400'"
+                        class="flex flex-col items-center gap-1 transition-all duration-200 relative px-3 py-1">
+                    <div class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200">
+                        <i class="fa-solid fa-clipboard-check text-xl"></i>
+                    </div>
+                    <span class="text-[9px] font-bold">Asist.</span>
+                </button>
+                <button @click="studentView = 'schedule'"
+                        :class="studentView === 'schedule' ? 'text-indigo-600 dark:text-indigo-400 font-bold scale-105' : 'text-slate-400'"
+                        class="flex flex-col items-center gap-1 transition-all duration-200 relative px-3 py-1">
+                    <div class="w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-200">
+                        <i class="fa-solid fa-clock text-xl"></i>
+                    </div>
+                    <span class="text-[9px] font-bold">Horarios</span>
+                </button>
+            </nav>
+        </div>
+
         <!-- ===== MODAL: PERFIL ALUMNO ===== -->
         <div x-show="showProfileModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="closeProfileModal()" x-transition.opacity></div>
-            <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[80vh] md:max-h-[88vh]">
+            <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
+                 @click="closeProfileModal()" 
+                 x-show="showProfileModal"
+                 x-transition:enter="backdrop-enter"
+                 x-transition:enter-start="backdrop-enter-start"
+                 x-transition:enter-end="backdrop-enter-end"
+                 x-transition:leave="backdrop-leave"
+                 x-transition:leave-start="backdrop-leave-start"
+                 x-transition:leave-end="backdrop-leave-end"></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden flex flex-col max-h-[80vh] md:max-h-[88vh]"
+                 x-show="showProfileModal"
+                 x-transition:enter="modal-card-enter"
+                 x-transition:enter-start="modal-card-enter-start"
+                 x-transition:enter-end="modal-card-enter-end"
+                 x-transition:leave="modal-card-leave"
+                 x-transition:leave-start="modal-card-leave-start"
+                 x-transition:leave-end="modal-card-leave-end">
                 
                 <div class="h-32 relative shrink-0" :class="activeStudent ? getCardStyle(activeStudent.rank) : 'bg-slate-200'">
                     <button @click="closeProfileModal()" class="absolute top-4 right-4 bg-black/20 text-white hover:bg-black/40 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
@@ -524,7 +1010,7 @@
                         </a>
                     </div>
 
-                    <div x-show="activeStudent && getUnpaidMonths(activeStudent.id).length > 0" class="bg-red-500/10 p-4 rounded-2xl border border-red-300/30 mb-6">
+                    <div x-show="activeStudent && getUnpaidMonths(activeStudent?.id).length > 0" class="bg-red-500/10 p-4 rounded-2xl border border-red-300/30 mb-6">
                         <div class="flex justify-between items-center mb-3">
                             <div>
                                 <p class="text-red-500 font-bold text-xs uppercase">Deuda pendiente</p>
@@ -586,8 +1072,23 @@
 
         <!-- ===== MODAL: EDITAR/NUEVO ALUMNO ===== -->
         <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="closeEditModal()" x-transition.opacity></div>
-            <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden modal-enter flex flex-col max-h-[80vh] md:max-h-[88vh]">
+            <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
+                 @click="closeEditModal()"
+                 x-show="showEditModal"
+                 x-transition:enter="backdrop-enter"
+                 x-transition:enter-start="backdrop-enter-start"
+                 x-transition:enter-end="backdrop-enter-end"
+                 x-transition:leave="backdrop-leave"
+                 x-transition:leave-start="backdrop-leave-start"
+                 x-transition:leave-end="backdrop-leave-end"></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden flex flex-col max-h-[80vh] md:max-h-[88vh]"
+                 x-show="showEditModal"
+                 x-transition:enter="modal-card-enter"
+                 x-transition:enter-start="modal-card-enter-start"
+                 x-transition:enter-end="modal-card-enter-end"
+                 x-transition:leave="modal-card-leave"
+                 x-transition:leave-start="modal-card-leave-start"
+                 x-transition:leave-end="modal-card-leave-end">
                 <div class="px-6 py-4 border-b border-white/20 flex justify-between items-center shrink-0">
                     <h3 class="text-lg font-extrabold text-slate-800" x-text="isEditing ? 'Editar Alumno' : 'Nuevo Alumno'"></h3>
                     <button @click="closeEditModal()" class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
@@ -627,8 +1128,13 @@
                             </select>
                         </div>
                          <div>
-                            <label class="text-xs font-bold text-slate-500 uppercase">Cuota Mensual ($)</label>
-                            <input type="number" x-model="form.tuition" class="w-full p-3 bg-white/60 border border-white/60 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-500 uppercase">Cuota Mensual ($)</label>
+                                <button type="button" @click="form.tuition = priceTiers.tier1" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                                    Base: <span x-text="formatMoney(priceTiers.tier1)"></span>
+                                </button>
+                            </div>
+                            <input type="number" x-model="form.tuition" :placeholder="priceTiers.tier1" class="w-full p-3 bg-white/60 dark:bg-slate-800/80 border border-white/60 dark:border-white/10 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white text-slate-800 dark:text-white mt-1">
                         </div>
                     </div>
                     <!-- Toggle cuota fija -->
@@ -655,17 +1161,54 @@
 
         <!-- ===== MODAL: PAGO DE EXAMEN ===== -->
         <div x-show="showExamModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showExamModal = false" x-transition.opacity></div>
-            <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-6 text-center max-h-[85vh] overflow-y-auto">
+            <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
+                 @click="showExamModal = false"
+                 x-show="showExamModal"
+                 x-transition:enter="backdrop-enter"
+                 x-transition:enter-start="backdrop-enter-start"
+                 x-transition:enter-end="backdrop-enter-end"
+                 x-transition:leave="backdrop-leave"
+                 x-transition:leave-start="backdrop-leave-start"
+                 x-transition:leave-end="backdrop-leave-end"></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden p-6 pb-6 text-center max-h-[85vh] overflow-y-auto"
+                 x-show="showExamModal"
+                 x-transition:enter="modal-card-enter"
+                 x-transition:enter-start="modal-card-enter-start"
+                 x-transition:enter-end="modal-card-enter-end"
+                 x-transition:leave="modal-card-leave"
+                 x-transition:leave-start="modal-card-leave-start"
+                 x-transition:leave-end="modal-card-leave-end">
                 <div class="w-16 h-16 bg-indigo-500/15 text-indigo-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
                     <i class="fa-solid fa-file-invoice-dollar"></i>
                 </div>
-                <h3 class="text-xl font-extrabold text-slate-800">Pago de Examen</h3>
-                <p class="text-slate-500 text-sm mt-1">Alumno: <span class="font-bold text-slate-700" x-text="examPaymentStudent?.name"></span></p>
+                <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">Pago de Examen</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Alumno: <span class="font-bold text-slate-800 dark:text-white" x-text="examPaymentStudent?.name"></span></p>
+                <div class="mt-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 py-1.5 px-3 rounded-xl border border-indigo-200 dark:border-indigo-800 inline-block">
+                    Rinde para: <span x-text="getNextRank(examPaymentStudent?.rank)"></span>
+                </div>
 
-                <div class="mt-6 text-left">
+                <div class="mt-4 text-left">
                     <label class="text-xs font-bold text-slate-500 uppercase">Monto a cobrar ($)</label>
                     <input type="number" x-model="examPaymentAmount" class="w-full p-4 bg-white/60 border border-white/60 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white mt-2 text-xl text-center text-slate-800">
+                </div>
+
+                <!-- Método de Pago -->
+                <div class="mt-4 text-left">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Método de Pago</label>
+                    <div class="grid grid-cols-2 gap-2 mt-1.5">
+                        <button type="button" 
+                                @click="paymentMethod = 'efectivo'"
+                                :class="paymentMethod === 'efectivo' ? 'bg-green-600 text-white font-black shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold'"
+                                class="py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i class="fa-solid fa-money-bill-wave"></i> Efectivo
+                        </button>
+                        <button type="button" 
+                                @click="paymentMethod = 'transferencia'"
+                                :class="paymentMethod === 'transferencia' ? 'bg-indigo-600 text-white font-black shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold'"
+                                class="py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i class="fa-solid fa-building-columns"></i> Transferencia
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mt-6">
@@ -677,26 +1220,60 @@
 
         <!-- ===== MODAL: COBRO MENSUAL (NUEVO) ===== -->
         <div x-show="showPaymentModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showPaymentModal = false" x-transition.opacity></div>
-            <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-6 text-center max-h-[85vh] overflow-y-auto">
+            <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
+                 @click="showPaymentModal = false"
+                 x-show="showPaymentModal"
+                 x-transition:enter="backdrop-enter"
+                 x-transition:enter-start="backdrop-enter-start"
+                 x-transition:enter-end="backdrop-enter-end"
+                 x-transition:leave="backdrop-leave"
+                 x-transition:leave-start="backdrop-leave-start"
+                 x-transition:leave-end="backdrop-leave-end"></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden p-6 pb-6 text-center max-h-[85vh] overflow-y-auto"
+                 x-show="showPaymentModal"
+                 x-transition:enter="modal-card-enter"
+                 x-transition:enter-start="modal-card-enter-start"
+                 x-transition:enter-end="modal-card-enter-end"
+                 x-transition:leave="modal-card-leave"
+                 x-transition:leave-start="modal-card-leave-start"
+                 x-transition:leave-end="modal-card-leave-end">
                 <div class="w-16 h-16 bg-green-500/15 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
                     <i class="fa-solid fa-money-bill-wave"></i>
                 </div>
-                <h3 class="text-xl font-extrabold text-slate-800">Registrar Cobro</h3>
-                <p class="text-slate-500 text-sm mt-1">Alumno: <span class="font-bold text-slate-700" x-text="paymentStudent?.name"></span></p>
+                <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">Registrar Cobro</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Alumno: <span class="font-bold text-slate-800 dark:text-white" x-text="paymentStudent?.name"></span></p>
                 
                 <div class="mt-4 bg-red-500/10 border border-red-300/30 rounded-xl p-3">
                     <p class="text-xs font-bold text-red-500 uppercase">Deuda actual</p>
-                    <p class="text-2xl font-black text-red-800" x-text="formatMoney(calcStudentDebt(paymentStudent?.id))"></p>
+                    <p class="text-2xl font-black text-red-800 dark:text-red-400" x-text="formatMoney(calcStudentDebt(paymentStudent?.id))"></p>
                 </div>
 
                 <div x-show="paymentStudent && !paymentStudent.cuota_fija" class="mt-3 text-[11px] text-slate-500 bg-white/40 rounded-lg px-3 py-2 border border-white/40">
-                    <span class="font-bold" x-text="getCurrentTierLabel()"></span>: cuota de <span class="font-bold text-slate-700" x-text="formatMoney(getCurrentTierAmount(paymentStudent))"></span>
+                    <span class="font-bold" x-text="getCurrentTierLabel()"></span>: cuota de <span class="font-bold text-slate-700 dark:text-slate-300" x-text="formatMoney(getCurrentTierAmount(paymentStudent))"></span>
                 </div>
 
                 <div class="mt-4 text-left">
                     <label class="text-xs font-bold text-slate-500 uppercase">Monto a cobrar ($)</label>
                     <input type="number" x-model="paymentAmount" class="w-full p-4 bg-white/60 border border-white/60 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-400 focus:bg-white mt-2 text-xl text-center text-slate-800">
+                </div>
+
+                <!-- Método de Pago -->
+                <div class="mt-4 text-left">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Método de Pago</label>
+                    <div class="grid grid-cols-2 gap-2 mt-1.5">
+                        <button type="button" 
+                                @click="paymentMethod = 'efectivo'"
+                                :class="paymentMethod === 'efectivo' ? 'bg-green-600 text-white font-black shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold'"
+                                class="py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i class="fa-solid fa-money-bill-wave"></i> Efectivo
+                        </button>
+                        <button type="button" 
+                                @click="paymentMethod = 'transferencia'"
+                                :class="paymentMethod === 'transferencia' ? 'bg-indigo-600 text-white font-black shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold'"
+                                class="py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i class="fa-solid fa-building-columns"></i> Transferencia
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mt-6">
@@ -708,62 +1285,335 @@
 
         <!-- ===== MODAL: CONFIGURACIÓN DE CUOTAS (NUEVO) ===== -->
         <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 pt-4 pb-28 md:pb-4">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showSettingsModal = false" x-transition.opacity></div>
-            <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-8 md:pb-6 max-h-[85vh] overflow-y-auto">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gear text-slate-400"></i> Ajustes de Cuotas</h3>
-                    <button @click="showSettingsModal = false" class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
+                 @click="showSettingsModal = false"
+                 x-show="showSettingsModal"
+                 x-transition:enter="backdrop-enter"
+                 x-transition:enter-start="backdrop-enter-start"
+                 x-transition:enter-end="backdrop-enter-end"
+                 x-transition:leave="backdrop-leave"
+                 x-transition:leave-start="backdrop-leave-start"
+                 x-transition:leave-end="backdrop-leave-end"></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-lg shadow-2xl relative z-50 overflow-hidden p-6 pb-8 md:pb-6 max-h-[88vh] overflow-y-auto"
+                 x-show="showSettingsModal"
+                 x-transition:enter="modal-card-enter"
+                 x-transition:enter-start="modal-card-enter-start"
+                 x-transition:enter-end="modal-card-enter-end"
+                 x-transition:leave="modal-card-leave"
+                 x-transition:leave-start="modal-card-leave-start"
+                 x-transition:leave-end="modal-card-leave-end">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-indigo-500"></i> Panel de Configuración
+                    </h3>
+                    <button @click="showSettingsModal = false" class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <!-- Tabs de Navegación de Ajustes -->
+                <div class="flex bg-slate-100 dark:bg-slate-800/80 rounded-2xl p-1 gap-1 mb-5">
+                    <button @click="settingsTab = 'tuition'" 
+                            :class="settingsTab === 'tuition' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'"
+                            class="flex-1 py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-wallet"></i> Cuotas
+                    </button>
+                    <button @click="settingsTab = 'exams'" 
+                            :class="settingsTab === 'exams' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'"
+                            class="flex-1 py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-graduation-cap"></i> Exámenes
+                    </button>
+                    <button @click="settingsTab = 'schedules'" 
+                            :class="settingsTab === 'schedules' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'"
+                            class="flex-1 py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-clock"></i> Horarios
+                    </button>
+                    <button @click="settingsTab = 'theme'" 
+                            :class="settingsTab === 'theme' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'"
+                            class="flex-1 py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-palette"></i> Tema
+                    </button>
                 </div>
                 
-                <p class="text-sm text-slate-500 mb-5">Configurá los valores de cuota según el día de pago del mes.</p>
-
-                <div class="space-y-4">
-                    <div class="bg-green-50 border border-green-100 rounded-xl p-4">
-                        <label class="text-xs font-bold text-green-700 uppercase flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-check"></i> Días 1 al 10
+                <!-- TAB 1: CUOTAS MENSUALES -->
+                <div x-show="settingsTab === 'tuition'" class="space-y-4">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Configurá los valores de cuota mensual según el día de pago del alumno:</p>
+                    <div class="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/40 rounded-2xl p-4">
+                        <label class="text-xs font-bold text-green-700 dark:text-green-400 uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check"></i> Días 1 al 10 (Primer Vencimiento)
                         </label>
-                        <input type="number" x-model="editTiers.tier1" class="w-full p-3 bg-white border border-green-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-500 mt-2 text-lg text-center">
+                        <input type="number" x-model="editTiers.tier1" class="w-full p-3 bg-white dark:bg-slate-800 border border-green-200 dark:border-green-700 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-500 mt-2 text-lg text-center text-slate-800 dark:text-white">
                     </div>
-                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-4">
-                        <label class="text-xs font-bold text-amber-700 uppercase flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-minus"></i> Días 11 al 20
+                    <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-2xl p-4">
+                        <label class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-minus"></i> Días 11 al 20 (Segundo Vencimiento)
                         </label>
-                        <input type="number" x-model="editTiers.tier2" class="w-full p-3 bg-white border border-amber-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-amber-500 mt-2 text-lg text-center">
+                        <input type="number" x-model="editTiers.tier2" class="w-full p-3 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 rounded-xl font-bold outline-none focus:ring-2 focus:ring-amber-500 mt-2 text-lg text-center text-slate-800 dark:text-white">
                     </div>
-                    <div class="bg-red-50 border border-red-100 rounded-xl p-4">
-                        <label class="text-xs font-bold text-red-700 uppercase flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-xmark"></i> Días 21 en adelante
+                    <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 rounded-2xl p-4">
+                        <label class="text-xs font-bold text-red-700 dark:text-red-400 uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-xmark"></i> Días 21 en adelante (Recargo)
                         </label>
-                        <input type="number" x-model="editTiers.tier3" class="w-full p-3 bg-white border border-red-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-500 mt-2 text-lg text-center">
+                        <input type="number" x-model="editTiers.tier3" class="w-full p-3 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-500 mt-2 text-lg text-center text-slate-800 dark:text-white">
                     </div>
                 </div>
 
-                <!-- Selector de tema -->
-                <div class="mt-6 pt-6 border-t border-slate-200">
-                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2 mb-3">
-                        <i class="fa-solid fa-palette text-slate-400"></i> Apariencia
+                <!-- TAB 2: VALORES DE EXAMEN ESCALONADOS -->
+                <div x-show="settingsTab === 'exams'" class="space-y-4">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Valores según el cinturón al que rinde el alumno (próxima graduación):</p>
+                    
+                    <div class="bg-amber-500/10 border border-amber-400/30 rounded-2xl p-4">
+                        <label class="text-xs font-black text-amber-700 dark:text-amber-400 uppercase flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-amber-400 inline-block border border-amber-600/30"></span> Rinde para Amarillos (Blanco ➔ Amarillo)
+                        </label>
+                        <input type="number" x-model="editExamTiers.amarillos" class="w-full p-3 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 rounded-xl font-bold outline-none focus:ring-2 focus:ring-amber-500 mt-2 text-lg text-center text-slate-800 dark:text-white">
+                    </div>
+
+                    <div class="bg-blue-500/10 border border-blue-400/30 rounded-2xl p-4">
+                        <label class="text-xs font-black text-blue-700 dark:text-blue-400 uppercase flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Rinde para Azules (Amarillo Avz. ➔ Azul)
+                        </label>
+                        <input type="number" x-model="editExamTiers.azules" class="w-full p-3 bg-white dark:bg-slate-800 border border-blue-300 dark:border-blue-700 rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500 mt-2 text-lg text-center text-slate-800 dark:text-white">
+                    </div>
+
+                    <div class="bg-red-500/10 border border-red-400/30 rounded-2xl p-4">
+                        <label class="text-xs font-black text-red-700 dark:text-red-400 uppercase flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Rinde para Rojos (Azul Avz. ➔ Rojo)
+                        </label>
+                        <input type="number" x-model="editExamTiers.rojos" class="w-full p-3 bg-white dark:bg-slate-800 border border-red-300 dark:border-red-700 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-500 mt-2 text-lg text-center text-slate-800 dark:text-white">
+                    </div>
+
+                    <div class="bg-slate-900/10 dark:bg-slate-800 border border-slate-400/30 rounded-2xl p-4">
+                        <label class="text-xs font-black text-slate-800 dark:text-slate-200 uppercase flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-slate-900 dark:bg-white inline-block"></span> Rinde para Cinturón Negro (Rojo Avz. ➔ I Dan)
+                        </label>
+                        <input type="number" x-model="editExamTiers.negros" class="w-full p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-bold outline-none focus:ring-2 focus:ring-slate-500 mt-2 text-lg text-center text-slate-800 dark:text-white">
+                    </div>
+                </div>
+
+                <!-- TAB 3: DÍAS Y HORARIOS DE CLASE -->
+                <div x-show="settingsTab === 'schedules'" class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Días, horarios y dojo donde se dictan clases:</p>
+                        <button type="button" @click="addScheduleRow()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm active:scale-95">
+                            <i class="fa-solid fa-plus"></i> Agregar Día
+                        </button>
+                    </div>
+
+                    <div class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                        <template x-for="(sch, idx) in editSchedules" :key="idx">
+                            <div class="bg-white/80 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 space-y-2 shadow-sm relative">
+                                <button type="button" @click="removeScheduleRow(idx)" class="absolute top-3 right-3 text-red-400 hover:text-red-600 text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/40 transition">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                                <div class="grid grid-cols-2 gap-2 pr-6">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase">Día</label>
+                                        <input type="text" x-model="sch.day" placeholder="Ej: Lunes" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase">Horario</label>
+                                        <input type="text" x-model="sch.time" placeholder="18:00 - 19:30" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 dark:text-white">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase">Lugar / Dojo</label>
+                                    <input type="text" x-model="sch.location" placeholder="Dojo Principal" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 dark:text-white">
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="editSchedules.length === 0" class="p-6 text-center text-xs text-slate-400">
+                            No hay horarios configurados. Tocá "+ Agregar Día" para crear uno.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: APARIENCIA -->
+                <div x-show="settingsTab === 'theme'" class="space-y-4">
+                    <h4 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-palette text-slate-400"></i> Tema de la Aplicación
                     </h4>
-                    <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
+                    <div class="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-1">
                         <button @click="setTheme('light')" 
-                                :class="themeMode === 'light' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'"
-                                class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5">
+                                :class="themeMode === 'light' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'"
+                                class="flex-1 py-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-sun text-amber-500"></i> Claro
                         </button>
                         <button @click="setTheme('dark')" 
-                                :class="themeMode === 'dark' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'"
-                                class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5">
+                                :class="themeMode === 'dark' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'"
+                                class="flex-1 py-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-moon text-indigo-500"></i> Oscuro
                         </button>
                         <button @click="setTheme('system')" 
-                                :class="themeMode === 'system' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'"
-                                class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5">
+                                :class="themeMode === 'system' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'"
+                                class="flex-1 py-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-laptop text-slate-400"></i> Sistema
                         </button>
                     </div>
                 </div>
 
-                <button @click="savePriceTiers()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-600 transition mt-6">
-                    Guardar Cambios
+                <button @click="saveSettings()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-600 transition mt-6 active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: PAGO MERCADO PAGO AUTOMATIZADO ===== -->
+        <div x-show="showMercadoPagoModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
+            <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
+                 @click="showMercadoPagoModal = false"
+                 x-show="showMercadoPagoModal"
+                 x-transition:enter="backdrop-enter"
+                 x-transition:enter-start="backdrop-enter-start"
+                 x-transition:enter-end="backdrop-enter-end"
+                 x-transition:leave="backdrop-leave"
+                 x-transition:leave-start="backdrop-leave-start"
+                 x-transition:leave-end="backdrop-leave-end"></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden p-6 text-center max-h-[90vh] overflow-y-auto"
+                 x-show="showMercadoPagoModal"
+                 x-transition:enter="modal-card-enter"
+                 x-transition:enter-start="modal-card-enter-start"
+                 x-transition:enter-end="modal-card-enter-end"
+                 x-transition:leave="modal-card-leave"
+                 x-transition:leave-start="modal-card-leave-start"
+                 x-transition:leave-end="modal-card-leave-end">
+                
+                <div class="w-16 h-16 bg-sky-500/15 text-sky-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">Pago con Mercado Pago</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs mt-1">Acreditación directa e inmediata</p>
+
+                <div class="mt-4 p-4 rounded-2xl bg-sky-500/10 border border-sky-300/30 text-center">
+                    <p class="text-xs font-bold text-sky-600 uppercase" x-text="mpPaymentType === 'examen' ? 'Derecho a Examen' : 'Cuota Mensual'"></p>
+                    <p class="text-3xl font-black text-sky-700 dark:text-sky-300 mt-1" x-text="formatMoney(mpPaymentAmount)"></p>
+                    <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mt-1" x-text="'Alumno: ' + linkedStudent?.name"></p>
+                </div>
+
+                <div class="mt-4 text-left p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 text-xs space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 font-bold">Alias Mercado Pago:</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-mono font-black text-indigo-600 dark:text-indigo-400 select-all text-sm">andres.moreno.3</span>
+                            <button type="button" 
+                                    @click="navigator.clipboard.writeText('andres.moreno.3'); showToast('Alias copiado al portapapeles')" 
+                                    class="text-indigo-500 hover:text-indigo-600 p-1 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded transition text-xs" 
+                                    title="Copiar alias">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 font-bold">Titular:</span>
+                        <span class="font-bold text-slate-700 dark:text-slate-300">Andrés Moreno</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2.5 mt-6">
+                    <button @click="processMercadoPagoApproval()" 
+                            class="w-full py-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-blue-500/25 active:scale-95 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-check text-base"></i>
+                        <span>Corroborar y Acreditar Pago</span>
+                    </button>
+                    <button @click="showMercadoPagoModal = false" class="w-full py-3 bg-white/40 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-white/60 transition text-xs">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: MIS DATOS PERSONALES (ALUMNO) ===== -->
+        <div x-show="showStudentProfileModal" x-cloak class="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pt-4 pb-28 md:pb-4">
+            <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
+                 @click="showStudentProfileModal = false"
+                 x-show="showStudentProfileModal"
+                 x-transition:enter="backdrop-enter"
+                 x-transition:enter-start="backdrop-enter-start"
+                 x-transition:enter-end="backdrop-enter-end"
+                 x-transition:leave="backdrop-leave"
+                 x-transition:leave-start="backdrop-leave-start"
+                 x-transition:leave-end="backdrop-leave-end"></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden p-6 text-left max-h-[90vh] overflow-y-auto"
+                 x-show="showStudentProfileModal"
+                 x-transition:enter="modal-card-enter"
+                 x-transition:enter-start="modal-card-enter-start"
+                 x-transition:enter-end="modal-card-enter-end"
+                 x-transition:leave="modal-card-leave"
+                 x-transition:leave-start="modal-card-leave-start"
+                 x-transition:leave-end="modal-card-leave-end">
+                
+                <div class="flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 pb-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-indigo-500/15 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                            <i class="fa-solid fa-user-gear"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-extrabold text-slate-900 dark:text-white">Mis Datos Personales</h3>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Mantené tu ficha actualizada</p>
+                        </div>
+                    </div>
+                    <button @click="showStudentProfileModal = false" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Info Ficha No Modificable (Oficial) -->
+                <div class="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-300/30 mb-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-bold text-indigo-600 uppercase">Alumno / Graduación</p>
+                        <p class="text-sm font-black text-slate-900 dark:text-white mt-0.5" x-text="studentProfileForm.name"></p>
+                    </div>
+                    <span class="text-xs font-black px-3 py-1 rounded-xl border shadow-sm" :class="getCardStyle(studentProfileForm.rank)" x-text="studentProfileForm.rank"></span>
+                </div>
+
+                <!-- Formulario de Datos Editables por el Alumno -->
+                <form @submit.prevent="saveStudentSelfProfile()" class="space-y-3.5">
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase">DNI / Documento</label>
+                        <input type="text" x-model="studentProfileForm.dni" placeholder="Ej: 38450123" class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 mt-1 text-slate-800 dark:text-white">
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase">Teléfono / WhatsApp</label>
+                        <input type="tel" x-model="studentProfileForm.phone" placeholder="Ej: 11 2345 6789" class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 mt-1 text-slate-800 dark:text-white">
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase">Fecha de Nacimiento</label>
+                        <input type="date" x-model="studentProfileForm.dob" class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 mt-1 text-slate-800 dark:text-white">
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase">Domicilio</label>
+                        <input type="text" x-model="studentProfileForm.location" placeholder="Ej: Av. San Martín 1234" class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 mt-1 text-slate-800 dark:text-white">
+                    </div>
+
+                    <div class="pt-3 space-y-2">
+                        <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-indigo-500/25 active:scale-95 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>Guardar Mis Datos</span>
+                        </button>
+                        <button type="button" @click="showStudentProfileModal = false" class="w-full py-2.5 bg-white/40 dark:bg-white/5 text-slate-500 rounded-xl font-bold hover:bg-white/60 transition text-xs">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== BANNER FLOTANTE DE INSTALACIÓN PWA ===== -->
+        <div x-show="showInstallBanner" x-transition.duration.300ms class="fixed top-4 left-4 right-4 md:left-auto md:right-6 md:w-96 z-[120] glass-heavy p-4 rounded-3xl shadow-2xl border border-indigo-400/30 flex items-center justify-between gap-3 page-enter">
+            <div class="flex items-center gap-3">
+                <img src="logo%20chang%20moo%20kwan.jpeg" alt="Logo" class="w-11 h-11 rounded-2xl object-cover shadow-md border border-slate-200 dark:border-slate-700 shrink-0">
+                <div>
+                    <h4 class="text-xs font-black text-slate-900 dark:text-white">Instalar App CMK</h4>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Accedé más rápido desde tu inicio</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button @click="installPWA()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl shadow-md transition active:scale-95">
+                    Instalar
+                </button>
+                <button @click="showInstallBanner = false" class="w-7 h-7 text-slate-400 hover:text-slate-600 rounded-full flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-xs"></i>
                 </button>
             </div>
         </div>
@@ -779,3 +1629,4 @@
     <script src="app.js"></script>
 </body>
 </html>
+

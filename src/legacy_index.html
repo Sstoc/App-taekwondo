@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -27,7 +27,7 @@
 
 <body class="text-slate-800 h-[100dvh] overflow-hidden selection:bg-indigo-100 selection:text-indigo-700 relative">
 
-    <!-- Canvas de Fondo Líquido Acelerado por GPU -->
+    <!-- Canvas de Fondo LÃ­quido Acelerado por GPU -->
     <canvas id="bg-canvas" class="fixed inset-0 pointer-events-none opacity-70 dark:opacity-50 transition-opacity duration-700 z-0"></canvas>
 
     <div x-data="tkdApp()" x-init="init()" class="h-full min-h-0 flex flex-col md:flex-row relative z-10">
@@ -46,7 +46,7 @@
                         <input type="email" x-model="authEmail" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Contraseña</label>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block ml-1">ContraseÃ±a</label>
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" x-model="authPassword" class="w-full p-4 pr-24 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
                             <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg" x-text="showPassword ? 'Ocultar' : 'Ver'"></button>
@@ -84,7 +84,7 @@
                             <i :class="item.icon + ' w-5'"></i> <span x-text="item.label"></span>
                         </button>
                     </template>
-                    <!-- Botón Ajustes -->
+                    <!-- BotÃ³n Ajustes -->
                     <button @click="openSettingsModal()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-all duration-300">
                         <i class="fa-solid fa-gear w-5"></i> <span>Ajustes</span>
                     </button>
@@ -101,18 +101,18 @@
                     </div>
                     <p class="text-2xl font-extrabold">
                         <span x-show="showRevenue" x-text="formatMoney(getCurrentMonthRevenue())"></span>
-                        <span x-show="!showRevenue">$ ••••••</span>
+                        <span x-show="!showRevenue">$ â€¢â€¢â€¢â€¢â€¢â€¢</span>
                     </p>
                     <div x-show="!confirmReset" class="mt-3">
                         <button @click="confirmReset = true" class="text-[10px] text-slate-400 underline hover:text-white transition">Reiniciar mes</button>
                     </div>
                     <div x-show="confirmReset" class="mt-3 bg-slate-800 p-2 rounded-lg flex gap-2">
-                        <button @click="resetCaja()" class="flex-1 bg-red-500 text-white text-xs font-bold py-1 rounded">Sí, borrar</button>
+                        <button @click="resetCaja()" class="flex-1 bg-red-500 text-white text-xs font-bold py-1 rounded">SÃ­, borrar</button>
                         <button @click="confirmReset = false" class="flex-1 bg-slate-700 text-white text-xs font-bold py-1 rounded">Cancelar</button>
                     </div>
                 </div>
                 <button @click="signOut()" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all duration-300">
-                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar SesiÃ³n
                 </button>
             </div>
         </aside>
@@ -139,7 +139,7 @@
                         <button x-show="user" @click="openSettingsModal()" class="w-9 h-9 rounded-xl glass hover:bg-white/40 text-slate-600 flex items-center justify-center active:scale-90 transition shadow-sm border border-white/50" aria-label="Ajustes">
                             <i class="fa-solid fa-gear text-xs"></i>
                         </button>
-                        <button x-show="user" @click="signOut()" class="w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 flex items-center justify-center active:scale-90 transition shadow-sm" aria-label="Cerrar sesión">
+                        <button x-show="user" @click="signOut()" class="w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 flex items-center justify-center active:scale-90 transition shadow-sm" aria-label="Cerrar sesiÃ³n">
                             <i class="fa-solid fa-right-from-bracket text-xs"></i>
                         </button>
                     </div>
@@ -154,7 +154,7 @@
                             <i class="fa-solid fa-wifi text-lg opacity-50"></i>
                             <div class="absolute inset-0 w-[120%] h-[2px] bg-red-500 rounded-full transform top-1/2 left-[-10%] rotate-45"></div>
                         </div>
-                        <span>Modo Offline. Los cambios se guardarán localmente.</span>
+                        <span>Modo Offline. Los cambios se guardarÃ¡n localmente.</span>
                     </div>
                     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
                         <div>
@@ -199,13 +199,13 @@
                                 </div>
                                 <p class="text-3xl font-black text-slate-800">
                                     <span x-show="showRevenue" x-text="formatMoney(getCurrentMonthRevenue())"></span>
-                                    <span x-show="!showRevenue">$ ••••••</span>
+                                    <span x-show="!showRevenue">$ â€¢â€¢â€¢â€¢â€¢â€¢</span>
                                 </p>
                             </div>
                             <div class="col-span-2 md:col-span-1 glass-indigo text-white p-5 rounded-2xl relative overflow-hidden cursor-pointer" @click="view='exams'">
-                                <p class="text-xs font-bold uppercase text-indigo-200">Próximo Examen</p>
+                                <p class="text-xs font-bold uppercase text-indigo-200">PrÃ³ximo Examen</p>
                                 <p class="text-xl font-bold mt-1" x-text="formatExamDate(getUpcomingExamDate())"></p>
-                                <p class="text-xs text-indigo-200 mt-2">Faltan <span class="font-bold text-white" x-text="countSaturdays(getUpcomingExamDate())"></span> Sábados</p>
+                                <p class="text-xs text-indigo-200 mt-2">Faltan <span class="font-bold text-white" x-text="countSaturdays(getUpcomingExamDate())"></span> SÃ¡bados</p>
                             </div>
                         </div>
 
@@ -216,9 +216,9 @@
                                 <p class="text-2xl font-black text-indigo-700" x-text="formatMoney(getCurrentTierAmount(null))"></p>
                             </div>
                             <div class="text-right space-y-1">
-                                <div class="text-[10px]" :class="new Date().getDate() <= 10 ? 'text-indigo-600 font-bold' : 'text-slate-500'"><span class="font-bold">Días 1-10:</span> <span x-text="formatMoney(priceTiers.tier1)"></span></div>
-                                <div class="text-[10px]" :class="new Date().getDate() > 10 && new Date().getDate() <= 20 ? 'text-indigo-600 font-bold' : 'text-slate-500'"><span class="font-bold">Días 11-20:</span> <span x-text="formatMoney(priceTiers.tier2)"></span></div>
-                                <div class="text-[10px]" :class="new Date().getDate() > 20 ? 'text-indigo-600 font-bold' : 'text-slate-500'"><span class="font-bold">Días 21+:</span> <span x-text="formatMoney(priceTiers.tier3)"></span></div>
+                                <div class="text-[10px]" :class="new Date().getDate() <= 10 ? 'text-indigo-600 font-bold' : 'text-slate-500'"><span class="font-bold">DÃ­as 1-10:</span> <span x-text="formatMoney(priceTiers.tier1)"></span></div>
+                                <div class="text-[10px]" :class="new Date().getDate() > 10 && new Date().getDate() <= 20 ? 'text-indigo-600 font-bold' : 'text-slate-500'"><span class="font-bold">DÃ­as 11-20:</span> <span x-text="formatMoney(priceTiers.tier2)"></span></div>
+                                <div class="text-[10px]" :class="new Date().getDate() > 20 ? 'text-indigo-600 font-bold' : 'text-slate-500'"><span class="font-bold">DÃ­as 21+:</span> <span x-text="formatMoney(priceTiers.tier3)"></span></div>
                             </div>
                         </div>
 
@@ -252,14 +252,14 @@
                                             <template x-if="getUnpaidMonths(student.id).length === 0">
                                                 <div class="flex items-center gap-1 text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100">
                                                     <i class="fa-solid fa-check text-xs"></i>
-                                                    <span class="text-xs font-bold">Al día</span>
+                                                    <span class="text-xs font-bold">Al dÃ­a</span>
                                                 </div>
                                             </template>
                                         </div>
                                     </div>
                                 </template>
                                 <div x-show="students.filter(s => !s.archived).length === 0" class="text-center text-slate-400 py-10">
-                                    Aún no tenés alumnos registrados.
+                                    AÃºn no tenÃ©s alumnos registrados.
                                 </div>
                             </div>
                         </div>
@@ -317,7 +317,7 @@
 
                     <!-- ===== ATTENDANCE ===== -->
                     <div x-show="view === 'attendance'" class="page-enter" x-cloak>
-                        <p class="text-sm text-slate-500 mb-6">Tocá el nombre del alumno para marcarlo como presente. Los alumnos ya registrados no aparecerán en la lista de hoy.</p>
+                        <p class="text-sm text-slate-500 mb-6">TocÃ¡ el nombre del alumno para marcarlo como presente. Los alumnos ya registrados no aparecerÃ¡n en la lista de hoy.</p>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                             <template x-for="student in studentsForAttendance" :key="student.id">
@@ -343,7 +343,7 @@
                             <p class="text-sm text-slate-500">Todos los alumnos ya tienen asistencia registrada hoy.</p>
                         </div>
                         <div x-show="students.length === 0" class="text-center py-10 card-item rounded-2xl mt-4 text-slate-500">
-                            Aún no tenés alumnos para tomar asistencia.
+                            AÃºn no tenÃ©s alumnos para tomar asistencia.
                         </div>
                     </div>
 
@@ -359,7 +359,7 @@
                                     <div class="flex items-center gap-3">
                                         <span class="text-sm font-bold text-green-600" :class="showRevenue ? '' : 'text-slate-400'">
                                             <span x-show="showRevenue" x-text="formatMoney(month.revenue || 0)"></span>
-                                            <span x-show="!showRevenue">$ ••••••</span>
+                                            <span x-show="!showRevenue">$ â€¢â€¢â€¢â€¢â€¢â€¢</span>
                                         </span>
                                         <i class="fa-solid fa-chevron-down text-slate-400 transition-transform" :class="month.open ? 'rotate-180' : ''"></i>
                                     </div>
@@ -389,7 +389,7 @@
                                                             </div>
                                                         </template>
                                                         <div x-show="getClassAttendeeNames(clase).length === 0" class="text-xs text-slate-400 py-2">
-                                                            Nadie asistió a esta clase.
+                                                            Nadie asistiÃ³ a esta clase.
                                                         </div>
                                                     </div>
                                                 </div>
@@ -404,7 +404,7 @@
                         </template>
                         
                         <div x-show="historyData.length === 0" class="text-center py-10 text-slate-400 font-bold">
-                            Aún no guardaste ninguna asistencia.
+                            AÃºn no guardaste ninguna asistencia.
                         </div>
                     </div>
 
@@ -412,8 +412,8 @@
                     <div x-show="view === 'exams'" class="page-enter" x-cloak>
                          <div class="glass-indigo text-white p-6 rounded-3xl mb-6 flex justify-between items-center">
                             <div>
-                                <h2 class="text-2xl font-bold">Proyección</h2>
-                                <p class="text-indigo-200 text-sm">Próxima mesa: <span x-text="formatExamDate(getUpcomingExamDate())"></span></p>
+                                <h2 class="text-2xl font-bold">ProyecciÃ³n</h2>
+                                <p class="text-indigo-200 text-sm">PrÃ³xima mesa: <span x-text="formatExamDate(getUpcomingExamDate())"></span></p>
                             </div>
                             <button @click="promotePaidStudents()" class="bg-white text-indigo-700 font-bold px-4 py-2.5 rounded-xl shadow-lg active:scale-95 transition text-xs flex items-center gap-2 hover:bg-slate-50">
                                 <i class="fa-solid fa-graduation-cap"></i>
@@ -501,18 +501,18 @@
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-black text-slate-800 leading-tight" x-text="activeStudent?.name"></h2>
                         <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold border bg-white text-slate-800" :class="activeStudent ? getCardStyle(activeStudent.rank) : ''" x-text="activeStudent?.rank"></span>
-                        <span class="text-sm font-bold text-slate-400 ml-2" x-text="activeStudent?.dob ? calculateAge(activeStudent.dob) + ' años' : ''"></span>
+                        <span class="text-sm font-bold text-slate-400 ml-2" x-text="activeStudent?.dob ? calculateAge(activeStudent.dob) + ' aÃ±os' : ''"></span>
                     </div>
 
                     <div class="glass rounded-2xl border border-white/30 p-4 mb-4 space-y-4">
-                        <!-- DNI en lugar de teléfono -->
+                        <!-- DNI en lugar de telÃ©fono -->
                         <div class="flex items-center gap-3 text-slate-700">
                             <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-id-card text-slate-400 text-xs"></i></div>
                             <span class="text-sm font-bold font-mono" x-text="activeStudent?.dni || 'Sin DNI registrado'"></span>
                         </div>
                         <div class="flex items-center gap-3 text-slate-700">
                             <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-location-dot text-slate-400 text-xs"></i></div>
-                            <span class="text-sm font-bold" x-text="activeStudent?.location || 'Sin ubicación registrada'"></span>
+                            <span class="text-sm font-bold" x-text="activeStudent?.location || 'Sin ubicaciÃ³n registrada'"></span>
                         </div>
                         <!-- Cuota fija badge -->
                         <div x-show="activeStudent?.cuota_fija" class="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
@@ -544,7 +544,7 @@
                                 </div>
                             </template>
                         </div>
-                        <!-- Botón Recordar por WhatsApp -->
+                        <!-- BotÃ³n Recordar por WhatsApp -->
                         <a x-show="activeStudent?.phone" 
                            :href="buildWhatsAppDebtUrl(activeStudent)" 
                            target="_blank"
@@ -554,10 +554,10 @@
                     </div>
                     <div x-show="activeStudent && getUnpaidMonths(activeStudent?.id).length === 0" class="bg-green-500/10 p-4 rounded-2xl border border-green-300/30 flex items-center gap-2 mb-6 text-green-700">
                         <i class="fa-solid fa-circle-check"></i>
-                        <span class="font-bold text-sm">Cuota al día</span>
+                        <span class="font-bold text-sm">Cuota al dÃ­a</span>
                     </div>
 
-                    <!-- Botón de Archivar / Desarchivar -->
+                    <!-- BotÃ³n de Archivar / Desarchivar -->
                     <button @click="toggleArchiveStudent(activeStudent)" 
                             :class="activeStudent?.archived ? 'bg-amber-500/10 text-amber-700 border-amber-300/30 hover:bg-amber-500/20' : 'bg-white/40 text-slate-700 border-white/40 hover:bg-white/60'"
                             class="w-full py-3 mb-3 border rounded-xl font-bold flex items-center justify-center gap-2 transition text-sm">
@@ -575,7 +575,7 @@
                                 <i class="fa-solid fa-trash"></i> Eliminar
                             </button>
                             <div x-show="confDelete" class="absolute inset-0 bg-red-500 rounded-xl flex items-center justify-center gap-2 overflow-hidden shadow-lg shadow-red-200">
-                                <button @click="deleteStudentConfirmed(); confDelete = false" class="flex-1 h-full text-white font-bold text-xs hover:bg-red-600">Sí, Borrar</button>
+                                <button @click="deleteStudentConfirmed(); confDelete = false" class="flex-1 h-full text-white font-bold text-xs hover:bg-red-600">SÃ­, Borrar</button>
                                 <button @click="confDelete = false" class="flex-1 h-full text-red-100 bg-red-800 font-bold text-xs hover:bg-red-900">Cancelar</button>
                             </div>
                         </div>
@@ -609,17 +609,17 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="text-xs font-bold text-slate-500 uppercase">Teléfono</label>
+                            <label class="text-xs font-bold text-slate-500 uppercase">TelÃ©fono</label>
                             <input type="tel" x-model="form.phone" placeholder="549..." class="w-full p-3 bg-white/60 border border-white/60 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white">
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-500 uppercase">Dirección</label>
+                            <label class="text-xs font-bold text-slate-500 uppercase">DirecciÃ³n</label>
                             <input type="text" x-model="form.location" placeholder="Calle 123" class="w-full p-3 bg-white/60 border border-white/60 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/20">
                         <div>
-                            <label class="text-xs font-bold text-slate-500 uppercase">Cinturón</label>
+                            <label class="text-xs font-bold text-slate-500 uppercase">CinturÃ³n</label>
                             <select x-model="form.rank" class="w-full p-3 bg-white/60 border border-white/60 rounded-xl font-bold outline-none focus:ring-2 focus:ring-indigo-400">
                                 <template x-for="rank in ranks" :key="rank">
                                     <option :value="rank" x-text="rank"></option>
@@ -706,7 +706,7 @@
             </div>
         </div>
 
-        <!-- ===== MODAL: CONFIGURACIÓN DE CUOTAS (NUEVO) ===== -->
+        <!-- ===== MODAL: CONFIGURACIÃ“N DE CUOTAS (NUEVO) ===== -->
         <div x-show="showSettingsModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 pt-4 pb-28 md:pb-4">
             <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showSettingsModal = false" x-transition.opacity></div>
             <div class="glass-heavy rounded-[2rem] w-full max-w-sm shadow-2xl relative z-50 overflow-hidden modal-enter p-6 pb-8 md:pb-6 max-h-[85vh] overflow-y-auto">
@@ -715,24 +715,24 @@
                     <button @click="showSettingsModal = false" class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 
-                <p class="text-sm text-slate-500 mb-5">Configurá los valores de cuota según el día de pago del mes.</p>
+                <p class="text-sm text-slate-500 mb-5">ConfigurÃ¡ los valores de cuota segÃºn el dÃ­a de pago del mes.</p>
 
                 <div class="space-y-4">
                     <div class="bg-green-50 border border-green-100 rounded-xl p-4">
                         <label class="text-xs font-bold text-green-700 uppercase flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-check"></i> Días 1 al 10
+                            <i class="fa-solid fa-calendar-check"></i> DÃ­as 1 al 10
                         </label>
                         <input type="number" x-model="editTiers.tier1" class="w-full p-3 bg-white border border-green-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-500 mt-2 text-lg text-center">
                     </div>
                     <div class="bg-amber-50 border border-amber-100 rounded-xl p-4">
                         <label class="text-xs font-bold text-amber-700 uppercase flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-minus"></i> Días 11 al 20
+                            <i class="fa-solid fa-calendar-minus"></i> DÃ­as 11 al 20
                         </label>
                         <input type="number" x-model="editTiers.tier2" class="w-full p-3 bg-white border border-amber-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-amber-500 mt-2 text-lg text-center">
                     </div>
                     <div class="bg-red-50 border border-red-100 rounded-xl p-4">
                         <label class="text-xs font-bold text-red-700 uppercase flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-xmark"></i> Días 21 en adelante
+                            <i class="fa-solid fa-calendar-xmark"></i> DÃ­as 21 en adelante
                         </label>
                         <input type="number" x-model="editTiers.tier3" class="w-full p-3 bg-white border border-red-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-500 mt-2 text-lg text-center">
                     </div>
@@ -779,3 +779,4 @@
     <script src="app.js"></script>
 </body>
 </html>
+
