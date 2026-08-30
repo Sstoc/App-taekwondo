@@ -83,6 +83,8 @@ function tkdApp() {
         historyTab: 'payments', // 'payments' | 'classes'
         paymentHistory: [],
         showMercadoPagoModal: false,
+        showPartialPayModal: false,
+        partialPayAmount: null,
         mpPaymentType: 'cuota',
         mpPaymentAmount: 0,
 
@@ -809,21 +811,51 @@ function tkdApp() {
             }
         },
 
-        async payWithMercadoPago(type = 'cuota') {
+        openPartialPaymentModal() {
+            if (!this.linkedStudent) {
+                this.showToast('No tenés un perfil vinculado. Avisale al profe.');
+                return;
+            }
+            const currentDebt = this.calcStudentDebt(this.linkedStudent.id);
+            if (currentDebt <= 0) {
+                this.showToast('¡No tenés saldo pendiente para abonar!');
+                return;
+            }
+            this.partialPayAmount = Math.round(currentDebt / 2) || 5000;
+            this.showPartialPayModal = true;
+        },
+
+        closePartialPaymentModal() {
+            this.showPartialPayModal = false;
+        },
+
+        async payWithMercadoPago(type = 'cuota', customAmount = null) {
             if (!this.linkedStudent) {
                 this.showToast('No tenés un perfil vinculado. Avisale al profe.');
                 return;
             }
             this.mpPaymentType = type;
-            this.mpPaymentAmount = type === 'examen' 
-                ? this.getExamFeeForStudent(this.linkedStudent) 
-                : this.calcStudentDebt(this.linkedStudent.id);
+            const maxDebt = this.calcStudentDebt(this.linkedStudent.id);
+
+            if (customAmount !== null && customAmount !== undefined) {
+                const numCustom = Number(customAmount);
+                if (isNaN(numCustom) || numCustom <= 0) {
+                    this.showToast('Por favor ingresá un monto válido.');
+                    return;
+                }
+                this.mpPaymentAmount = numCustom;
+            } else {
+                this.mpPaymentAmount = type === 'examen' 
+                    ? this.getExamFeeForStudent(this.linkedStudent) 
+                    : maxDebt;
+            }
 
             if (this.mpPaymentAmount <= 0) {
                 this.showToast('¡No tenés saldo pendiente para abonar!');
                 return;
             }
 
+            this.showPartialPayModal = false;
             this.mpLoading = true;
             try {
                 const res = await fetch('/.netlify/functions/create-preference', {

@@ -827,13 +827,20 @@
                         </div>
 
                         <template x-if="calcStudentDebt(linkedStudent?.id) > 0">
-                            <div class="w-full md:w-auto shrink-0">
-                                <button @click="payWithMercadoPago('cuota')" 
+                            <div class="w-full md:w-auto shrink-0 flex flex-col sm:flex-row md:flex-col gap-2.5">
+                                <button @click="payWithMercadoPago('cuota', null)" 
                                         :disabled="mpLoading" 
-                                        class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-blue-500/25 active:scale-95 transition flex items-center justify-center gap-3">
-                                    <i class="fa-solid fa-shield-halved text-lg"></i>
-                                    <span x-show="!mpLoading">Pagar con Mercado Pago</span>
+                                        class="w-full px-6 py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-blue-500/25 active:scale-95 transition flex items-center justify-center gap-2.5 cursor-pointer">
+                                    <i class="fa-solid fa-shield-halved text-base"></i>
+                                    <span x-show="!mpLoading">Pagar Totalidad (<span x-text="formatMoney(calcStudentDebt(linkedStudent?.id))"></span>)</span>
                                     <span x-show="mpLoading"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
+                                </button>
+                                <button @click="openPartialPaymentModal()" 
+                                        type="button"
+                                        :disabled="mpLoading"
+                                        class="w-full px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl active:scale-95 transition flex items-center justify-center gap-2 border border-slate-200 dark:border-white/10 cursor-pointer">
+                                    <i class="fa-solid fa-wallet text-indigo-500"></i>
+                                    <span>Pagar otro monto (Parcial)</span>
                                 </button>
                             </div>
                         </template>
@@ -1642,6 +1649,105 @@
                     <button @click="showMercadoPagoModal = false" class="w-full py-3 bg-white/40 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-white/60 transition text-xs">
                         Cerrar
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: PAGO PARCIAL PERSONALIZADO ===== -->
+        <div x-show="showPartialPayModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 pt-16 pb-24 md:p-4 overflow-y-auto">
+            <div class="fixed inset-0 z-40 modal-backdrop-base cursor-pointer" 
+                 @click="closePartialPaymentModal()" 
+                 x-show="showPartialPayModal"
+                 x-transition:enter="backdrop-enter"
+                 x-transition:enter-start="backdrop-enter-start"
+                 x-transition:enter-end="backdrop-enter-end"
+                 x-transition:leave="backdrop-leave"
+                 x-transition:leave-start="backdrop-leave-start"
+                 x-transition:leave-end="backdrop-leave-end"></div>
+            <div class="glass-heavy rounded-[2rem] w-full max-w-md shadow-2xl relative z-50 overflow-hidden p-6 max-h-[75vh] md:max-h-[85vh] my-auto overflow-y-auto"
+                 x-show="showPartialPayModal"
+                 x-transition:enter="modal-card-enter"
+                 x-transition:enter-start="modal-card-enter-start"
+                 x-transition:enter-end="modal-card-enter-end"
+                 x-transition:leave="modal-card-leave"
+                 x-transition:leave-start="modal-card-leave-start"
+                 x-transition:leave-end="modal-card-leave-end">
+                
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800 dark:text-white leading-tight">Pago Parcial</h3>
+                            <p class="text-xs text-slate-400">Elegí cuánto abonar ahora</p>
+                        </div>
+                    </div>
+                    <button @click="closePartialPaymentModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition cursor-pointer">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 space-y-2 mb-5">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Deuda total pendiente:</span>
+                        <span class="font-black text-slate-800 dark:text-white text-sm" x-text="formatMoney(calcStudentDebt(linkedStudent?.id))"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs" x-show="partialPayAmount > 0">
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Saldo que quedará después:</span>
+                        <span class="font-bold text-amber-500" x-text="formatMoney(Math.max(0, calcStudentDebt(linkedStudent?.id) - (Number(partialPayAmount) || 0)))"></span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Monto a abonar ($ ARS)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg">$</span>
+                            <input type="number" 
+                                   x-model.number="partialPayAmount" 
+                                   :max="calcStudentDebt(linkedStudent?.id)"
+                                   min="100"
+                                   step="500"
+                                   placeholder="0"
+                                   class="w-full pl-9 pr-4 py-3.5 rounded-2xl bg-white dark:bg-slate-800 border-2 border-indigo-500/30 focus:border-indigo-500 font-black text-xl text-slate-800 dark:text-white outline-none transition shadow-sm">
+                        </div>
+                    </div>
+
+                    <!-- Accesos rápidos de monto -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" 
+                                @click="partialPayAmount = Math.round(calcStudentDebt(linkedStudent?.id) * 0.25)"
+                                class="py-2 px-2 text-[11px] font-bold rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-white/5 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 border border-slate-200 dark:border-white/10 transition cursor-pointer">
+                            25% (<span x-text="formatMoney(Math.round(calcStudentDebt(linkedStudent?.id) * 0.25))"></span>)
+                        </button>
+                        <button type="button" 
+                                @click="partialPayAmount = Math.round(calcStudentDebt(linkedStudent?.id) * 0.50)"
+                                class="py-2 px-2 text-[11px] font-bold rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-white/5 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 border border-slate-200 dark:border-white/10 transition cursor-pointer">
+                            50% (<span x-text="formatMoney(Math.round(calcStudentDebt(linkedStudent?.id) * 0.50))"></span>)
+                        </button>
+                        <button type="button" 
+                                @click="partialPayAmount = calcStudentDebt(linkedStudent?.id)"
+                                class="py-2 px-2 text-[11px] font-bold rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-white/5 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 border border-slate-200 dark:border-white/10 transition cursor-pointer">
+                            100% (Total)
+                        </button>
+                    </div>
+
+                    <div class="pt-2 space-y-2">
+                        <button @click="payWithMercadoPago('cuota', partialPayAmount)" 
+                                :disabled="mpLoading || !partialPayAmount || partialPayAmount <= 0"
+                                class="w-full py-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-blue-500/25 active:scale-95 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer">
+                            <i class="fa-solid fa-shield-halved text-base"></i>
+                            <span x-show="!mpLoading">Pagar <span x-text="formatMoney(partialPayAmount || 0)"></span> con Mercado Pago</span>
+                            <span x-show="mpLoading"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
+                        </button>
+                        
+                        <button @click="closePartialPaymentModal()" 
+                                type="button"
+                                class="w-full py-2.5 text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition cursor-pointer">
+                            Cancelar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
