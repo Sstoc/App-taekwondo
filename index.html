@@ -53,6 +53,15 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .modal-backdrop-base {
+            position: fixed !important;
+            inset: 0 !important;
+            background-color: rgba(10, 15, 30, 0.65) !important;
+            -webkit-backdrop-filter: blur(28px) !important;
+            backdrop-filter: blur(28px) !important;
+        }
+    </style>
 </head>
 
 <body class="text-slate-800 h-[100dvh] overflow-hidden selection:bg-indigo-100 selection:text-indigo-700 relative">
@@ -800,29 +809,76 @@
                     </div>
 
                     <!-- Tarjeta Principal de Pago / Estado -->
-                    <div class="glass p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div class="space-y-2 text-center md:text-left">
-                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold"
-                                 :class="calcStudentDebt(linkedStudent?.id) > 0 ? 'bg-red-500/15 text-red-600' : 'bg-green-500/15 text-green-600'">
-                                <span class="w-2 h-2 rounded-full" :class="calcStudentDebt(linkedStudent?.id) > 0 ? 'bg-red-500' : 'bg-green-500'"></span>
-                                <span x-text="calcStudentDebt(linkedStudent?.id) > 0 ? 'Cuota pendiente de pago' : 'Cuota al día'"></span>
+                    <div class="glass p-6 md:p-8 rounded-3xl shadow-xl space-y-5">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="space-y-2 text-center md:text-left">
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold"
+                                     :class="calcStudentDebt(linkedStudent?.id) > 0 ? 'bg-red-500/15 text-red-600' : 'bg-green-500/15 text-green-600'">
+                                    <span class="w-2 h-2 rounded-full" :class="calcStudentDebt(linkedStudent?.id) > 0 ? 'bg-red-500' : 'bg-green-500'"></span>
+                                    <span x-text="calcStudentDebt(linkedStudent?.id) > 0 ? 'Cuota pendiente de pago' : 'Cuota al día'"></span>
+                                </div>
+                                <h2 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white" x-text="calcStudentDebt(linkedStudent?.id) > 0 ? formatMoney(calcStudentDebt(linkedStudent?.id)) : '¡Estás al día!'"></h2>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400 max-w-md">
+                                    <span x-show="calcStudentDebt(linkedStudent?.id) > 0">Aboná con tarjeta o dinero en cuenta mediante Mercado Pago con acreditación instantánea.</span>
+                                    <span x-show="calcStudentDebt(linkedStudent?.id) === 0">Tu cuenta se encuentra regularizada. ¡Muchas gracias por tu constancia!</span>
+                                </p>
                             </div>
-                            <h2 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white" x-text="calcStudentDebt(linkedStudent?.id) > 0 ? formatMoney(calcStudentDebt(linkedStudent?.id)) : '¡Estás al día!'"></h2>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 max-w-md">
-                                <span x-show="calcStudentDebt(linkedStudent?.id) > 0">Aboná con tarjeta o dinero en cuenta mediante Mercado Pago con acreditación instantánea.</span>
-                                <span x-show="calcStudentDebt(linkedStudent?.id) === 0">Tu cuenta se encuentra regularizada. ¡Muchas gracias por tu constancia!</span>
-                            </p>
+
+                            <template x-if="calcStudentDebt(linkedStudent?.id) > 0">
+                                <div class="w-full md:w-auto shrink-0 flex flex-col items-center sm:items-end gap-2">
+                                    <button @click="payWithMercadoPago('cuota')" 
+                                            :disabled="mpLoading || getEffectiveStudentPaymentAmount() <= 0" 
+                                            class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-blue-500/25 active:scale-95 transition flex items-center justify-center gap-3">
+                                        <i class="fa-solid fa-shield-halved text-lg"></i>
+                                        <span x-show="!mpLoading" x-text="'Pagar ' + formatMoney(getEffectiveStudentPaymentAmount()) + ' con Mercado Pago'"></span>
+                                        <span x-show="mpLoading"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
+                                    </button>
+                                </div>
+                            </template>
                         </div>
 
+                        <!-- Selector de Monto a Pagar (Total vs Pago Parcial) -->
                         <template x-if="calcStudentDebt(linkedStudent?.id) > 0">
-                            <div class="w-full md:w-auto shrink-0">
-                                <button @click="payWithMercadoPago('cuota')" 
-                                        :disabled="mpLoading" 
-                                        class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-blue-500/25 active:scale-95 transition flex items-center justify-center gap-3">
-                                    <i class="fa-solid fa-shield-halved text-lg"></i>
-                                    <span x-show="!mpLoading">Pagar con Mercado Pago</span>
-                                    <span x-show="mpLoading"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
-                                </button>
+                            <div class="pt-4 border-t border-slate-100 dark:border-white/10 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">¿Cuánto querés abonar hoy?</span>
+                                    <div class="flex bg-slate-200/80 dark:bg-slate-900/90 border border-slate-300/40 dark:border-white/10 rounded-2xl p-1 gap-1 text-xs">
+                                        <button type="button" 
+                                                @click="studentPaymentMode = 'total'" 
+                                                :class="studentPaymentMode === 'total' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white font-black shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'" 
+                                                class="px-3 py-1.5 rounded-xl transition">
+                                            Total (<span x-text="formatMoney(calcStudentDebt(linkedStudent?.id))"></span>)
+                                        </button>
+                                        <button type="button" 
+                                                @click="studentPaymentMode = 'custom'; if (!studentCustomAmount) studentCustomAmount = Math.min(calcStudentDebt(linkedStudent?.id), getCurrentTierAmount(linkedStudent))" 
+                                                :class="studentPaymentMode === 'custom' ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white font-black shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 font-bold'" 
+                                                class="px-3 py-1.5 rounded-xl transition">
+                                            Otro Monto / Parcial
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Input de monto personalizado con validación de límite estricto de deuda -->
+                                <div x-show="studentPaymentMode === 'custom'" x-collapse class="space-y-2 bg-slate-50/60 dark:bg-slate-950/40 p-3.5 rounded-2xl border border-slate-200/60 dark:border-white/5">
+                                    <label class="text-[11px] font-bold uppercase text-slate-400">Ingresá el monto que vas a abonar:</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-3.5 text-slate-400 font-black text-sm">$</span>
+                                        <input type="number" 
+                                               x-model.number="studentCustomAmount" 
+                                               @input="if (studentCustomAmount > calcStudentDebt(linkedStudent?.id)) { studentCustomAmount = calcStudentDebt(linkedStudent?.id); showToast('El monto no puede superar tu deuda total'); } if (studentCustomAmount < 0) studentCustomAmount = 0;" 
+                                               :max="calcStudentDebt(linkedStudent?.id)" 
+                                               min="100" 
+                                               step="500" 
+                                               placeholder="Monto a pagar..." 
+                                               class="w-full p-3 pl-8 text-base font-black text-slate-800 dark:text-white rounded-xl outline-none border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 font-mono">
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                                        <span>Deuda total: <b class="text-slate-700 dark:text-slate-200" x-text="formatMoney(calcStudentDebt(linkedStudent?.id))"></b></span>
+                                        <span x-show="studentCustomAmount > 0 && studentCustomAmount < calcStudentDebt(linkedStudent?.id)" class="text-amber-600 dark:text-amber-400 font-bold">
+                                            Restará abonar: <span x-text="formatMoney(calcStudentDebt(linkedStudent?.id) - (studentCustomAmount || 0))"></span>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </template>
                     </div>

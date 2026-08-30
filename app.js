@@ -119,6 +119,18 @@ function tkdApp() {
             { day: 'Miércoles', time: '18:00 - 19:30', location: 'Dojo Principal' },
             { day: 'Viernes', time: '18:00 - 19:30', location: 'Dojo Principal' }
         ],
+        studentPaymentMode: 'total', // 'total' | 'custom'
+        studentCustomAmount: null,
+
+        getEffectiveStudentPaymentAmount() {
+            if (!this.linkedStudent) return 0;
+            const totalDebt = this.calcStudentDebt(this.linkedStudent.id);
+            if (this.studentPaymentMode === 'custom') {
+                const customVal = Number(this.studentCustomAmount) || 0;
+                return Math.min(Math.max(0, customVal), totalDebt);
+            }
+            return totalDebt;
+        },
 
         form: { id: null, name: '', dob: '', rank: 'Blanco', tuition: 12500, debt: 12500, phone: '', location: '', dni: '', cuota_fija: false, exam_paid: false, exam_paid_amount: 0, archived: false },
         archiveFilter: 'active',
@@ -808,13 +820,18 @@ function tkdApp() {
                 return;
             }
             this.mpPaymentType = type;
+            const totalDebt = this.calcStudentDebt(this.linkedStudent.id);
             this.mpPaymentAmount = type === 'examen' 
                 ? this.getExamFeeForStudent(this.linkedStudent) 
-                : this.calcStudentDebt(this.linkedStudent.id);
+                : this.getEffectiveStudentPaymentAmount();
 
             if (this.mpPaymentAmount <= 0) {
                 this.showToast('¡No tenés saldo pendiente para abonar!');
                 return;
+            }
+
+            if (type === 'cuota' && this.mpPaymentAmount > totalDebt) {
+                this.mpPaymentAmount = totalDebt;
             }
 
             this.mpLoading = true;

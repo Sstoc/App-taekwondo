@@ -102,37 +102,30 @@ body {
 .modal-backdrop-base {
     position: fixed;
     inset: 0;
-    background-color: rgba(10, 15, 30, 0.60) !important;
-    backdrop-filter: blur(28px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+    background-color: rgba(10, 15, 30, 0.65) !important;
+    backdrop-filter: blur(28px) !important;
+    -webkit-backdrop-filter: blur(28px) !important;
+    will-change: opacity;
 }
 
 .backdrop-enter {
-    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1), -webkit-backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 .backdrop-enter-start {
     opacity: 0 !important;
-    backdrop-filter: blur(0.01px) saturate(100%) !important;
-    -webkit-backdrop-filter: blur(0.01px) saturate(100%) !important;
 }
 .backdrop-enter-end {
     opacity: 1 !important;
-    backdrop-filter: blur(28px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
 }
 
 .backdrop-leave {
-    transition: opacity 0.25s cubic-bezier(0.32, 0.72, 0, 1), backdrop-filter 0.25s cubic-bezier(0.32, 0.72, 0, 1), -webkit-backdrop-filter 0.25s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    transition: opacity 0.22s cubic-bezier(0.32, 0.72, 0, 1) !important;
 }
 .backdrop-leave-start {
     opacity: 1 !important;
-    backdrop-filter: blur(28px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
 }
 .backdrop-leave-end {
     opacity: 0 !important;
-    backdrop-filter: blur(0.01px) saturate(100%) !important;
-    -webkit-backdrop-filter: blur(0.01px) saturate(100%) !important;
 }
 
 /* Modal Dialog Card Transition States */
