@@ -1,9 +1,10 @@
 {
   "name": "Taekwondo Chang Moo Kwan",
-  "short_name": "CMK Taekwondo",
+  "short_name": "Taekwondo CMK",
   "description": "Sistema oficial de gestión y portal de alumnos Taekwondo Chang Moo Kwan",
   "start_url": "/",
   "scope": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
@@ -28,7 +29,7 @@
       "purpose": "maskable"
     },
     {
-      "src": "/logo chang moo kwan.jpeg",
+      "src": "/logo.jpeg",
       "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any"

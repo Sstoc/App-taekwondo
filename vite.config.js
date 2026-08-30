@@ -9,23 +9,27 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo chang moo kwan.jpeg', 'icon-192.png', 'icon-512.png'],
+      includeAssets: ['logo.jpeg', 'icon-192.png', 'icon-512.png', 'icon-padded.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Taekwondo CMK',
-        short_name: 'CMK',
-        description: 'Sistema de gestión Chang Moo Kwan',
+        name: 'Taekwondo Chang Moo Kwan',
+        short_name: 'Taekwondo CMK',
+        description: 'Sistema oficial de gestión y portal de alumnos Taekwondo Chang Moo Kwan',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
         orientation: 'portrait',
+        start_url: '/',
+        scope: '/',
+        id: '/',
         icons: [
-          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icon-padded.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/logo.jpeg', sizes: '512x512', type: 'image/jpeg', purpose: 'any' }
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpeg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpeg,json}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/ihxvrsdyxhslwahkklmh\.supabase\.co\/.*/i,

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cmk-pwa-v2';
+const CACHE_NAME = 'cmk-pwa-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -8,7 +8,8 @@ const ASSETS_TO_CACHE = [
   '/icon-192.png',
   '/icon-512.png',
   '/icon-padded.png',
-  '/logo chang moo kwan.jpeg'
+  '/logo.jpeg',
+  '/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
