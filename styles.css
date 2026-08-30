@@ -25,11 +25,13 @@ body {
         #e8f0ff 100%);
 }
 
-/* --- Clases de Vidrio y Tarjetas Sólidas de Alto Rendimiento (0% Lag) --- */
+/* --- Clases de Vidrio Líquido con Desenfoque Dinámico --- */
 .glass {
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(226, 232, 240, 0.80);
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05), inset 0 1px 0 rgba(255,255,255,0.90);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06), inset 0 1px 0 rgba(255,255,255,0.90);
     transform: translateZ(0);
 }
 
@@ -66,9 +68,10 @@ body {
 }
 
 .glass-cloud-header {
-    background: rgba(255, 255, 255, 0.96);
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: 1px solid rgba(226, 232, 240, 0.80);
-    transform: translateZ(0);
 }
 
 /* Tarjeta optimizada para elementos de lista con Scroll Ultra Fluido (0% lag) */
@@ -102,30 +105,37 @@ body {
 .modal-backdrop-base {
     position: fixed;
     inset: 0;
-    background-color: rgba(10, 15, 30, 0.65) !important;
-    backdrop-filter: blur(28px) !important;
-    -webkit-backdrop-filter: blur(28px) !important;
-    will-change: opacity;
+    background-color: rgba(10, 15, 30, 0.60) !important;
+    backdrop-filter: blur(28px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
 }
 
 .backdrop-enter {
-    transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1), -webkit-backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 .backdrop-enter-start {
     opacity: 0 !important;
+    backdrop-filter: blur(0.01px) saturate(100%) !important;
+    -webkit-backdrop-filter: blur(0.01px) saturate(100%) !important;
 }
 .backdrop-enter-end {
     opacity: 1 !important;
+    backdrop-filter: blur(28px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
 }
 
 .backdrop-leave {
-    transition: opacity 0.22s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    transition: opacity 0.25s cubic-bezier(0.32, 0.72, 0, 1), backdrop-filter 0.25s cubic-bezier(0.32, 0.72, 0, 1), -webkit-backdrop-filter 0.25s cubic-bezier(0.32, 0.72, 0, 1) !important;
 }
 .backdrop-leave-start {
     opacity: 1 !important;
+    backdrop-filter: blur(28px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
 }
 .backdrop-leave-end {
     opacity: 0 !important;
+    backdrop-filter: blur(0.01px) saturate(100%) !important;
+    -webkit-backdrop-filter: blur(0.01px) saturate(100%) !important;
 }
 
 /* Modal Dialog Card Transition States */
@@ -203,18 +213,18 @@ button:active {
     transition: transform 0.1s ease-out;
 }
 
-/* --- Navegación flotante móvil (píldora Liquid Glass FIXED) --- */
+/* --- Navegación flotante móvil (píldora Liquid Glass idéntica al Header) --- */
 .nav-pill {
     position: fixed;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     left: 16px;
     right: 16px;
-    border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.65) !important;
-    backdrop-filter: blur(28px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+    border-radius: 9999px !important;
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.60) !important;
-    box-shadow: 0 16px 40px rgba(99, 102, 241, 0.18), 0 6px 18px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.75);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.90) !important;
     transform: translateZ(0);
 }
 
@@ -267,25 +277,34 @@ html.dark body {
     100% { background-position: 0% 50%; }
 }
 
-/* Glass en dark mode */
+/* Glass en dark mode (Liquid Glass Traslúcido Real) */
 html.dark .glass {
-    background: #0f172a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40);
+    background: rgba(30, 41, 59, 0.35) !important;
+    backdrop-filter: blur(24px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark .glass-cloud-header {
+    background: rgba(30, 41, 59, 0.35) !important;
+    backdrop-filter: blur(24px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
 html.dark .glass-heavy {
     background: #0f172a !important;
-    backdrop-filter: blur(32px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.60) !important;
 }
 
 html.dark .nav-pill {
-    background: #0f172a !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.50);
+    background: rgba(30, 41, 59, 0.35) !important;
+    backdrop-filter: blur(24px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
 }
 
 /* Backgrounds principales */
@@ -349,17 +368,7 @@ html.dark .border-slate-100 { border-color: rgba(255,255,255,0.08) !important; }
 /* Sidebar desktop */
 html.dark aside { background: #0f172a !important; border-color: rgba(255,255,255,0.08) !important; }
 
-/* Header mobile */
-html.dark header { 
-    background: #0f172a !important; 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important; 
-}
 
-/* Nav mobile */
-html.dark .nav-pill { 
-    background: #0f172a !important; 
-    border-color: rgba(255, 255, 255, 0.10) !important; 
-}
 
 /* Modales */
 html.dark .glass-heavy { background: #0f172a !important; }

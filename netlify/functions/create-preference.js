@@ -45,7 +45,9 @@ exports.handler = async (event) => {
             ? `Derecho a Examen - Taekwondo CMK (${student_name || 'Alumno'})`
             : `Cuota Mensual - Taekwondo CMK (${student_name || 'Alumno'})`;
 
-        const baseUrl = (origin_url || 'https://apptaekwondo.netlify.app').replace(/\/$/, '');
+        const baseUrl = (origin_url && origin_url.startsWith('https://') && !origin_url.includes('localhost'))
+            ? origin_url.replace(/\/$/, '')
+            : 'https://apptaekwondo.netlify.app';
 
         const preferencePayload = {
             items: [

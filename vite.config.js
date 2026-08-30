@@ -43,8 +43,4 @@ export default defineConfig({
       },
     }),
   ],
-  build: {
-    target: 'esnext',
-    cssTarget: 'chrome90'
-  }
 })

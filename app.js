@@ -119,18 +119,6 @@ function tkdApp() {
             { day: 'Miércoles', time: '18:00 - 19:30', location: 'Dojo Principal' },
             { day: 'Viernes', time: '18:00 - 19:30', location: 'Dojo Principal' }
         ],
-        studentPaymentMode: 'total', // 'total' | 'custom'
-        studentCustomAmount: null,
-
-        getEffectiveStudentPaymentAmount() {
-            if (!this.linkedStudent) return 0;
-            const totalDebt = this.calcStudentDebt(this.linkedStudent.id);
-            if (this.studentPaymentMode === 'custom') {
-                const customVal = Number(this.studentCustomAmount) || 0;
-                return Math.min(Math.max(0, customVal), totalDebt);
-            }
-            return totalDebt;
-        },
 
         form: { id: null, name: '', dob: '', rank: 'Blanco', tuition: 12500, debt: 12500, phone: '', location: '', dni: '', cuota_fija: false, exam_paid: false, exam_paid_amount: 0, archived: false },
         archiveFilter: 'active',
@@ -274,11 +262,8 @@ function tkdApp() {
                 const studentId = params.get('student_id');
                 const fallbackAmount = Number(params.get('amount') || 0);
 
-                if ((mpStatus === 'approved' || paymentId) && paymentId && !localStorage.getItem('cmk-processed-mp-' + paymentId)) {
-                    // Verificación segura en el servidor (Netlify Function)
-                    let verifiedAmount = fallbackAmount;
-                    let isVerified = false;
-
+                if (paymentId && !localStorage.getItem('cmk-processed-mp-' + paymentId)) {
+                    // Verificación OBLIGATORIA y estricta en el servidor con la API oficial de Mercado Pago
                     try {
                         const verifyRes = await fetch('/.netlify/functions/verify-payment', {
                             method: 'POST',
@@ -289,23 +274,19 @@ function tkdApp() {
                         if (verifyRes.ok) {
                             const verifyData = await verifyRes.json();
                             if (verifyData.verified && verifyData.amount > 0) {
-                                isVerified = true;
-                                verifiedAmount = verifyData.amount;
+                                localStorage.setItem('cmk-processed-mp-' + paymentId, 'true');
+                                await this.processMercadoPagoApproval({
+                                    paymentId,
+                                    type,
+                                    studentId: studentId || this.linkedStudent?.id,
+                                    amount: verifyData.amount
+                                });
+                            } else {
+                                this.showToast('El pago no pudo ser verificado con Mercado Pago.');
                             }
                         }
                     } catch (err) {
-                        console.warn("Server verification network warning, fallback to parameter check:", err);
-                    }
-
-                    // Si se verificó con el servidor o si el estado de retorno de MP es approved
-                    if (isVerified || mpStatus === 'approved') {
-                        localStorage.setItem('cmk-processed-mp-' + paymentId, 'true');
-                        await this.processMercadoPagoApproval({
-                            paymentId,
-                            type,
-                            studentId: studentId || this.linkedStudent?.id,
-                            amount: verifiedAmount
-                        });
+                        console.warn("Server payment verification failed:", err);
                     }
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
@@ -580,16 +561,28 @@ function tkdApp() {
             try {
                 // Cargar lista de alumnos para vincular y refrescar
                 const { data: allStudents } = await this.supabase.from('tkd_students').select('*');
-                this.availableStudentsToLink = Array.isArray(allStudents) ? allStudents.filter(s => !s.archived) : [];
+                this.students = Array.isArray(allStudents) ? allStudents.map(s => ({
+                    ...s,
+                    dni: s.dni || '',
+                    cuota_fija: !!s.cuota_fija,
+                    exam_paid: !!s.exam_paid,
+                    exam_paid_amount: Number(s.exam_paid_amount || 0),
+                    debt: Number(s.debt || 0),
+                    archived: !!s.archived
+                })) : [];
+                this.availableStudentsToLink = this.students.filter(s => !s.archived);
 
                 let st = null;
                 const savedStudentId = profile?.student_id || localStorage.getItem(`cmk-student-link-${this.user?.id}`) || this.linkedStudent?.id;
                 
                 if (savedStudentId) {
-                    st = this.availableStudentsToLink.find(s => s.id === savedStudentId);
+                    st = this.students.find(s => s.id === savedStudentId);
                     if (!st) {
                         const { data: singleSt } = await this.supabase.from('tkd_students').select('*').eq('id', savedStudentId).maybeSingle();
-                        if (singleSt) st = singleSt;
+                        if (singleSt) {
+                            st = singleSt;
+                            this.students.push(singleSt);
+                        }
                     }
                 }
 
@@ -619,6 +612,8 @@ function tkdApp() {
                     if (Array.isArray(settingsData.payment_history)) this.paymentHistory = settingsData.payment_history;
                     if (settingsData.classes) this.classes = Array.isArray(settingsData.classes) ? settingsData.classes : [];
                     if (settingsData.current_month) this.currentMonth = settingsData.current_month;
+
+                    this.migrateExistingDebts();
 
                     if (st) {
                         const attendances = [];
@@ -820,18 +815,13 @@ function tkdApp() {
                 return;
             }
             this.mpPaymentType = type;
-            const totalDebt = this.calcStudentDebt(this.linkedStudent.id);
             this.mpPaymentAmount = type === 'examen' 
                 ? this.getExamFeeForStudent(this.linkedStudent) 
-                : this.getEffectiveStudentPaymentAmount();
+                : this.calcStudentDebt(this.linkedStudent.id);
 
             if (this.mpPaymentAmount <= 0) {
                 this.showToast('¡No tenés saldo pendiente para abonar!');
                 return;
-            }
-
-            if (type === 'cuota' && this.mpPaymentAmount > totalDebt) {
-                this.mpPaymentAmount = totalDebt;
             }
 
             this.mpLoading = true;
@@ -1355,12 +1345,42 @@ function tkdApp() {
         // --- DESGLOSE DE DEUDA MENSUAL ---
         getStudentMonthlyDebts(studentId) {
             if (!studentId) return [];
-            return Array.isArray(this.debtDetails[studentId]) ? this.debtDetails[studentId] : [];
+            const s = this.students.find(st => st.id === studentId) || (this.linkedStudent?.id === studentId ? this.linkedStudent : null) || this.availableStudentsToLink?.find(st => st.id === studentId);
+            const actualDebt = Number(s?.debt || 0);
+
+            let entries = Array.isArray(this.debtDetails[studentId]) ? this.debtDetails[studentId] : [];
+
+            // Si el alumno tiene deuda en la base de datos pero todas las entradas de debtDetails están marcadas como pagadas o vacías
+            const unpaidTotal = entries.filter(d => !d.paid && Number(d.amount || 0) > 0).reduce((sum, d) => sum + Number(d.amount || 0), 0);
+
+            if (actualDebt > 0 && unpaidTotal === 0) {
+                // Hay inconsistencia: el alumno debe en BD pero debtDetails decía pagado. Reconciliar al monto real de BD
+                entries = [{
+                    month: 'legacy',
+                    label: 'Cuota Pendiente',
+                    amount: actualDebt,
+                    paid: false
+                }];
+                this.debtDetails[studentId] = entries;
+            } else if (actualDebt === 0 && unpaidTotal > 0) {
+                // Alumno está al día en BD
+                entries.forEach(e => e.paid = true);
+            } else if (entries.length === 0 && actualDebt > 0) {
+                entries = [{
+                    month: 'legacy',
+                    label: 'Cuota Pendiente',
+                    amount: actualDebt,
+                    paid: false
+                }];
+                this.debtDetails[studentId] = entries;
+            }
+
+            return entries;
         },
 
         getUnpaidMonths(studentId) {
             if (!studentId) return [];
-            return this.getStudentMonthlyDebts(studentId).filter(d => !d.paid && d.amount > 0);
+            return this.getStudentMonthlyDebts(studentId).filter(d => !d.paid && Number(d.amount || 0) > 0);
         },
 
         getPaidMonths(studentId) {
@@ -1369,9 +1389,11 @@ function tkdApp() {
         },
 
         calcStudentDebt(studentId) {
-            const unpaidTotal = this.getUnpaidMonths(studentId).reduce((sum, d) => sum + Number(d.amount || 0), 0);
+            if (!studentId) return 0;
+            const unpaidEntries = this.getUnpaidMonths(studentId);
+            const unpaidTotal = unpaidEntries.reduce((sum, d) => sum + Number(d.amount || 0), 0);
             if (unpaidTotal === 0) {
-                const s = this.students.find(st => st.id === studentId);
+                const s = this.students.find(st => st.id === studentId) || (this.linkedStudent?.id === studentId ? this.linkedStudent : null) || this.availableStudentsToLink?.find(st => st.id === studentId);
                 if (s && Number(s.debt || 0) > 0) return Number(s.debt);
             }
             return unpaidTotal;
@@ -1414,13 +1436,19 @@ function tkdApp() {
 
         migrateExistingDebts() {
             let migrated = false;
-            for (let s of this.students) {
+            const studentsToCheck = [...(this.students || [])];
+            if (this.linkedStudent && !studentsToCheck.some(s => s.id === this.linkedStudent.id)) {
+                studentsToCheck.push(this.linkedStudent);
+            }
+            for (let s of studentsToCheck) {
                 const currentDebt = Number(s.debt || 0);
-                const existingEntries = this.getStudentMonthlyDebts(s.id);
-                if (currentDebt > 0 && existingEntries.length === 0) {
+                const existingEntries = Array.isArray(this.debtDetails[s.id]) ? this.debtDetails[s.id] : [];
+                const unpaidSum = existingEntries.filter(d => !d.paid && Number(d.amount || 0) > 0).reduce((sum, d) => sum + Number(d.amount || 0), 0);
+                
+                if (currentDebt > 0 && unpaidSum === 0) {
                     this.debtDetails[s.id] = [{
                         month: 'legacy',
-                        label: 'Deuda anterior',
+                        label: 'Cuota Pendiente',
                         amount: currentDebt,
                         paid: false
                     }];
