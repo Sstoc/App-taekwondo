@@ -307,7 +307,7 @@
                                         <i :class="showRevenue ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" class="text-xs"></i>
                                     </button>
                                 </div>
-                                <p class="text-3xl font-black text-slate-800 dark:text-white mt-1">
+                                <p class="text-xl sm:text-2xl md:text-3xl font-black text-slate-800 dark:text-white mt-1 tracking-tight truncate">
                                     <span x-show="showRevenue" x-text="formatMoney(getCurrentMonthRevenue())"></span>
                                     <span x-show="!showRevenue">$ ••••••</span>
                                 </p>

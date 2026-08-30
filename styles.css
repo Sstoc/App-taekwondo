@@ -27,10 +27,10 @@ body {
 
 /* --- Clases de Vidrio Líquido con Desenfoque Dinámico --- */
 .glass {
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.88);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.60);
+    border: 1px solid rgba(255, 255, 255, 0.70);
     box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06), inset 0 1px 0 rgba(255,255,255,0.90);
     transform: translateZ(0);
 }
@@ -220,11 +220,11 @@ button:active {
     left: 16px;
     right: 16px;
     border-radius: 9999px !important;
-    background: rgba(255, 255, 255, 0.72) !important;
+    background: rgba(255, 255, 255, 0.88) !important;
     backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.60) !important;
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.90) !important;
+    border: 1px solid rgba(255, 255, 255, 0.70) !important;
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.90) !important;
     transform: translateZ(0);
 }
 
@@ -277,20 +277,20 @@ html.dark body {
     100% { background-position: 0% 50%; }
 }
 
-/* Glass en dark mode (Liquid Glass Traslúcido Real) */
+/* Glass en dark mode (Frosted Glass Opaco y Limpio: sin que se traspasen los textos) */
 html.dark .glass {
-    background: rgba(30, 41, 59, 0.35) !important;
-    backdrop-filter: blur(24px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.40);
 }
 
 html.dark .glass-cloud-header {
-    background: rgba(30, 41, 59, 0.35) !important;
-    backdrop-filter: blur(24px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
 }
 
 html.dark .glass-heavy {
@@ -300,11 +300,11 @@ html.dark .glass-heavy {
 }
 
 html.dark .nav-pill {
-    background: rgba(30, 41, 59, 0.35) !important;
-    backdrop-filter: blur(24px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.50), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
 }
 
 /* Backgrounds principales */
