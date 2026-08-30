@@ -178,8 +178,9 @@ function tkdApp() {
                 });
 
                 window.tkdAppInstance = this;
-                if (globalDeferredPrompt) {
-                    this.deferredPrompt = globalDeferredPrompt;
+                const existingPrompt = globalDeferredPrompt || window.deferredInstallPrompt;
+                if (existingPrompt) {
+                    this.deferredPrompt = existingPrompt;
                     this.showInstallBanner = true;
                 }
 
@@ -190,6 +191,7 @@ function tkdApp() {
                 window.addEventListener('beforeinstallprompt', (e) => {
                     e.preventDefault();
                     globalDeferredPrompt = e;
+                    window.deferredInstallPrompt = e;
                     this.deferredPrompt = e;
                     this.showInstallBanner = true;
                 });
@@ -198,15 +200,8 @@ function tkdApp() {
                     this.showInstallBanner = false;
                     this.deferredPrompt = null;
                     globalDeferredPrompt = null;
+                    window.deferredInstallPrompt = null;
                 });
-
-                if (!this.isPWAInstalled) {
-                    setTimeout(() => {
-                        if (!this.isPWAInstalled && !sessionStorage.getItem('cmk-dismiss-pwa')) {
-                            this.showInstallBanner = true;
-                        }
-                    }, 1200);
-                }
 
                 // Aplicar tema guardado
                 this.themeMode = localStorage.getItem('cmk-theme') || 'dark';
