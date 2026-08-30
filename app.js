@@ -266,6 +266,7 @@ function tkdApp() {
 
                 if (paymentId && !localStorage.getItem('cmk-processed-mp-' + paymentId)) {
                     // Verificación OBLIGATORIA y estricta en el servidor con la API oficial de Mercado Pago
+                    try {
                         let verifyRes = await fetch('/api/verify-payment', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
